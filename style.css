@@ -116,19 +116,23 @@ body:has(.home) { overflow: hidden; }
 
 /* ─── RESPONSIVE BASE ─── */
 @media (max-width: 640px) {
+    .nav { justify-content: space-between; }
     .nav-links {
         display: none; position: absolute; top: var(--nav-h); left: 0; right: 0;
         background: rgba(240,237,231,0.97); backdrop-filter: blur(14px);
-        flex-direction: column; padding: 1.5rem clamp(1.5rem,5vw,4rem); gap: 1.25rem;
+        flex-direction: column; padding: 1.5rem clamp(1.5rem,5vw,4rem); gap: 0.5rem;
         border-bottom: 1px solid rgba(0,0,0,0.07);
     }
     .nav-links.open { display: flex; }
+    .nav-link { opacity: 1 !important; padding: 0.75rem 0; font-size: 0.9rem; }
     .nav-toggle { display: flex; }
     .nav-toggle.open span:nth-child(1) { transform: rotate(45deg) translate(4px,4px); }
     .nav-toggle.open span:nth-child(2) { opacity: 0; }
     .nav-toggle.open span:nth-child(3) { transform: rotate(-45deg) translate(4px,-4px); }
     .home-actions { flex-direction: column; align-items: center; }
-    .btn { width: 100%; max-width: 260px; justify-content: center; }
+    .btn { width: 100%; max-width: 260px; justify-content: center; padding: 0.85rem 1.6rem; font-size: 0.85rem; }
+    .sp-sub .hover-hint { display: none; }
+    .sp-sub .touch-hint { display: inline; }
 }
 
 /* ═══════════════════════════════════════════
@@ -151,6 +155,7 @@ body.shelf-dark { background: #0e0c0a; color: #e0ddd5; }
 .sp-title { font-family: var(--serif); font-size: clamp(2.2rem,5vw,3.2rem); font-weight: 500; color: #e0ddd5; letter-spacing: -0.01em; }
 .sp-rule { width: 48px; height: 2px; background: #c4a67a; margin: 1rem 0 0.75rem; }
 .sp-sub { font-size: 0.88rem; color: rgba(224,221,213,0.45); max-width: 420px; margin-bottom: 1.5rem; }
+.sp-sub .touch-hint { display: none; }
 
 .genre-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 4rem; }
 .genre-tag {
@@ -221,6 +226,7 @@ body.shelf-dark { background: #0e0c0a; color: #e0ddd5; }
 
 @media (max-width: 640px) {
     .shelf-dark .nav-links { background: rgba(14,12,10,0.97); border-bottom-color: rgba(255,255,255,0.06); }
+    .shelf-dark .nav-link { opacity: 1 !important; }
     .book { width: 130px; }
     .book-cover { width: 130px; height: 197px; }
 }
