@@ -1,12 +1,12 @@
 /* ============================================
-   Nusayb Nurani — v4
-   Nav · Covers (static manifest) · Scroll
+   Nusayb Nurani — v5
+   Nav · Covers (Goodreads API + OL fallback) · Scroll
    ============================================ */
 
 (function () {
     'use strict';
 
-    // ─── NAV TOGGLE ──────────────────────────
+    // ─── NAV ─────────────────────────────────
     const tog = document.querySelector('.nav-toggle');
     const links = document.querySelector('.nav-links');
     if (tog && links) {
@@ -18,86 +18,105 @@
 
     // ─── COVER LOADING ──────────────────────
     //
-    // ENGINEERING DECISION: APIs (Google Books search, Open Library) are unreliable
-    // for cover accuracy — they return wrong editions, graphic novels, 1×1 blanks,
-    // or completely wrong books. The correct solution for a personal site with a
-    // fixed set of books is a STATIC MANIFEST of verified cover URLs.
+    // Strategy (ordered by reliability):
+    //   1. bookcover.longitood.com — fetches from Goodreads by title+author
+    //      Returns a direct Goodreads CDN image URL. Most accurate for popular books.
+    //   2. Same API but by ISBN (less reliable for older ISBNs)
+    //   3. Open Library by ISBN (-L size)
+    //   4. Styled fallback card
     //
-    // Primary source: Google Books (stable CDN, high-res via zoom=0)
-    //   Format: https://books.google.com/books/content?id={VOLUME_ID}&printsec=frontcover&img=1&zoom=0
-    //
-    // Fallback: Open Library (by ISBN, -L size)
-    //   Format: https://covers.openlibrary.org/b/isbn/{ISBN}-L.jpg
-    //
-    // Each book element: <div class="book-cover" data-key="wot-1"><img ...></div>
-    // The key maps into the manifest below.
+    // Why not Google Books? Their volume IDs are unstable across editions,
+    // zoom=0 often returns a generic grey placeholder, and the search API
+    // frequently returns graphic novel editions instead of the novel.
 
-    const GB = (id) => `https://books.google.com/books/content?id=${id}&printsec=frontcover&img=1&zoom=0&source=gbs_api`;
+    const BCAPI = 'https://bookcover.longitood.com/bookcover';
     const OL = (isbn) => `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`;
 
-    const COVERS = {
-        // === WHEEL OF TIME (Tor ebook editions — consistent cover art) ===
-        'wot-1':  [GB('1PgKPuFIz1kC'), OL('9780765334336')],  // Eye of the World
-        'wot-2':  [GB('nt1dDQAAQBAJ'), OL('9780765334343')],   // The Great Hunt
-        'wot-3':  [GB('bj2IDQAAQBAJ'), OL('9780765334350')],   // The Dragon Reborn
-        'wot-4':  [GB('5GfzlQEACAAJ'), OL('9780765334367')],   // The Shadow Rising
-        'wot-5':  [GB('PvZoDwAAQBAJ'), OL('9780765334374')],   // The Fires of Heaven
-        'wot-6':  [GB('2N1JDwAAQBAJ'), OL('9780765334381')],   // Lord of Chaos
-        'wot-7':  [GB('0h_NEAAAQBAJ'), OL('9780765334398')],   // A Crown of Swords
-        'wot-8':  [GB('eSl4AgAAQBAJ'), OL('9780765334404')],   // The Path of Daggers
-        'wot-9':  [GB('sFuJAgAAQBAJ'), OL('9780765334411')],   // Winter's Heart
-        'wot-10': [GB('LCuOAgAAQBAJ'), OL('9780765334428')],   // Crossroads of Twilight
-        'wot-11': [GB('1l72AgAAQBAJ'), OL('9780765334435')],   // Knife of Dreams
-        'wot-12': [GB('aYwWeXYnTBMC'), OL('9780765341532')],   // The Gathering Storm
-        'wot-13': [GB('8gl4BwAAQBAJ'), OL('9780765364876')],   // Towers of Midnight
-        'wot-14': [GB('w5_cAgAAQBAJ'), OL('9780765325952')],   // A Memory of Light
+    const covers = document.querySelectorAll('.book-cover[data-title]');
+    if (!covers.length) return;
 
-        // === TOLKIEN ===
-        'me-1':   [GB('pD6arNyKyi8C'), OL('9780547928227')],   // The Hobbit
-        'me-2':   [GB('aWZzLPhY4o0C'), OL('9780547928210')],   // Fellowship of the Ring
-        'me-3':   [GB('12e8PgZmcGEC'), OL('9780547928203')],   // The Two Towers
-        'me-4':   [GB('3TMlDwAAQBAJ'), OL('9780547928197')],   // Return of the King
+    // Throttle API calls to avoid rate limiting (100ms between calls)
+    let queue = [];
+    let processing = false;
 
-        // === SUN EATER ===
-        'se-1':   [GB('dcxCDwAAQBAJ'), OL('9780756413064')],   // Empire of Silence
-        'se-2':   [GB('vWGMDwAAQBAJ'), OL('9780756414092')],   // Howling Dark
-        'se-3':   [GB('fUjJDwAAQBAJ'), OL('9780756415266')],   // Demon in White
-        'se-4':   [GB('nAUxEAAAQBAJ'), OL('9780756416430')],   // Kingdoms of Death
-        'se-5':   [GB('VHJHEAAAQBAJ'), OL('9780756417413')],   // Ashes of Man
-        'se-6':   [GB('Gqr1EAAAQBAJ'), OL('9780756418328')],   // Disquiet Gods
-        'se-7':   [OL('9780756419332')],                        // Shadows Upon Time (newer, may lack GB)
-    };
+    function enqueue(fn) {
+        queue.push(fn);
+        if (!processing) processQueue();
+    }
 
-    document.querySelectorAll('.book-cover[data-key]').forEach(wrap => {
-        const key = wrap.dataset.key;
-        const urls = COVERS[key];
-        const img = wrap.querySelector('img');
-        if (!img || !urls || !urls.length) return;
+    function processQueue() {
+        if (!queue.length) { processing = false; return; }
+        processing = true;
+        const fn = queue.shift();
+        fn();
+        setTimeout(processQueue, 120);
+    }
 
+    covers.forEach(wrap => {
         const title = wrap.dataset.title || '';
-        let i = 0;
-
-        function tryNext() {
-            if (i >= urls.length) { showFallback(); return; }
-            img.src = urls[i++];
-        }
+        const author = wrap.dataset.author || '';
+        const isbn = wrap.dataset.isbn || '';
+        const img = wrap.querySelector('img');
+        if (!img) return;
 
         function showFallback() {
             img.style.display = 'none';
-            const fb = document.createElement('div');
-            fb.className = 'fallback';
-            fb.innerHTML = `<div class="fallback-title">${title}</div>`;
-            wrap.appendChild(fb);
+            if (!wrap.querySelector('.fallback')) {
+                const fb = document.createElement('div');
+                fb.className = 'fallback';
+                fb.innerHTML = `<div class="fallback-title">${title}</div>`;
+                wrap.appendChild(fb);
+            }
         }
 
-        img.onload = function () {
-            // Detect Open Library's 1×1 blank
-            if (img.naturalWidth <= 1 || img.naturalHeight <= 1) { tryNext(); return; }
-            img.classList.add('loaded');
-        };
-        img.onerror = tryNext;
-        tryNext();
+        // Phase 3: Open Library by ISBN
+        function tryOL() {
+            if (!isbn) { showFallback(); return; }
+            img.onload = function () {
+                if (img.naturalWidth <= 1 || img.naturalHeight <= 1) { showFallback(); return; }
+                img.classList.add('loaded');
+            };
+            img.onerror = showFallback;
+            img.src = OL(isbn);
+        }
+
+        // Phase 2: API by ISBN
+        function tryAPIByISBN() {
+            if (!isbn) { tryOL(); return; }
+            fetch(`${BCAPI}/${isbn}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.url) { loadURL(data.url, tryOL); }
+                    else { tryOL(); }
+                })
+                .catch(() => tryOL());
+        }
+
+        // Phase 1: API by title + author (most accurate)
+        function tryAPIByTitle() {
+            if (!title || !author) { tryAPIByISBN(); return; }
+            const params = new URLSearchParams({ book_title: title, author_name: author });
+            fetch(`${BCAPI}?${params}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.url) { loadURL(data.url, tryAPIByISBN); }
+                    else { tryAPIByISBN(); }
+                })
+                .catch(() => tryAPIByISBN());
+        }
+
+        function loadURL(url, fallbackFn) {
+            img.onload = function () {
+                if (img.naturalWidth <= 1 || img.naturalHeight <= 1) { fallbackFn(); return; }
+                img.classList.add('loaded');
+            };
+            img.onerror = fallbackFn;
+            img.src = url;
+        }
+
+        enqueue(tryAPIByTitle);
     });
+
 
     // ─── CURSOR-TRACKING SCROLL ─────────────
     document.querySelectorAll('.track-wrap').forEach(wrap => {
