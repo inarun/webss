@@ -157,11 +157,13 @@ body.shelf-dark { background: #0e0c0a; color: #e0ddd5; }
 .series { margin-bottom: 5rem; }
 .series:last-child { margin-bottom: 0; }
 .series-head { margin-bottom: 1.5rem; }
-.series-title { font-family: var(--serif); font-size: 1.55rem; font-weight: 600; color: #e0ddd5; display: inline; margin-right: 0.75rem; }
+.series-title {
+    font-family: var(--serif); font-size: 1.55rem; font-weight: 600; display: inline; margin-right: 0.75rem;
+    color: #c4a67a;
+}
 .series-count {
     font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
-    color: #c4a67a; background: rgba(196,166,122,0.08); border: 1px solid rgba(196,166,122,0.18);
-    padding: 0.15rem 0.5rem; border-radius: 2px; vertical-align: 0.2em;
+    color: rgba(224,221,213,0.4); vertical-align: 0.2em;
 }
 .series-author { font-size: 0.82rem; color: rgba(224,221,213,0.4); margin-top: 0.35rem; font-style: italic; }
 .series-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
