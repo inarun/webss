@@ -8,7 +8,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Libre+Franklin:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="bookshelf.css">
 </head>
 <body class="bookshelf-page">
     <nav class="nav">
@@ -29,7 +28,7 @@
         </header>
         <p class="bookshelf-intro">Some of the series and stories I've enjoyed. Move your cursor across a shelf to browse.</p>
 
-        <!-- ============ WHEEL OF TIME ============ -->
+        <!-- WHEEL OF TIME -->
         <div class="series-section">
             <div class="series-label"><h2 class="series-name">The Wheel of Time</h2><span class="series-badge">14 books</span></div>
             <p class="series-by">Robert Jordan &amp; Brandon Sanderson</p>
@@ -57,7 +56,7 @@
             </div>
         </div>
 
-        <!-- ============ TOLKIEN ============ -->
+        <!-- TOLKIEN -->
         <div class="series-section">
             <div class="series-label"><h2 class="series-name">Middle-earth</h2><span class="series-badge">4 books</span></div>
             <p class="series-by">J.R.R. Tolkien</p>
@@ -75,7 +74,7 @@
             </div>
         </div>
 
-        <!-- ============ SUN EATER ============ -->
+        <!-- SUN EATER -->
         <div class="series-section">
             <div class="series-label"><h2 class="series-name">The Sun Eater</h2><span class="series-badge">7 books</span></div>
             <p class="series-by">Christopher Ruocchio</p>
@@ -95,12 +94,6 @@
                 <div class="shelf-progress"><div class="shelf-progress-bar"></div></div>
             </div>
         </div>
-
-        <!--
-            TO ADD A SERIES: Copy a .series-section block. For covers, add ISBNs
-            (hardcover, paperback, different editions) to data-isbns separated by commas.
-            The system tries each one in order, then falls back to title search.
-        -->
     </main>
 
     <footer class="footer">
@@ -108,6 +101,5 @@
     </footer>
 
     <script src="script.js"></script>
-    <script src="bookshelf.js"></script>
 </body>
 </html>
