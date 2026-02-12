@@ -16,6 +16,49 @@
         );
     }
 
+    // ─── NAV PROXIMITY FADE (per-link) ─────
+    const navLinksAll = document.querySelectorAll('.nav-link');
+    if (navLinksAll.length) {
+        const threshold = 250;
+        const minOpacity = 0.25;
+        const current = Array.from(navLinksAll).map(() => minOpacity);
+        const targets = Array.from(navLinksAll).map(() => minOpacity);
+        let rafNav = null;
+
+        function tickNav() {
+            let done = true;
+            navLinksAll.forEach((link, i) => {
+                const d = targets[i] - current[i];
+                if (Math.abs(d) < 0.005) { current[i] = targets[i]; }
+                else { current[i] += d * 0.14; done = false; }
+                link.style.opacity = current[i];
+            });
+            if (!done) rafNav = requestAnimationFrame(tickNav);
+            else rafNav = null;
+        }
+        function goNav() { if (!rafNav) rafNav = requestAnimationFrame(tickNav); }
+
+        document.addEventListener('mousemove', e => {
+            navLinksAll.forEach((link, i) => {
+                const rect = link.getBoundingClientRect();
+                const cx = rect.left + rect.width / 2;
+                const cy = rect.top + rect.height / 2;
+                const dist = Math.sqrt(Math.pow(e.clientX - cx, 2) + Math.pow(e.clientY - cy, 2));
+                const t = Math.max(0, Math.min(1, 1 - (dist / threshold)));
+                targets[i] = minOpacity + t * (1 - minOpacity);
+            });
+            goNav();
+        });
+
+        document.addEventListener('mouseleave', () => {
+            navLinksAll.forEach((_, i) => { targets[i] = minOpacity; });
+            goNav();
+        });
+
+        // Set initial state, override CSS
+        navLinksAll.forEach(link => { link.style.opacity = minOpacity; link.style.transition = 'none'; });
+    }
+
     // ─── COVER LOADING ──────────────────────
     //
     // Strategy (ordered by reliability):
