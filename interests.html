@@ -8,61 +8,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Libre+Franklin:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <style>
-        .bookshelf-intro {
-            font-size: 1rem;
-            color: var(--color-ink-muted);
-            margin-bottom: 3rem;
-            max-width: 560px;
-        }
-        .series-section { margin-bottom: 4rem; }
-        .series-section:last-child { margin-bottom: 0; }
-        .series-label { display: flex; align-items: baseline; gap: 0.75rem; margin-bottom: 0.2rem; }
-        .series-name { font-family: var(--font-display); font-size: 1.55rem; font-weight: 600; color: var(--color-ink); }
-        .series-badge { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-ink-muted); background: var(--color-warm); padding: 0.2rem 0.55rem; border-radius: 2px; }
-        .series-by { font-size: 0.88rem; color: var(--color-ink-muted); margin-bottom: 1.5rem; }
-
-        .shelf { position: relative; }
-        .shelf-books { display: flex; gap: 1.25rem; padding: 0 0.75rem; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; padding-bottom: 6px; }
-        .shelf-books::-webkit-scrollbar { display: none; }
-
-        .shelf-wood {
-            height: 14px; margin: 0 0.25rem;
-            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.06) 10%, rgba(255,255,255,0.06) 90%, rgba(255,255,255,0) 100%), linear-gradient(180deg, #c4a882 0%, #b5956d 20%, #a68558 50%, #97754a 80%, #8a6a40 100%);
-            border-radius: 0 0 4px 4px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.2);
-            position: relative;
-        }
-        .shelf-wood::after { content: ''; position: absolute; bottom: -6px; left: 4%; right: 4%; height: 6px; background: radial-gradient(ellipse at center, rgba(0,0,0,0.08) 0%, transparent 70%); }
-
-        .shelf-fade-right { position: absolute; right: 0; top: 0; bottom: 14px; width: 48px; background: linear-gradient(90deg, transparent, var(--color-cream)); pointer-events: none; z-index: 5; opacity: 0; transition: opacity 0.3s; }
-        .shelf.has-overflow .shelf-fade-right { opacity: 1; }
-
-        .book-card { flex-shrink: 0; width: 130px; }
-        .book-cover-wrap {
-            position: relative; width: 130px; height: 195px; border-radius: 3px 6px 6px 3px; overflow: hidden;
-            box-shadow: -4px 4px 12px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.1), inset -2px 0 4px rgba(0,0,0,0.08);
-            transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer; background: #e8e0d4;
-        }
-        .book-cover-wrap:hover {
-            transform: translateY(-6px) rotateY(-3deg);
-            box-shadow: -6px 8px 20px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.12), inset -2px 0 4px rgba(0,0,0,0.08);
-        }
-        .book-cover-wrap::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: linear-gradient(90deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.06) 40%, rgba(255,255,255,0.05) 100%); z-index: 2; pointer-events: none; }
-        .book-cover-wrap::after { content: ''; position: absolute; right: 0; top: 3px; bottom: 3px; width: 3px; background: repeating-linear-gradient(180deg, #f5f0e8 0px, #e8e2d8 1px, #f5f0e8 2px); z-index: 2; pointer-events: none; border-radius: 0 2px 2px 0; }
-
-        .book-cover-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .book-cover-wrap .cover-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 1rem 0.75rem; text-align: center; font-family: var(--font-display); font-size: 0.85rem; font-weight: 600; line-height: 1.3; color: var(--color-ink-light); }
-
-        .book-num { position: absolute; top: 6px; right: 8px; background: rgba(0,0,0,0.55); color: #fff; font-family: var(--font-body); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.04em; padding: 2px 6px; border-radius: 2px; z-index: 3; backdrop-filter: blur(4px); }
-        .book-meta { padding-top: 0.6rem; }
-        .book-title { font-family: var(--font-display); font-size: 0.88rem; font-weight: 600; color: var(--color-ink); line-height: 1.3; }
-
-        @media (max-width: 768px) { .book-card { width: 115px; } .book-cover-wrap { width: 115px; height: 172px; } .shelf-books { gap: 1rem; } }
-        @media (max-width: 480px) { .book-card { width: 105px; } .book-cover-wrap { width: 105px; height: 157px; } .shelf-books { gap: 0.75rem; padding: 0 0.5rem; } .book-title { font-size: 0.8rem; } }
-    </style>
+    <link rel="stylesheet" href="bookshelf.css">
 </head>
-<body>
+<body class="bookshelf-page">
     <nav class="nav">
         <a href="index.html" class="nav-name">Nusayb Nurani</a>
         <div class="nav-links">
@@ -79,70 +27,80 @@
             <h1 class="page-title">Bookshelf</h1>
             <div class="page-rule"></div>
         </header>
+        <p class="bookshelf-intro">Some of the series and stories I've enjoyed. Move your cursor across a shelf to browse.</p>
 
-        <p class="bookshelf-intro">Some of the series and stories I've enjoyed. Scroll to browse each shelf.</p>
-
-        <!-- WHEEL OF TIME -->
+        <!-- ============ WHEEL OF TIME ============ -->
         <div class="series-section">
             <div class="series-label"><h2 class="series-name">The Wheel of Time</h2><span class="series-badge">14 books</span></div>
             <p class="series-by">Robert Jordan &amp; Brandon Sanderson</p>
             <div class="shelf">
-                <div class="shelf-books">
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#1</span><img src="https://covers.openlibrary.org/b/isbn/9780765334336-L.jpg" alt="The Eye of the World" loading="lazy"></div><div class="book-meta"><div class="book-title">The Eye of the World</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#2</span><img src="https://covers.openlibrary.org/b/isbn/9780765334343-L.jpg" alt="The Great Hunt" loading="lazy"></div><div class="book-meta"><div class="book-title">The Great Hunt</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#3</span><img src="https://covers.openlibrary.org/b/isbn/9780765334350-L.jpg" alt="The Dragon Reborn" loading="lazy"></div><div class="book-meta"><div class="book-title">The Dragon Reborn</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#4</span><img src="https://covers.openlibrary.org/b/isbn/9780765334367-L.jpg" alt="The Shadow Rising" loading="lazy"></div><div class="book-meta"><div class="book-title">The Shadow Rising</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#5</span><img src="https://covers.openlibrary.org/b/isbn/9780765334374-L.jpg" alt="The Fires of Heaven" loading="lazy"></div><div class="book-meta"><div class="book-title">The Fires of Heaven</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#6</span><img src="https://covers.openlibrary.org/b/isbn/9780765334381-L.jpg" alt="Lord of Chaos" loading="lazy"></div><div class="book-meta"><div class="book-title">Lord of Chaos</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#7</span><img src="https://covers.openlibrary.org/b/isbn/9780765334398-L.jpg" alt="A Crown of Swords" loading="lazy"></div><div class="book-meta"><div class="book-title">A Crown of Swords</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#8</span><img src="https://covers.openlibrary.org/b/isbn/9780765334404-L.jpg" alt="The Path of Daggers" loading="lazy"></div><div class="book-meta"><div class="book-title">The Path of Daggers</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#9</span><img src="https://covers.openlibrary.org/b/isbn/9780765334411-L.jpg" alt="Winter's Heart" loading="lazy"></div><div class="book-meta"><div class="book-title">Winter's Heart</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#10</span><img src="https://covers.openlibrary.org/b/isbn/9780765334428-L.jpg" alt="Crossroads of Twilight" loading="lazy"></div><div class="book-meta"><div class="book-title">Crossroads of Twilight</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#11</span><img src="https://covers.openlibrary.org/b/isbn/9780765334435-L.jpg" alt="Knife of Dreams" loading="lazy"></div><div class="book-meta"><div class="book-title">Knife of Dreams</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#12</span><img src="https://covers.openlibrary.org/b/isbn/9780765341532-L.jpg" alt="The Gathering Storm" loading="lazy"></div><div class="book-meta"><div class="book-title">The Gathering Storm</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#13</span><img src="https://covers.openlibrary.org/b/isbn/9780765364876-L.jpg" alt="Towers of Midnight" loading="lazy"></div><div class="book-meta"><div class="book-title">Towers of Midnight</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#14</span><img src="https://covers.openlibrary.org/b/isbn/9780765325952-L.jpg" alt="A Memory of Light" loading="lazy"></div><div class="book-meta"><div class="book-title">A Memory of Light</div></div></div>
-                </div>
+                <div class="shelf-track"><div class="shelf-books">
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#1</span><img data-isbns="0765334336,9780765334336,0312850093,0812511816" alt="The Eye of the World" loading="lazy"></div><div class="book-meta"><div class="book-title-label">The Eye of the World</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#2</span><img data-isbns="0765334348,9780765334343,0312850085,9780812517729" alt="The Great Hunt" loading="lazy"></div><div class="book-meta"><div class="book-title-label">The Great Hunt</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#3</span><img data-isbns="0765334356,9780765334350,0312852487,9780812513714" alt="The Dragon Reborn" loading="lazy"></div><div class="book-meta"><div class="book-title-label">The Dragon Reborn</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#4</span><img data-isbns="0765334364,9780765334367,0312854315,9780812513738" alt="The Shadow Rising" loading="lazy"></div><div class="book-meta"><div class="book-title-label">The Shadow Rising</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#5</span><img data-isbns="0765334372,9780765334374,9780812550306" alt="The Fires of Heaven" loading="lazy"></div><div class="book-meta"><div class="book-title-label">The Fires of Heaven</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#6</span><img data-isbns="0765334380,9780765334381,0312854285,9780812513752" alt="Lord of Chaos" loading="lazy"></div><div class="book-meta"><div class="book-title-label">Lord of Chaos</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#7</span><img data-isbns="0765334399,9780765334398,0312857675,9780812550283" alt="A Crown of Swords" loading="lazy"></div><div class="book-meta"><div class="book-title-label">A Crown of Swords</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#8</span><img data-isbns="0765334402,9780765334404,0312857691,9780812550290" alt="The Path of Daggers" loading="lazy"></div><div class="book-meta"><div class="book-title-label">The Path of Daggers</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#9</span><img data-isbns="0765334410,9780765334411,0312864256,9780812575583" alt="Winter's Heart" loading="lazy"></div><div class="book-meta"><div class="book-title-label">Winter's Heart</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#10</span><img data-isbns="0765334429,9780765334428,0312864590,9780812571332" alt="Crossroads of Twilight" loading="lazy"></div><div class="book-meta"><div class="book-title-label">Crossroads of Twilight</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#11</span><img data-isbns="0765334437,9780765334435,0312867581,9780812577563" alt="Knife of Dreams" loading="lazy"></div><div class="book-meta"><div class="book-title-label">Knife of Dreams</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#12</span><img data-isbns="0765341530,9780765341532,076532638X,9780765326386" alt="The Gathering Storm" loading="lazy"></div><div class="book-meta"><div class="book-title-label">The Gathering Storm</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#13</span><img data-isbns="0765364875,9780765364876,076532594X,9780765325945" alt="Towers of Midnight" loading="lazy"></div><div class="book-meta"><div class="book-title-label">Towers of Midnight</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#14</span><img data-isbns="0765325950,9780765325952,076535650X,9780765356505" alt="A Memory of Light" loading="lazy"></div><div class="book-meta"><div class="book-title-label">A Memory of Light</div></div></div>
+                </div></div>
                 <div class="shelf-wood"></div>
+                <div class="shelf-fade-left"></div>
                 <div class="shelf-fade-right"></div>
+                <div class="shelf-progress"><div class="shelf-progress-bar"></div></div>
             </div>
         </div>
 
-        <!-- TOLKIEN -->
+        <!-- ============ TOLKIEN ============ -->
         <div class="series-section">
             <div class="series-label"><h2 class="series-name">Middle-earth</h2><span class="series-badge">4 books</span></div>
             <p class="series-by">J.R.R. Tolkien</p>
             <div class="shelf">
-                <div class="shelf-books">
-                    <div class="book-card"><div class="book-cover-wrap"><img src="https://covers.openlibrary.org/b/isbn/9780547928227-L.jpg" alt="The Hobbit" loading="lazy"></div><div class="book-meta"><div class="book-title">The Hobbit</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#1</span><img src="https://covers.openlibrary.org/b/isbn/9780547928210-L.jpg" alt="The Fellowship of the Ring" loading="lazy"></div><div class="book-meta"><div class="book-title">The Fellowship of the Ring</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#2</span><img src="https://covers.openlibrary.org/b/isbn/9780547928203-L.jpg" alt="The Two Towers" loading="lazy"></div><div class="book-meta"><div class="book-title">The Two Towers</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#3</span><img src="https://covers.openlibrary.org/b/isbn/9780547928197-L.jpg" alt="The Return of the King" loading="lazy"></div><div class="book-meta"><div class="book-title">The Return of the King</div></div></div>
-                </div>
+                <div class="shelf-track"><div class="shelf-books">
+                    <div class="book-card"><div class="book-cover-wrap"><img data-isbns="9780547928227,0547928227,0618260307,0618002219" alt="The Hobbit" loading="lazy"></div><div class="book-meta"><div class="book-title-label">The Hobbit</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#1</span><img data-isbns="9780547928210,0547928211,0618640150,0618346252" alt="The Fellowship of the Ring" loading="lazy"></div><div class="book-meta"><div class="book-title-label">The Fellowship of the Ring</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#2</span><img data-isbns="9780547928203,0547928203,0618346260,0618002235" alt="The Two Towers" loading="lazy"></div><div class="book-meta"><div class="book-title-label">The Two Towers</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#3</span><img data-isbns="9780547928197,0547928195,0618346279,0618002243" alt="The Return of the King" loading="lazy"></div><div class="book-meta"><div class="book-title-label">The Return of the King</div></div></div>
+                </div></div>
                 <div class="shelf-wood"></div>
+                <div class="shelf-fade-left"></div>
                 <div class="shelf-fade-right"></div>
+                <div class="shelf-progress"><div class="shelf-progress-bar"></div></div>
             </div>
         </div>
 
-        <!-- SUN EATER -->
+        <!-- ============ SUN EATER ============ -->
         <div class="series-section">
             <div class="series-label"><h2 class="series-name">The Sun Eater</h2><span class="series-badge">7 books</span></div>
             <p class="series-by">Christopher Ruocchio</p>
             <div class="shelf">
-                <div class="shelf-books">
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#1</span><img src="https://covers.openlibrary.org/b/isbn/9780756413064-L.jpg" alt="Empire of Silence" loading="lazy"></div><div class="book-meta"><div class="book-title">Empire of Silence</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#2</span><img src="https://covers.openlibrary.org/b/isbn/9780756414092-L.jpg" alt="Howling Dark" loading="lazy"></div><div class="book-meta"><div class="book-title">Howling Dark</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#3</span><img src="https://covers.openlibrary.org/b/isbn/9780756415266-L.jpg" alt="Demon in White" loading="lazy"></div><div class="book-meta"><div class="book-title">Demon in White</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#4</span><img src="https://covers.openlibrary.org/b/isbn/9780756416430-L.jpg" alt="Kingdoms of Death" loading="lazy"></div><div class="book-meta"><div class="book-title">Kingdoms of Death</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#5</span><img src="https://covers.openlibrary.org/b/isbn/9780756417413-L.jpg" alt="Ashes of Man" loading="lazy"></div><div class="book-meta"><div class="book-title">Ashes of Man</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#6</span><img src="https://covers.openlibrary.org/b/isbn/9780756418328-L.jpg" alt="Disquiet Gods" loading="lazy"></div><div class="book-meta"><div class="book-title">Disquiet Gods</div></div></div>
-                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#7</span><img src="https://covers.openlibrary.org/b/isbn/9780756419332-L.jpg" alt="Shadows Upon Time" loading="lazy"></div><div class="book-meta"><div class="book-title">Shadows Upon Time</div></div></div>
-                </div>
+                <div class="shelf-track"><div class="shelf-books">
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#1</span><img data-isbns="9780756413064,0756413060,9780756416850,0756416850" alt="Empire of Silence" loading="lazy"></div><div class="book-meta"><div class="book-title-label">Empire of Silence</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#2</span><img data-isbns="9780756414092,0756414091,9780756417857,0756417856" alt="Howling Dark" loading="lazy"></div><div class="book-meta"><div class="book-title-label">Howling Dark</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#3</span><img data-isbns="9780756415266,0756415268,9780756418809,0756418801" alt="Demon in White" loading="lazy"></div><div class="book-meta"><div class="book-title-label">Demon in White</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#4</span><img data-isbns="9780756416430,0756416434,9780756412630" alt="Kingdoms of Death" loading="lazy"></div><div class="book-meta"><div class="book-title-label">Kingdoms of Death</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#5</span><img data-isbns="9780756417413,0756417414,9780756414788" alt="Ashes of Man" loading="lazy"></div><div class="book-meta"><div class="book-title-label">Ashes of Man</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#6</span><img data-isbns="9780756418328,0756418321" alt="Disquiet Gods" loading="lazy"></div><div class="book-meta"><div class="book-title-label">Disquiet Gods</div></div></div>
+                    <div class="book-card"><div class="book-cover-wrap"><span class="book-num">#7</span><img data-isbns="9780756419332,0756419336" alt="Shadows Upon Time" loading="lazy"></div><div class="book-meta"><div class="book-title-label">Shadows Upon Time</div></div></div>
+                </div></div>
                 <div class="shelf-wood"></div>
+                <div class="shelf-fade-left"></div>
                 <div class="shelf-fade-right"></div>
+                <div class="shelf-progress"><div class="shelf-progress-bar"></div></div>
             </div>
         </div>
 
+        <!--
+            TO ADD A SERIES: Copy a .series-section block. For covers, add ISBNs
+            (hardcover, paperback, different editions) to data-isbns separated by commas.
+            The system tries each one in order, then falls back to title search.
+        -->
     </main>
 
     <footer class="footer">
@@ -150,33 +108,6 @@
     </footer>
 
     <script src="script.js"></script>
-    <script>
-        // Fallback for broken covers
-        document.querySelectorAll('.book-cover-wrap img').forEach(img => {
-            img.addEventListener('error', function() {
-                const fallback = document.createElement('div');
-                fallback.className = 'cover-fallback';
-                fallback.textContent = this.alt;
-                this.parentElement.replaceChild(fallback, this);
-            });
-        });
-        // Scroll fade hint
-        function checkOverflow() {
-            document.querySelectorAll('.shelf').forEach(shelf => {
-                const row = shelf.querySelector('.shelf-books');
-                shelf.classList.toggle('has-overflow', row.scrollWidth > row.clientWidth + 8);
-            });
-        }
-        checkOverflow();
-        window.addEventListener('resize', checkOverflow);
-        document.querySelectorAll('.shelf-books').forEach(row => {
-            row.addEventListener('scroll', () => {
-                const shelf = row.closest('.shelf');
-                const atEnd = row.scrollLeft + row.clientWidth >= row.scrollWidth - 8;
-                if (atEnd) shelf.classList.remove('has-overflow');
-                else if (row.scrollWidth > row.clientWidth + 8) shelf.classList.add('has-overflow');
-            });
-        });
-    </script>
+    <script src="bookshelf.js"></script>
 </body>
 </html>
