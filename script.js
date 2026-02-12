@@ -218,4 +218,40 @@
         ui();
     });
 
+    // ─── PAGE TRANSITION ──────────────────────
+    // Scale fade: current page shrinks + fades, new page grows in
+    (function () {
+        const main = document.querySelector('main');
+        if (!main) return;
+
+        // On arrival: if coming from a transition, animate in
+        const entry = sessionStorage.getItem('pageTransition');
+        if (entry) {
+            sessionStorage.removeItem('pageTransition');
+            main.style.opacity = '0';
+            main.style.transform = 'scale(1.03)';
+            main.style.transition = 'none';
+            main.offsetHeight;
+            main.style.transition = 'opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)';
+            main.style.opacity = '1';
+            main.style.transform = 'scale(1)';
+        }
+
+        // Intercept nav link clicks
+        document.querySelectorAll('.nav-link:not(.active)').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const href = this.getAttribute('href');
+
+                sessionStorage.setItem('pageTransition', '1');
+
+                main.style.transition = 'opacity 0.35s ease, transform 0.35s cubic-bezier(0.4, 0, 1, 1)';
+                main.style.opacity = '0';
+                main.style.transform = 'scale(0.97)';
+
+                setTimeout(() => { window.location.href = href; }, 360);
+            });
+        });
+    })();
+
 })();

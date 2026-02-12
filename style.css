@@ -119,6 +119,9 @@ body:has(.home) { overflow: hidden; }
 
 @keyframes fadeUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
 
+/* ─── PAGE TRANSITION ─── */
+/* Scale fade handled via inline styles in script.js */
+
 /* ─── RESPONSIVE BASE ─── */
 @media (max-width: 640px) {
     .nav { justify-content: space-between; }
