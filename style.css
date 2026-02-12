@@ -144,7 +144,15 @@ body.shelf-dark { background: #0e0c0a; color: #e0ddd5; }
 }
 .sp-title { font-family: var(--serif); font-size: clamp(2.2rem,5vw,3.2rem); font-weight: 500; color: #e0ddd5; letter-spacing: -0.01em; }
 .sp-rule { width: 48px; height: 2px; background: #c4a67a; margin: 1rem 0 0.75rem; }
-.sp-sub { font-size: 0.88rem; color: rgba(224,221,213,0.45); max-width: 420px; margin-bottom: 4rem; }
+.sp-sub { font-size: 0.88rem; color: rgba(224,221,213,0.45); max-width: 420px; margin-bottom: 1.5rem; }
+
+.genre-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 4rem; }
+.genre-tag {
+    font-size: 0.68rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
+    color: rgba(224,221,213,0.5); background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08); padding: 0.25rem 0.65rem;
+    border-radius: 100px;
+}
 
 .series { margin-bottom: 5rem; }
 .series:last-child { margin-bottom: 0; }
