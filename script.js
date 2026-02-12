@@ -33,7 +33,7 @@
     const OL = (isbn) => `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`;
 
     const covers = document.querySelectorAll('.book-cover[data-title]');
-    if (!covers.length) return;
+    if (covers.length) {
 
     // Throttle API calls to avoid rate limiting (100ms between calls)
     let queue = [];
@@ -116,6 +116,7 @@
 
         enqueue(tryAPIByTitle);
     });
+    } // end if (covers.length)
 
 
     // ─── CURSOR-TRACKING SCROLL ─────────────
