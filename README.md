@@ -1,4 +1,4 @@
-# nusayb.com
+#### nusayb.me
 
 Personal website built with vanilla HTML, CSS, and JavaScript. Hosted on GitHub Pages.
 
