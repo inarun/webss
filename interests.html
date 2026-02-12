@@ -8,6 +8,274 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Libre+Franklin:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* ===== Bookshelf Styles ===== */
+
+        .bookshelf-intro {
+            font-size: 1rem;
+            color: var(--color-ink-muted);
+            margin-bottom: 2.5rem;
+            max-width: 560px;
+        }
+
+        /* --- Series Group --- */
+        .series-group {
+            margin-bottom: 3.5rem;
+        }
+        .series-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .series-header {
+            display: flex;
+            align-items: baseline;
+            gap: 0.75rem;
+            margin-bottom: 0.25rem;
+        }
+        .series-title {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--color-ink);
+        }
+        .series-count {
+            font-family: var(--font-body);
+            font-size: 0.78rem;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            color: var(--color-ink-muted);
+            text-transform: uppercase;
+        }
+        .series-author {
+            font-family: var(--font-body);
+            font-size: 0.88rem;
+            color: var(--color-ink-muted);
+            margin-bottom: 1.25rem;
+        }
+
+        /* --- The Shelf --- */
+        .shelf-wrapper {
+            position: relative;
+        }
+
+        .shelf-row {
+            display: flex;
+            gap: 0;
+            align-items: flex-end;
+            padding: 0 1rem;
+            overflow-x: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-rule) transparent;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 4px;
+        }
+        .shelf-row::-webkit-scrollbar {
+            height: 4px;
+        }
+        .shelf-row::-webkit-scrollbar-thumb {
+            background: var(--color-rule);
+            border-radius: 2px;
+        }
+
+        /* The wooden shelf plank */
+        .shelf-plank {
+            height: 10px;
+            background: linear-gradient(
+                180deg,
+                #b5926b 0%,
+                #a07850 30%,
+                #8b6540 60%,
+                #7a5833 100%
+            );
+            border-radius: 0 0 3px 3px;
+            box-shadow:
+                0 2px 4px rgba(0,0,0,0.15),
+                0 4px 12px rgba(0,0,0,0.08),
+                inset 0 1px 0 rgba(255,255,255,0.15);
+            margin: 0 0.5rem;
+            position: relative;
+        }
+        .shelf-plank::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255,255,255,0.12) 20%,
+                rgba(255,255,255,0.12) 80%,
+                transparent 100%
+            );
+        }
+
+        /* --- Individual Book Spine --- */
+        .book {
+            flex-shrink: 0;
+            width: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.25s ease;
+        }
+        .book:hover {
+            transform: translateY(-8px);
+        }
+        .book:hover .book-tooltip {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-4px);
+            pointer-events: auto;
+        }
+
+        .spine {
+            width: 32px;
+            border-radius: 2px 2px 0 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow:
+                1px 1px 3px rgba(0,0,0,0.2),
+                inset -2px 0 4px rgba(0,0,0,0.15),
+                inset 2px 0 4px rgba(255,255,255,0.08);
+        }
+
+        /* Spine texture overlay */
+        .spine::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                180deg,
+                transparent 0px,
+                transparent 3px,
+                rgba(0,0,0,0.03) 3px,
+                rgba(0,0,0,0.03) 4px
+            );
+            pointer-events: none;
+        }
+
+        /* Number badge on spine */
+        .spine-number {
+            position: absolute;
+            top: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: var(--font-display);
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: rgba(255,255,255,0.75);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            pointer-events: none;
+        }
+
+        /* --- Tooltip --- */
+        .book-tooltip {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%) translateY(4px);
+            background: var(--color-ink);
+            color: var(--color-cream);
+            padding: 0.6rem 0.85rem;
+            border-radius: 4px;
+            width: max-content;
+            max-width: 220px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s ease;
+            z-index: 20;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+        }
+        .book-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: var(--color-ink);
+        }
+        .tooltip-title {
+            font-family: var(--font-display);
+            font-size: 0.9rem;
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: 0.15rem;
+        }
+        .tooltip-num {
+            font-family: var(--font-body);
+            font-size: 0.68rem;
+            font-weight: 500;
+            color: rgba(250,248,245,0.55);
+            letter-spacing: 0.03em;
+        }
+
+        /* --- Color palettes per series --- */
+
+        /* Wheel of Time — warm reds, ambers, deep burgundies */
+        .wot-1  .spine { background: #8B2E2E; }
+        .wot-2  .spine { background: #6B4226; }
+        .wot-3  .spine { background: #7A3B3B; }
+        .wot-4  .spine { background: #5C4033; }
+        .wot-5  .spine { background: #A0522D; }
+        .wot-6  .spine { background: #6E3630; }
+        .wot-7  .spine { background: #8B6914; }
+        .wot-8  .spine { background: #704214; }
+        .wot-9  .spine { background: #5B3A29; }
+        .wot-10 .spine { background: #8B4513; }
+        .wot-11 .spine { background: #6B3A2E; }
+        .wot-12 .spine { background: #7A4B32; }
+        .wot-13 .spine { background: #5C3317; }
+        .wot-14 .spine { background: #922B21; }
+
+        /* Tolkien — forest greens, golds, earthy browns */
+        .tolkien-1 .spine { background: #2E5E3F; }
+        .tolkien-2 .spine { background: #3B5E2E; }
+        .tolkien-3 .spine { background: #4A6741; }
+        .tolkien-4 .spine { background: #355E3B; }
+
+        /* Sun Eater — deep blues, violets, dark teals */
+        .se-1 .spine { background: #1B3A5C; }
+        .se-2 .spine { background: #2C2C54; }
+        .se-3 .spine { background: #1A3C5E; }
+        .se-4 .spine { background: #3B2D5E; }
+        .se-5 .spine { background: #1E4D6E; }
+        .se-6 .spine { background: #2A2A50; }
+        .se-7 .spine { background: #1C3D5A; }
+
+        /* --- Height variation for visual interest --- */
+        .h-tall   .spine { height: 160px; }
+        .h-med    .spine { height: 145px; }
+        .h-short  .spine { height: 130px; }
+        .h-xtall  .spine { height: 170px; }
+
+        /* --- Responsive --- */
+        @media (max-width: 640px) {
+            .book {
+                width: 36px;
+            }
+            .spine {
+                width: 28px;
+            }
+            .h-tall   .spine { height: 130px; }
+            .h-med    .spine { height: 118px; }
+            .h-short  .spine { height: 108px; }
+            .h-xtall  .spine { height: 140px; }
+
+            .book-tooltip {
+                display: none;
+            }
+            /* On mobile, show title via tap */
+            .book.tapped .book-tooltip {
+                display: block;
+                opacity: 1;
+                transform: translateX(-50%) translateY(-4px);
+                pointer-events: auto;
+            }
+        }
+    </style>
 </head>
 <body>
     <nav class="nav">
@@ -27,66 +295,89 @@
             <div class="page-rule"></div>
         </header>
 
-        <section class="interests-section">
+        <p class="bookshelf-intro">
+            A collection of books I enjoy — organized by series. Hover over a spine to see the title.
+        </p>
 
-            <!-- BOOKS -->
-            <div class="interest-block">
-                <h2 class="interest-heading">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                    Books
-                </h2>
-                <p class="interest-intro">A selection of books that have shaped my thinking.</p>
-
-                <div class="book-grid">
-
-                    <!--
-                        TO ADD A BOOK: Copy a book-card block below, update title/author/note.
-                        TO REMOVE: Delete the entire <div class="book-card">...</div> block.
-                    -->
-
-                    <div class="book-card">
-                        <div class="book-spine"></div>
-                        <div class="book-info">
-                            <h3 class="book-title">Placeholder Title</h3>
-                            <p class="book-author">Author Name</p>
-                            <p class="book-note">Replace with a favorite book and a short note on why it resonated with you.</p>
-                        </div>
-                    </div>
-
-                    <div class="book-card">
-                        <div class="book-spine"></div>
-                        <div class="book-info">
-                            <h3 class="book-title">Placeholder Title</h3>
-                            <p class="book-author">Author Name</p>
-                            <p class="book-note">Replace with another book recommendation.</p>
-                        </div>
-                    </div>
-
-                    <div class="book-card">
-                        <div class="book-spine"></div>
-                        <div class="book-info">
-                            <h3 class="book-title">Placeholder Title</h3>
-                            <p class="book-author">Author Name</p>
-                            <p class="book-note">Replace with another book recommendation.</p>
-                        </div>
-                    </div>
-
-                </div>
+        <!-- ==================== WHEEL OF TIME ==================== -->
+        <div class="series-group">
+            <div class="series-header">
+                <h2 class="series-title">The Wheel of Time</h2>
+                <span class="series-count">14 books</span>
             </div>
+            <p class="series-author">Robert Jordan &amp; Brandon Sanderson</p>
 
-            <!--
-                TO ADD ANOTHER INTEREST SECTION: Copy this template and uncomment it.
-
-                <div class="interest-block">
-                    <h2 class="interest-heading">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-                        Section Title
-                    </h2>
-                    <p class="interest-intro">Description of this interest.</p>
+            <div class="shelf-wrapper">
+                <div class="shelf-row">
+                    <div class="book wot-1 h-tall"><div class="spine"><span class="spine-number">1</span></div><div class="book-tooltip"><div class="tooltip-title">The Eye of the World</div><div class="tooltip-num">Book 1</div></div></div>
+                    <div class="book wot-2 h-med"><div class="spine"><span class="spine-number">2</span></div><div class="book-tooltip"><div class="tooltip-title">The Great Hunt</div><div class="tooltip-num">Book 2</div></div></div>
+                    <div class="book wot-3 h-med"><div class="spine"><span class="spine-number">3</span></div><div class="book-tooltip"><div class="tooltip-title">The Dragon Reborn</div><div class="tooltip-num">Book 3</div></div></div>
+                    <div class="book wot-4 h-xtall"><div class="spine"><span class="spine-number">4</span></div><div class="book-tooltip"><div class="tooltip-title">The Shadow Rising</div><div class="tooltip-num">Book 4</div></div></div>
+                    <div class="book wot-5 h-tall"><div class="spine"><span class="spine-number">5</span></div><div class="book-tooltip"><div class="tooltip-title">The Fires of Heaven</div><div class="tooltip-num">Book 5</div></div></div>
+                    <div class="book wot-6 h-xtall"><div class="spine"><span class="spine-number">6</span></div><div class="book-tooltip"><div class="tooltip-title">Lord of Chaos</div><div class="tooltip-num">Book 6</div></div></div>
+                    <div class="book wot-7 h-med"><div class="spine"><span class="spine-number">7</span></div><div class="book-tooltip"><div class="tooltip-title">A Crown of Swords</div><div class="tooltip-num">Book 7</div></div></div>
+                    <div class="book wot-8 h-short"><div class="spine"><span class="spine-number">8</span></div><div class="book-tooltip"><div class="tooltip-title">The Path of Daggers</div><div class="tooltip-num">Book 8</div></div></div>
+                    <div class="book wot-9 h-med"><div class="spine"><span class="spine-number">9</span></div><div class="book-tooltip"><div class="tooltip-title">Winter's Heart</div><div class="tooltip-num">Book 9</div></div></div>
+                    <div class="book wot-10 h-short"><div class="spine"><span class="spine-number">10</span></div><div class="book-tooltip"><div class="tooltip-title">Crossroads of Twilight</div><div class="tooltip-num">Book 10</div></div></div>
+                    <div class="book wot-11 h-tall"><div class="spine"><span class="spine-number">11</span></div><div class="book-tooltip"><div class="tooltip-title">Knife of Dreams</div><div class="tooltip-num">Book 11</div></div></div>
+                    <div class="book wot-12 h-tall"><div class="spine"><span class="spine-number">12</span></div><div class="book-tooltip"><div class="tooltip-title">The Gathering Storm</div><div class="tooltip-num">Book 12</div></div></div>
+                    <div class="book wot-13 h-med"><div class="spine"><span class="spine-number">13</span></div><div class="book-tooltip"><div class="tooltip-title">Towers of Midnight</div><div class="tooltip-num">Book 13</div></div></div>
+                    <div class="book wot-14 h-xtall"><div class="spine"><span class="spine-number">14</span></div><div class="book-tooltip"><div class="tooltip-title">A Memory of Light</div><div class="tooltip-num">Book 14</div></div></div>
                 </div>
-            -->
+                <div class="shelf-plank"></div>
+            </div>
+        </div>
 
-        </section>
+        <!-- ==================== TOLKIEN ==================== -->
+        <div class="series-group">
+            <div class="series-header">
+                <h2 class="series-title">Middle-earth</h2>
+                <span class="series-count">4 books</span>
+            </div>
+            <p class="series-author">J.R.R. Tolkien</p>
+
+            <div class="shelf-wrapper">
+                <div class="shelf-row">
+                    <div class="book tolkien-1 h-med"><div class="spine"><span class="spine-number"></span></div><div class="book-tooltip"><div class="tooltip-title">The Hobbit</div><div class="tooltip-num">Standalone</div></div></div>
+                    <div class="book tolkien-2 h-tall"><div class="spine"><span class="spine-number">1</span></div><div class="book-tooltip"><div class="tooltip-title">The Fellowship of the Ring</div><div class="tooltip-num">The Lord of the Rings · Book 1</div></div></div>
+                    <div class="book tolkien-3 h-med"><div class="spine"><span class="spine-number">2</span></div><div class="book-tooltip"><div class="tooltip-title">The Two Towers</div><div class="tooltip-num">The Lord of the Rings · Book 2</div></div></div>
+                    <div class="book tolkien-4 h-tall"><div class="spine"><span class="spine-number">3</span></div><div class="book-tooltip"><div class="tooltip-title">The Return of the King</div><div class="tooltip-num">The Lord of the Rings · Book 3</div></div></div>
+                </div>
+                <div class="shelf-plank"></div>
+            </div>
+        </div>
+
+        <!-- ==================== SUN EATER ==================== -->
+        <div class="series-group">
+            <div class="series-header">
+                <h2 class="series-title">The Sun Eater</h2>
+                <span class="series-count">7 books</span>
+            </div>
+            <p class="series-author">Christopher Ruocchio</p>
+
+            <div class="shelf-wrapper">
+                <div class="shelf-row">
+                    <div class="book se-1 h-xtall"><div class="spine"><span class="spine-number">1</span></div><div class="book-tooltip"><div class="tooltip-title">Empire of Silence</div><div class="tooltip-num">Book 1</div></div></div>
+                    <div class="book se-2 h-tall"><div class="spine"><span class="spine-number">2</span></div><div class="book-tooltip"><div class="tooltip-title">Howling Dark</div><div class="tooltip-num">Book 2</div></div></div>
+                    <div class="book se-3 h-tall"><div class="spine"><span class="spine-number">3</span></div><div class="book-tooltip"><div class="tooltip-title">Demon in White</div><div class="tooltip-num">Book 3</div></div></div>
+                    <div class="book se-4 h-med"><div class="spine"><span class="spine-number">4</span></div><div class="book-tooltip"><div class="tooltip-title">Kingdoms of Death</div><div class="tooltip-num">Book 4</div></div></div>
+                    <div class="book se-5 h-tall"><div class="spine"><span class="spine-number">5</span></div><div class="book-tooltip"><div class="tooltip-title">Ashes of Man</div><div class="tooltip-num">Book 5</div></div></div>
+                    <div class="book se-6 h-xtall"><div class="spine"><span class="spine-number">6</span></div><div class="book-tooltip"><div class="tooltip-title">Disquiet Gods</div><div class="tooltip-num">Book 6</div></div></div>
+                    <div class="book se-7 h-tall"><div class="spine"><span class="spine-number">7</span></div><div class="book-tooltip"><div class="tooltip-title">Shadows Upon Time</div><div class="tooltip-num">Book 7</div></div></div>
+                </div>
+                <div class="shelf-plank"></div>
+            </div>
+        </div>
+
+        <!--
+            TO ADD A NEW SERIES:
+            1. Copy a .series-group block above
+            2. Update series-title, series-count, series-author
+            3. Add book divs with a new color class prefix (e.g. .new-1, .new-2...)
+            4. Add matching CSS: .new-1 .spine { background: #hexcolor; }
+            5. Vary heights with h-short, h-med, h-tall, h-xtall
+        -->
+
     </main>
 
     <footer class="footer">
@@ -94,5 +385,24 @@
     </footer>
 
     <script src="script.js"></script>
+    <script>
+        // Mobile tap-to-reveal tooltips
+        document.querySelectorAll('.book').forEach(book => {
+            book.addEventListener('click', (e) => {
+                const wasTapped = book.classList.contains('tapped');
+                document.querySelectorAll('.book.tapped').forEach(b => b.classList.remove('tapped'));
+                if (!wasTapped) {
+                    book.classList.add('tapped');
+                }
+            });
+        });
+
+        // Close tooltip when tapping outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.book')) {
+                document.querySelectorAll('.book.tapped').forEach(b => b.classList.remove('tapped'));
+            }
+        });
+    </script>
 </body>
 </html>
