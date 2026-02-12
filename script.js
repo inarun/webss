@@ -18,7 +18,8 @@
 
     // ─── NAV PROXIMITY FADE (per-link) ─────
     const navLinksAll = document.querySelectorAll('.nav-link');
-    if (navLinksAll.length) {
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (navLinksAll.length && !isTouch) {
         const threshold = 250;
         const minOpacity = 0.25;
         const current = Array.from(navLinksAll).map(() => minOpacity);
