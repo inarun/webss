@@ -164,6 +164,7 @@ body.shelf-dark { background: #0e0c0a; color: #e0ddd5; }
     padding: 0.15rem 0.5rem; border-radius: 2px; vertical-align: 0.2em;
 }
 .series-author { font-size: 0.82rem; color: rgba(224,221,213,0.4); margin-top: 0.35rem; font-style: italic; }
+.series-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
 
 .track-wrap { position: relative; }
 .track { overflow: hidden; cursor: grab; user-select: none; -webkit-user-select: none; }
