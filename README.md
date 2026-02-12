@@ -1,1 +1,5 @@
-Welcome to my website!
+# nusayb.com
+
+Personal website built with vanilla HTML, CSS, and JavaScript. Hosted on GitHub Pages.
+
+**[→ Visit site](nusayb.me)**
