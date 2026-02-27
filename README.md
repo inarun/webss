@@ -1,5 +1,5 @@
 #### nusayb.me
 
-Personal website hosted on GitHub Pages.
+Personal website.
 
-**[→ Visit site](https://inarun.github.io/webss)**
+**[→ Visit site](https://nusayb.me)**

@@ -1,6 +1,6 @@
 /* ============================================
-   Nusayb Nurani — v5
-   Nav · Covers (Goodreads API + OL fallback) · Scroll
+   Nusayb Nurani — v6
+   Nav · Theme · Covers · Scroll · Resume Overlay
    ============================================ */
 
 (function () {
@@ -14,6 +14,16 @@
         links.querySelectorAll('.nav-link').forEach(a =>
             a.addEventListener('click', () => { tog.classList.remove('open'); links.classList.remove('open'); })
         );
+    }
+
+    // ─── THEME TOGGLE ────────────────────────
+    const themeToggle = document.querySelector('.theme-toggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+        });
     }
 
     // ─── NAV PROXIMITY FADE (per-link) ─────
@@ -219,6 +229,32 @@
         });
         ui();
     });
+
+    // ─── RESUME OVERLAY ──────────────────────
+    const resumeLink = document.querySelector('.btn-primary[href*="Resume"]');
+    const overlay = document.querySelector('.resume-overlay');
+    if (resumeLink && overlay && window.innerWidth > 640) {
+        const frame = overlay.querySelector('iframe');
+        const closeBtn = overlay.querySelector('.resume-close');
+
+        function openResume(e) {
+            e.preventDefault();
+            frame.src = resumeLink.getAttribute('href');
+            overlay.classList.add('active');
+        }
+
+        function closeResume() {
+            overlay.classList.remove('active');
+            setTimeout(() => { frame.src = ''; }, 350);
+        }
+
+        resumeLink.addEventListener('click', openResume);
+        if (closeBtn) closeBtn.addEventListener('click', closeResume);
+        overlay.addEventListener('click', e => { if (e.target === overlay) closeResume(); });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && overlay.classList.contains('active')) closeResume();
+        });
+    }
 
     // ─── PAGE TRANSITION ──────────────────────
     // Scale fade: current page shrinks + fades, new page grows in
