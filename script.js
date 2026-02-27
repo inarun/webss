@@ -119,6 +119,7 @@
             img.onload = function () {
                 if (img.naturalWidth <= 1 || img.naturalHeight <= 1) { showFallback(); return; }
                 img.classList.add('loaded');
+                img.alt = wrap.dataset.title || '';
             };
             img.onerror = showFallback;
             img.src = OL(isbn);
@@ -153,6 +154,7 @@
             img.onload = function () {
                 if (img.naturalWidth <= 1 || img.naturalHeight <= 1) { fallbackFn(); return; }
                 img.classList.add('loaded');
+                img.alt = wrap.dataset.title || '';
             };
             img.onerror = fallbackFn;
             img.src = url;
