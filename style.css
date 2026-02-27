@@ -19,16 +19,16 @@
     --text-secondary: #3d3d3d;
     --text-muted:     #6e6e6e;
     --text-faint:     rgba(26,26,26,0.22);
-    --accent:         #7a5c12;
-    --accent-hover:   #5e4700;
-    --accent-bright:  #c4a67a;
+    --accent:         #1e3a5f;
+    --accent-hover:   #152d4a;
+    --accent-bright:  #6a9ac4;
     --surface:        #ffffff;
     --rule:           #c8bfb0;
     --border:         rgba(0,0,0,0.07);
     --border-faint:   rgba(0,0,0,0.04);
     --btn-text:       #ffffff;
-    --btn-shadow:     rgba(122,92,18,0.2);
-    --btn-shadow-h:   rgba(122,92,18,0.3);
+    --btn-shadow:     rgba(30,58,95,0.2);
+    --btn-shadow-h:   rgba(30,58,95,0.3);
     --tag-text:       rgba(26,26,26,0.55);
     --tag-bg:         rgba(0,0,0,0.04);
     --tag-border:     rgba(0,0,0,0.1);
@@ -37,7 +37,7 @@
     --cover-fb-text:  #999;
     --cover-shadow:   0 2px 8px rgba(0,0,0,0.12), 0 12px 40px rgba(0,0,0,0.06);
     --cover-shadow-h: 0 8px 20px rgba(0,0,0,0.2), 0 24px 60px rgba(0,0,0,0.1);
-    --prog-bar:       rgba(196,166,122,0.3);
+    --prog-bar:       rgba(106,154,196,0.3);
     --overlay-bg:     rgba(240,237,231,0.95);
 }
 
@@ -49,16 +49,16 @@
     --text-secondary: rgba(224,221,213,0.65);
     --text-muted:     rgba(224,221,213,0.4);
     --text-faint:     rgba(224,221,213,0.22);
-    --accent:         #c4a67a;
-    --accent-hover:   #d4b88a;
-    --accent-bright:  #c4a67a;
+    --accent:         #7aaac8;
+    --accent-hover:   #9ac0d8;
+    --accent-bright:  #6a9ac4;
     --surface:        #1a1714;
     --rule:           rgba(255,255,255,0.08);
     --border:         rgba(255,255,255,0.06);
     --border-faint:   rgba(255,255,255,0.04);
     --btn-text:       #0e0c0a;
-    --btn-shadow:     rgba(196,166,122,0.15);
-    --btn-shadow-h:   rgba(196,166,122,0.25);
+    --btn-shadow:     rgba(122,170,200,0.15);
+    --btn-shadow-h:   rgba(122,170,200,0.25);
     --tag-text:       rgba(224,221,213,0.5);
     --tag-bg:         rgba(255,255,255,0.04);
     --tag-border:     rgba(255,255,255,0.08);
@@ -67,7 +67,7 @@
     --cover-fb-text:  #777;
     --cover-shadow:   0 2px 8px rgba(0,0,0,0.35), 0 12px 40px rgba(0,0,0,0.18);
     --cover-shadow-h: 0 8px 20px rgba(0,0,0,0.45), 0 24px 60px rgba(0,0,0,0.22);
-    --prog-bar:       rgba(196,166,122,0.4);
+    --prog-bar:       rgba(122,170,200,0.4);
     --overlay-bg:     rgba(14,12,10,0.95);
 }
 
