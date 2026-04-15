@@ -27,22 +27,35 @@
     }
 
     // ─── NAV PROXIMITY FADE (per-link) ─────
-    const navLinksAll = document.querySelectorAll('.nav-link');
+    // Live-queries .nav-link on every tick so any link added dynamically
+    // (see conditional Writing nav below) participates in the fade without
+    // a re-init. Per-link state is stashed on the element itself.
+    const navLinksRoot = document.querySelector('.nav-links');
     const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    if (navLinksAll.length && !isTouch) {
+    if (navLinksRoot && !isTouch) {
         const threshold = 250;
         const minOpacity = 0.25;
-        const current = Array.from(navLinksAll).map(() => minOpacity);
-        const targets = Array.from(navLinksAll).map(() => minOpacity);
         let rafNav = null;
+
+        function getLinks() { return navLinksRoot.querySelectorAll('.nav-link'); }
+
+        function initLink(link) {
+            if (link._proxInit) return;
+            link._proxInit = true;
+            link._proxCurrent = minOpacity;
+            link._proxTarget = minOpacity;
+            link.style.opacity = minOpacity;
+            link.style.transition = 'none';
+        }
 
         function tickNav() {
             let done = true;
-            navLinksAll.forEach((link, i) => {
-                const d = targets[i] - current[i];
-                if (Math.abs(d) < 0.005) { current[i] = targets[i]; }
-                else { current[i] += d * 0.14; done = false; }
-                link.style.opacity = current[i];
+            getLinks().forEach(link => {
+                initLink(link);
+                const d = link._proxTarget - link._proxCurrent;
+                if (Math.abs(d) < 0.005) { link._proxCurrent = link._proxTarget; }
+                else { link._proxCurrent += d * 0.14; done = false; }
+                link.style.opacity = link._proxCurrent;
             });
             if (!done) rafNav = requestAnimationFrame(tickNav);
             else rafNav = null;
@@ -50,24 +63,25 @@
         function goNav() { if (!rafNav) rafNav = requestAnimationFrame(tickNav); }
 
         document.addEventListener('mousemove', e => {
-            navLinksAll.forEach((link, i) => {
+            getLinks().forEach(link => {
+                initLink(link);
                 const rect = link.getBoundingClientRect();
                 const cx = rect.left + rect.width / 2;
                 const cy = rect.top + rect.height / 2;
                 const dist = Math.sqrt(Math.pow(e.clientX - cx, 2) + Math.pow(e.clientY - cy, 2));
                 const t = Math.max(0, Math.min(1, 1 - (dist / threshold)));
-                targets[i] = minOpacity + t * (1 - minOpacity);
+                link._proxTarget = minOpacity + t * (1 - minOpacity);
             });
             goNav();
         });
 
         document.addEventListener('mouseleave', () => {
-            navLinksAll.forEach((_, i) => { targets[i] = minOpacity; });
+            getLinks().forEach(link => { initLink(link); link._proxTarget = minOpacity; });
             goNav();
         });
 
         // Set initial state, override CSS
-        navLinksAll.forEach(link => { link.style.opacity = minOpacity; link.style.transition = 'none'; });
+        getLinks().forEach(initLink);
     }
 
     // ─── COVER LOADING ──────────────────────
@@ -275,21 +289,62 @@
             main.style.transform = 'scale(1)';
         }
 
-        // Intercept nav link clicks
-        document.querySelectorAll('.nav-link:not(.active)').forEach(link => {
-            link.addEventListener('click', function (e) {
-                e.preventDefault();
-                const href = this.getAttribute('href');
+        // Intercept nav link clicks (delegated so links added dynamically
+        // — see the conditional Writing nav below — also get the transition).
+        document.addEventListener('click', function (e) {
+            const link = e.target.closest('.nav-links .nav-link');
+            if (!link || link.classList.contains('active')) return;
+            e.preventDefault();
+            const href = link.getAttribute('href');
 
-                sessionStorage.setItem('pageTransition', '1');
+            sessionStorage.setItem('pageTransition', '1');
 
-                main.style.transition = 'opacity 0.35s ease, transform 0.35s cubic-bezier(0.4, 0, 1, 1)';
-                main.style.opacity = '0';
-                main.style.transform = 'scale(0.97)';
+            main.style.transition = 'opacity 0.35s ease, transform 0.35s cubic-bezier(0.4, 0, 1, 1)';
+            main.style.opacity = '0';
+            main.style.transform = 'scale(0.97)';
 
-                setTimeout(() => { window.location.href = href; }, 360);
-            });
+            setTimeout(() => { window.location.href = href; }, 360);
         });
+    })();
+
+    // ─── CONDITIONAL WRITING NAV ─────────────
+    // The Writing link is absent from every page's static HTML until the
+    // Substack feed has at least one post. This fetch queries the RSS feed
+    // on page load; if items.length > 0, a Writing link is injected into
+    // the current page's nav. If the feed is empty or the fetch fails, the
+    // link stays absent — users and crawlers never see a "coming soon" page.
+    // When the first post publishes, the link appears across all pages
+    // automatically, with no code change.
+    (function () {
+        const navLinks = document.querySelector('.nav-links');
+        if (!navLinks) return;
+        if (navLinks.querySelector('a[href="writing.html"]')) return;
+
+        const RSS_API = 'https://api.rss2json.com/v1/api.json?rss_url=' +
+                        encodeURIComponent('https://nusayb.substack.com/feed');
+
+        fetch(RSS_API)
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+                if (!data || !data.items || data.items.length === 0) return;
+
+                const link = document.createElement('a');
+                link.href = 'writing.html';
+                link.className = 'nav-link';
+                link.textContent = 'Writing';
+                if (location.pathname.endsWith('writing.html')) {
+                    link.classList.add('active');
+                }
+
+                // Insert before Bookshelf if present, otherwise append at end
+                const bookshelf = navLinks.querySelector('a[href="interests.html"]');
+                if (bookshelf) {
+                    navLinks.insertBefore(link, bookshelf);
+                } else {
+                    navLinks.appendChild(link);
+                }
+            })
+            .catch(() => { /* silent: no feed, no link */ });
     })();
 
 })();

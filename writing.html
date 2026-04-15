@@ -3,8 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--
+      Post-merge manual steps when the first Substack post publishes:
+        1. Remove the <meta name="robots" content="noindex"> line below.
+        2. Add a <url><loc>https://nusayb.me/writing.html</loc>...</url> entry
+           to sitemap.xml.
+      The Writing nav link reappears automatically across all pages once the
+      Substack feed has at least one item (see script.js conditional nav block).
+    -->
+    <meta name="robots" content="noindex">
     <title>Writing — Nusayb Nurani</title>
     <meta name="description" content="Essays and reflections by Nusayb Nurani, published on Substack.">
+    <link rel="canonical" href="https://nusayb.me/writing.html">
     <meta property="og:title" content="Writing — Nusayb Nurani">
     <meta property="og:description" content="Essays and reflections by Nusayb Nurani.">
     <meta property="og:type" content="website">
@@ -195,7 +205,6 @@
         <a href="index.html" class="nav-name">Nusayb Nurani</a>
         <div class="nav-links">
             <a href="index.html" class="nav-link">Home</a>
-            <a href="writing.html" class="nav-link active">Writing</a>
             <a href="interests.html" class="nav-link">Bookshelf</a>
         </div>
         <button class="theme-toggle" aria-label="Toggle theme">
