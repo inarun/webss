@@ -100,149 +100,160 @@
     const BCAPI = 'https://bookcover.longitood.com/bookcover';
     const OL = (isbn) => `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`;
 
-    const covers = document.querySelectorAll('.book-cover[data-title]');
-    if (covers.length) {
+    function initCoverLoader(root) {
+        const scope = root || document;
+        const covers = scope.querySelectorAll('.book-cover[data-title]');
+        if (!covers.length) return;
 
-    // Throttle API calls to avoid rate limiting (100ms between calls)
-    let queue = [];
-    let processing = false;
+        // Throttle API calls to avoid rate limiting (120ms between calls)
+        let queue = [];
+        let processing = false;
 
-    function enqueue(fn) {
-        queue.push(fn);
-        if (!processing) processQueue();
-    }
+        function enqueue(fn) {
+            queue.push(fn);
+            if (!processing) processQueue();
+        }
 
-    function processQueue() {
-        if (!queue.length) { processing = false; return; }
-        processing = true;
-        const fn = queue.shift();
-        fn();
-        setTimeout(processQueue, 120);
-    }
+        function processQueue() {
+            if (!queue.length) { processing = false; return; }
+            processing = true;
+            const fn = queue.shift();
+            fn();
+            setTimeout(processQueue, 120);
+        }
 
-    covers.forEach(wrap => {
-        const title = wrap.dataset.title || '';
-        const author = wrap.dataset.author || '';
-        const isbn = wrap.dataset.isbn || '';
-        const img = wrap.querySelector('img');
-        if (!img) return;
+        covers.forEach(wrap => {
+            const title = wrap.dataset.title || '';
+            const author = wrap.dataset.author || '';
+            const isbn = wrap.dataset.isbn || '';
+            const img = wrap.querySelector('img');
+            if (!img) return;
+            if (img.classList.contains('loaded')) return;  // skip pre-resolved covers (cover_url in JSON)
 
-        function showFallback() {
-            img.style.display = 'none';
-            if (!wrap.querySelector('.fallback')) {
-                const fb = document.createElement('div');
-                fb.className = 'fallback';
-                fb.innerHTML = `<div class="fallback-title">${title}</div>`;
-                wrap.appendChild(fb);
+            function showFallback() {
+                img.style.display = 'none';
+                if (!wrap.querySelector('.fallback')) {
+                    const fb = document.createElement('div');
+                    fb.className = 'fallback';
+                    const fbTitle = document.createElement('div');
+                    fbTitle.className = 'fallback-title';
+                    fbTitle.textContent = title;
+                    fb.appendChild(fbTitle);
+                    wrap.appendChild(fb);
+                }
             }
-        }
 
-        // Phase 3: Open Library by ISBN
-        function tryOL() {
-            if (!isbn) { showFallback(); return; }
-            img.onload = function () {
-                if (img.naturalWidth <= 1 || img.naturalHeight <= 1) { showFallback(); return; }
-                img.classList.add('loaded');
-                img.alt = wrap.dataset.title || '';
-            };
-            img.onerror = showFallback;
-            img.src = OL(isbn);
-        }
+            // Phase 3: Open Library by ISBN
+            function tryOL() {
+                if (!isbn) { showFallback(); return; }
+                img.onload = function () {
+                    if (img.naturalWidth <= 1 || img.naturalHeight <= 1) { showFallback(); return; }
+                    img.classList.add('loaded');
+                    img.alt = wrap.dataset.title || '';
+                };
+                img.onerror = showFallback;
+                img.src = OL(isbn);
+            }
 
-        // Phase 2: API by ISBN
-        function tryAPIByISBN() {
-            if (!isbn) { tryOL(); return; }
-            fetch(`${BCAPI}/${isbn}`)
-                .then(r => r.json())
-                .then(data => {
-                    if (data.url) { loadURL(data.url, tryOL); }
-                    else { tryOL(); }
-                })
-                .catch(() => tryOL());
-        }
+            // Phase 2: API by ISBN
+            function tryAPIByISBN() {
+                if (!isbn) { tryOL(); return; }
+                fetch(`${BCAPI}/${isbn}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.url) { loadURL(data.url, tryOL); }
+                        else { tryOL(); }
+                    })
+                    .catch(() => tryOL());
+            }
 
-        // Phase 1: API by title + author (most accurate)
-        function tryAPIByTitle() {
-            if (!title || !author) { tryAPIByISBN(); return; }
-            const params = new URLSearchParams({ book_title: title, author_name: author });
-            fetch(`${BCAPI}?${params}`)
-                .then(r => r.json())
-                .then(data => {
-                    if (data.url) { loadURL(data.url, tryAPIByISBN); }
-                    else { tryAPIByISBN(); }
-                })
-                .catch(() => tryAPIByISBN());
-        }
+            // Phase 1: API by title + author (most accurate)
+            function tryAPIByTitle() {
+                if (!title || !author) { tryAPIByISBN(); return; }
+                const params = new URLSearchParams({ book_title: title, author_name: author });
+                fetch(`${BCAPI}?${params}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.url) { loadURL(data.url, tryAPIByISBN); }
+                        else { tryAPIByISBN(); }
+                    })
+                    .catch(() => tryAPIByISBN());
+            }
 
-        function loadURL(url, fallbackFn) {
-            img.onload = function () {
-                if (img.naturalWidth <= 1 || img.naturalHeight <= 1) { fallbackFn(); return; }
-                img.classList.add('loaded');
-                img.alt = wrap.dataset.title || '';
-            };
-            img.onerror = fallbackFn;
-            img.src = url;
-        }
+            function loadURL(url, fallbackFn) {
+                img.onload = function () {
+                    if (img.naturalWidth <= 1 || img.naturalHeight <= 1) { fallbackFn(); return; }
+                    img.classList.add('loaded');
+                    img.alt = wrap.dataset.title || '';
+                };
+                img.onerror = fallbackFn;
+                img.src = url;
+            }
 
-        enqueue(tryAPIByTitle);
-    });
-    } // end if (covers.length)
+            enqueue(tryAPIByTitle);
+        });
+    }
+    initCoverLoader(document);
 
 
     // ─── CURSOR-TRACKING SCROLL ─────────────
-    document.querySelectorAll('.track-wrap').forEach(wrap => {
-        const track = wrap.querySelector('.track');
-        const inner = wrap.querySelector('.track-inner');
-        const bar   = wrap.querySelector('.prog-bar');
-        if (!track || !inner) return;
+    function initTrackScroll(root) {
+        const scope = root || document;
+        scope.querySelectorAll('.track-wrap').forEach(wrap => {
+            const track = wrap.querySelector('.track');
+            const inner = wrap.querySelector('.track-inner');
+            const bar   = wrap.querySelector('.prog-bar');
+            if (!track || !inner) return;
 
-        let cur = 0, target = 0, raf = null, isTouch = false;
-        const mx = () => Math.max(0, inner.scrollWidth - track.clientWidth);
+            let cur = 0, target = 0, raf = null, isTouch = false;
+            const mx = () => Math.max(0, inner.scrollWidth - track.clientWidth);
 
-        function ui() {
-            const m = mx(), p = m > 0 ? (-cur / m) : 0;
-            wrap.classList.toggle('fl', p > 0.01);
-            wrap.classList.toggle('fr', p < 0.99 && m > 0);
-            if (bar) {
-                const v = track.clientWidth / inner.scrollWidth;
-                bar.style.width = Math.max(v * 100, 8) + '%';
-                bar.style.left  = (p * (1 - v) * 100) + '%';
+            function ui() {
+                const m = mx(), p = m > 0 ? (-cur / m) : 0;
+                wrap.classList.toggle('fl', p > 0.01);
+                wrap.classList.toggle('fr', p < 0.99 && m > 0);
+                if (bar) {
+                    const v = track.clientWidth / inner.scrollWidth;
+                    bar.style.width = Math.max(v * 100, 8) + '%';
+                    bar.style.left  = (p * (1 - v) * 100) + '%';
+                }
             }
-        }
 
-        function tick() {
-            const d = target - cur;
-            if (Math.abs(d) < 0.4) { cur = target; raf = null; }
-            else { cur += d * 0.1; raf = requestAnimationFrame(tick); }
-            inner.style.transform = `translateX(${cur}px)`;
+            function tick() {
+                const d = target - cur;
+                if (Math.abs(d) < 0.4) { cur = target; raf = null; }
+                else { cur += d * 0.1; raf = requestAnimationFrame(tick); }
+                inner.style.transform = `translateX(${cur}px)`;
+                ui();
+            }
+            function go() { if (!raf) raf = requestAnimationFrame(tick); }
+
+            track.addEventListener('mousemove', e => {
+                if (isTouch) return;
+                const m = mx(); if (m <= 0) return;
+                const r = track.getBoundingClientRect();
+                const p = (e.clientX - r.left) / r.width;
+                const ease = p < 0.06 ? 0 : p > 0.94 ? 1 : (p - 0.06) / 0.88;
+                target = -ease * m; go();
+            });
+
+            let tx = 0, ts = 0;
+            track.addEventListener('touchstart', e => { isTouch = true; tx = e.touches[0].clientX; ts = cur; }, { passive: true });
+            track.addEventListener('touchmove', e => {
+                const dx = e.touches[0].clientX - tx;
+                target = Math.max(-mx(), Math.min(0, ts + dx));
+                cur = target; inner.style.transform = `translateX(${cur}px)`; ui();
+            }, { passive: true });
+            track.addEventListener('touchend', () => { isTouch = false; });
+
+            window.addEventListener('resize', () => {
+                const m = mx(); if (-cur > m) { cur = -m; target = -m; }
+                inner.style.transform = `translateX(${cur}px)`; ui();
+            });
             ui();
-        }
-        function go() { if (!raf) raf = requestAnimationFrame(tick); }
-
-        track.addEventListener('mousemove', e => {
-            if (isTouch) return;
-            const m = mx(); if (m <= 0) return;
-            const r = track.getBoundingClientRect();
-            const p = (e.clientX - r.left) / r.width;
-            const ease = p < 0.06 ? 0 : p > 0.94 ? 1 : (p - 0.06) / 0.88;
-            target = -ease * m; go();
         });
-
-        let tx = 0, ts = 0;
-        track.addEventListener('touchstart', e => { isTouch = true; tx = e.touches[0].clientX; ts = cur; }, { passive: true });
-        track.addEventListener('touchmove', e => {
-            const dx = e.touches[0].clientX - tx;
-            target = Math.max(-mx(), Math.min(0, ts + dx));
-            cur = target; inner.style.transform = `translateX(${cur}px)`; ui();
-        }, { passive: true });
-        track.addEventListener('touchend', () => { isTouch = false; });
-
-        window.addEventListener('resize', () => {
-            const m = mx(); if (-cur > m) { cur = -m; target = -m; }
-            inner.style.transform = `translateX(${cur}px)`; ui();
-        });
-        ui();
-    });
+    }
+    initTrackScroll(document);
 
     // ─── RESUME OVERLAY ──────────────────────
     const resumeLink = document.querySelector('.btn-primary[href*="Resume"]');
@@ -345,6 +356,222 @@
                 }
             })
             .catch(() => { /* silent: no feed, no link */ });
+    })();
+
+    // ─── BOOKSHELF RENDERER ──────────────────
+    // Feature-detects #bookshelf-root; fetches data/books.json; builds the
+    // shelf DOM; then calls initCoverLoader / initTrackScroll
+    // scoped to the newly-rendered subtree.
+    (function () {
+        const root = document.getElementById('bookshelf-root');
+        if (!root) return;
+
+        fetch('data/books.json')
+            .then(r => { if (!r.ok) throw new Error('fetch failed: ' + r.status); return r.json(); })
+            .then(data => {
+                if (!data || !Array.isArray(data.series) || !data.series.length) {
+                    renderEmpty(root); return;
+                }
+                data.series.forEach(series => root.appendChild(buildSeries(series)));
+                initCoverLoader(root);
+                initTrackScroll(root);
+            })
+            .catch(err => {
+                console.error('[bookshelf] failed to load', err);
+                renderEmpty(root);
+            });
+
+        function renderEmpty(target) {
+            const p = document.createElement('p');
+            p.className = 'shelf-empty';
+            p.textContent = 'Unable to load bookshelf right now.';
+            target.appendChild(p);
+        }
+
+        function buildSeries(series) {
+            const section = document.createElement('section');
+            section.className = 'series';
+
+            const head = document.createElement('div');
+            head.className = 'series-head';
+
+            const h2 = document.createElement('h2');
+            h2.className = 'series-title';
+            h2.textContent = series.name || '';
+            head.appendChild(h2);
+
+            const authorP = document.createElement('p');
+            authorP.className = 'series-author';
+            const n = Array.isArray(series.books) ? series.books.length : 0;
+            authorP.appendChild(document.createTextNode((series.author || '') + ' · '));
+            const countSpan = document.createElement('span');
+            countSpan.className = 'series-count';
+            countSpan.textContent = n + ' book' + (n === 1 ? '' : 's');
+            authorP.appendChild(countSpan);
+            head.appendChild(authorP);
+
+            if (Array.isArray(series.tags) && series.tags.length) {
+                const tagRow = document.createElement('div');
+                tagRow.className = 'series-tags';
+                series.tags.forEach(tag => {
+                    const chip = document.createElement('span');
+                    chip.className = 'genre-tag';
+                    chip.textContent = tag;
+                    tagRow.appendChild(chip);
+                });
+                head.appendChild(tagRow);
+            }
+            section.appendChild(head);
+
+            const trackWrap = document.createElement('div');
+            trackWrap.className = 'track-wrap';
+            const track = document.createElement('div'); track.className = 'track';
+            const inner = document.createElement('div'); inner.className = 'track-inner';
+            (series.books || []).forEach(book => inner.appendChild(buildBook(book, series)));
+            track.appendChild(inner);
+            trackWrap.appendChild(track);
+
+            const fadeL = document.createElement('div'); fadeL.className = 'fade-l';
+            const fadeR = document.createElement('div'); fadeR.className = 'fade-r';
+            trackWrap.appendChild(fadeL);
+            trackWrap.appendChild(fadeR);
+
+            const prog = document.createElement('div'); prog.className = 'prog';
+            const progBar = document.createElement('div'); progBar.className = 'prog-bar';
+            prog.appendChild(progBar);
+            trackWrap.appendChild(prog);
+
+            section.appendChild(trackWrap);
+            return section;
+        }
+
+        function buildBook(book, series) {
+            const bookEl = document.createElement('div');
+            bookEl.className = 'book';
+
+            const cover = document.createElement('div');
+            cover.className = 'book-cover';
+            cover.setAttribute('role', 'button');
+            cover.setAttribute('tabindex', '0');
+            cover.setAttribute('aria-label', 'Open details for ' + (book.title || ''));
+            cover.dataset.title = book.title || '';
+            cover.dataset.author = series.author || '';
+            cover.dataset.isbn = book.isbn || '';
+            cover.dataset.seriesName = series.name || '';
+
+            const img = document.createElement('img');
+            img.alt = (book.title || '') + ' by ' + (series.author || '') + ' — book cover';
+            if (book.cover_url) {
+                img.src = book.cover_url;
+                img.classList.add('loaded');  // the cover loader skips images already marked loaded
+            } else {
+                img.src = '';
+            }
+            cover.appendChild(img);
+            bookEl.appendChild(cover);
+
+            const label = document.createElement('p');
+            label.className = 'book-label';
+            label.textContent = book.title || '';
+            bookEl.appendChild(label);
+
+            return bookEl;
+        }
+    })();
+
+    // ─── BOOK DETAIL MODAL ──────────────────
+    // Click / tap / keyboard on a .book-cover opens an overlay with a larger
+    // cover, title, author, series, and an Open Library link. Pointer events
+    // + 8px distance threshold distinguish tap from drag/swipe.
+    (function () {
+        const overlay = document.querySelector('.book-overlay');
+        const shelfRoot = document.getElementById('bookshelf-root');
+        if (!overlay || !shelfRoot) return;
+
+        const closeBtn = overlay.querySelector('.book-overlay-close');
+        const titleEl  = overlay.querySelector('.book-overlay-title');
+        const authorEl = overlay.querySelector('.book-overlay-author');
+        const seriesEl = overlay.querySelector('.book-overlay-series');
+        const linkEl   = overlay.querySelector('.book-overlay-link');
+        const imgEl    = overlay.querySelector('.book-overlay-cover img');
+
+        let lastTrigger = null;
+        const DRAG_THRESHOLD = 8;
+        const pointerStart = new Map();
+
+        function openDetail(cover) {
+            const isbn = cover.dataset.isbn || '';
+            titleEl.textContent  = cover.dataset.title || '';
+            authorEl.textContent = cover.dataset.author || '';
+            seriesEl.textContent = cover.dataset.seriesName || '';
+            if (isbn) {
+                linkEl.href = 'https://openlibrary.org/isbn/' + isbn;
+                linkEl.style.display = '';
+            } else {
+                linkEl.removeAttribute('href');
+                linkEl.style.display = 'none';
+            }
+            const srcImg = cover.querySelector('img');
+            imgEl.src = srcImg && srcImg.src ? srcImg.src : '';
+            imgEl.alt = (cover.dataset.title || '') + ' — book cover';
+
+            lastTrigger = cover;
+            overlay.classList.add('active');
+            overlay.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => closeBtn.focus(), 50);
+        }
+
+        function closeDetail() {
+            overlay.classList.remove('active');
+            overlay.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+            setTimeout(() => { imgEl.src = ''; }, 350);
+            if (lastTrigger && typeof lastTrigger.focus === 'function') lastTrigger.focus();
+            lastTrigger = null;
+        }
+
+        // Delegated pointer events: record start, gate on distance threshold at pointerup
+        shelfRoot.addEventListener('pointerdown', e => {
+            const cover = e.target.closest('.book-cover');
+            if (!cover) return;
+            pointerStart.set(e.pointerId, { x: e.clientX, y: e.clientY, cover });
+        });
+        shelfRoot.addEventListener('pointerup', e => {
+            const start = pointerStart.get(e.pointerId);
+            pointerStart.delete(e.pointerId);
+            if (!start) return;
+            const cover = e.target.closest('.book-cover');
+            if (!cover || cover !== start.cover) return;
+            const dx = e.clientX - start.x, dy = e.clientY - start.y;
+            if (Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) return;
+            openDetail(cover);
+        });
+        shelfRoot.addEventListener('pointercancel', e => { pointerStart.delete(e.pointerId); });
+
+        // Keyboard: Enter/Space on focused .book-cover
+        shelfRoot.addEventListener('keydown', e => {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            const cover = e.target.closest('.book-cover');
+            if (!cover) return;
+            e.preventDefault();
+            openDetail(cover);
+        });
+
+        // Close: ×, backdrop click, Escape, focus trap
+        closeBtn.addEventListener('click', closeDetail);
+        overlay.addEventListener('click', e => { if (e.target === overlay) closeDetail(); });
+        document.addEventListener('keydown', e => {
+            if (!overlay.classList.contains('active')) return;
+            if (e.key === 'Escape') { closeDetail(); return; }
+            if (e.key === 'Tab') {
+                const focusables = [closeBtn, linkEl].filter(el => el && el.offsetParent !== null);
+                if (!focusables.length) { e.preventDefault(); return; }
+                const first = focusables[0], last = focusables[focusables.length - 1];
+                if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+            }
+        });
     })();
 
 })();
