@@ -149,7 +149,6 @@
                 img.onload = function () {
                     if (img.naturalWidth <= 1 || img.naturalHeight <= 1) { showFallback(); return; }
                     img.classList.add('loaded');
-                    img.alt = wrap.dataset.title || '';
                 };
                 img.onerror = showFallback;
                 img.src = OL(isbn);
@@ -184,7 +183,6 @@
                 img.onload = function () {
                     if (img.naturalWidth <= 1 || img.naturalHeight <= 1) { fallbackFn(); return; }
                     img.classList.add('loaded');
-                    img.alt = wrap.dataset.title || '';
                 };
                 img.onerror = fallbackFn;
                 img.src = url;
@@ -246,6 +244,22 @@
             }, { passive: true });
             track.addEventListener('touchend', () => { isTouch = false; });
 
+            // Keyboard: focusing an off-screen cover makes the browser natively
+            // scroll the overflow:hidden track (scrollLeft), which stacks with
+            // the translateX lerp and desyncs the progress bar / fade masks.
+            // Undo the native scroll and steer the lerp target instead.
+            track.addEventListener('focusin', e => {
+                const book = e.target.closest('.book');
+                if (!book) return;
+                track.scrollLeft = 0;
+                const center = book.offsetLeft + book.offsetWidth / 2 - track.clientWidth / 2;
+                target = Math.max(-mx(), Math.min(0, -center));
+                cur = target;
+                inner.style.transform = `translateX(${cur}px)`;
+                ui();
+            });
+            track.addEventListener('scroll', () => { if (track.scrollLeft !== 0) track.scrollLeft = 0; });
+
             window.addEventListener('resize', () => {
                 const m = mx(); if (-cur > m) { cur = -m; target = -m; }
                 inner.style.transform = `translateX(${cur}px)`; ui();
@@ -266,10 +280,12 @@
             e.preventDefault();
             frame.src = resumeLink.getAttribute('href');
             overlay.classList.add('active');
+            overlay.setAttribute('aria-hidden', 'false');
         }
 
         function closeResume() {
             overlay.classList.remove('active');
+            overlay.setAttribute('aria-hidden', 'true');
             setTimeout(() => { frame.src = ''; }, 350);
         }
 
@@ -287,10 +303,14 @@
         const main = document.querySelector('main');
         if (!main) return;
 
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
         // On arrival: if coming from a transition, animate in
         const entry = sessionStorage.getItem('pageTransition');
         if (entry) {
             sessionStorage.removeItem('pageTransition');
+        }
+        if (entry && !reduceMotion) {
             main.style.opacity = '0';
             main.style.transform = 'scale(1.03)';
             main.style.transition = 'none';
@@ -307,6 +327,8 @@
             if (!link || link.classList.contains('active')) return;
             e.preventDefault();
             const href = link.getAttribute('href');
+
+            if (reduceMotion) { window.location.href = href; return; }
 
             sessionStorage.setItem('pageTransition', '1');
 
@@ -372,6 +394,7 @@
                 if (!data || !Array.isArray(data.series) || !data.series.length) {
                     renderEmpty(root); return;
                 }
+                renderGenreChips(data.series);
                 data.series.forEach(series => root.appendChild(buildSeries(series)));
                 initCoverLoader(root);
                 initTrackScroll(root);
@@ -386,6 +409,22 @@
             p.className = 'shelf-empty';
             p.textContent = 'Unable to load bookshelf right now.';
             target.appendChild(p);
+        }
+
+        // Header chips are derived from the union of series tags, in JSON
+        // order, so they always reflect what's actually on the shelf.
+        function renderGenreChips(seriesList) {
+            const row = document.querySelector('.genre-tags');
+            if (!row) return;
+            const seen = new Set();
+            seriesList.forEach(s => (s.tags || []).forEach(tag => {
+                if (seen.has(tag)) return;
+                seen.add(tag);
+                const chip = document.createElement('span');
+                chip.className = 'genre-tag';
+                chip.textContent = tag;
+                row.appendChild(chip);
+            }));
         }
 
         function buildSeries(series) {
@@ -461,12 +500,14 @@
 
             const img = document.createElement('img');
             img.alt = (book.title || '') + ' by ' + (series.author || '') + ' — book cover';
+            img.loading = 'lazy';
+            img.decoding = 'async';
             if (book.cover_url) {
                 img.src = book.cover_url;
                 img.classList.add('loaded');  // the cover loader skips images already marked loaded
-            } else {
-                img.src = '';
             }
+            // No cover_url: leave src unset — the cover-loader pipeline fills it in.
+            // (src='' would make some browsers request the page URL itself.)
             cover.appendChild(img);
             bookEl.appendChild(cover);
 
