@@ -2,7 +2,9 @@
    Nusayb Nurani — v6
    ============================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Libre+Franklin:wght@400;500&display=swap');
+/* Fonts are loaded via <link rel="preconnect"> + <link rel="stylesheet">
+   in each page's <head> — an @import here would serialize the request
+   chain (CSS → fonts CSS) and delay first paint. */
 
 :root {
     --serif: 'Cormorant Garamond', Georgia, serif;
@@ -205,6 +207,15 @@ body:has(.home) { overflow: hidden; }
 
 @keyframes fadeUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
 
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    html { scroll-behavior: auto; }
+}
+
 /* ─── PAGE TRANSITION ─── */
 /* Scale fade handled via inline styles in script.js */
 
@@ -243,6 +254,7 @@ body:has(.home) { overflow: hidden; }
 .sp-sub .touch-hint { display: none; }
 
 .genre-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 4rem; }
+.genre-tags:empty { display: none; }
 .genre-tag {
     font-size: 0.68rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
     color: var(--tag-text); background: var(--tag-bg);
