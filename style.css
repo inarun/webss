@@ -2,7 +2,7 @@
    Nusayb Nurani — v6
    ============================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Libre+Franklin:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Libre+Franklin:wght@400;500&display=swap');
 
 :root {
     --serif: 'Cormorant Garamond', Georgia, serif;
@@ -89,7 +89,7 @@ a:hover { color: var(--accent-hover); }
     background: var(--nav-bg); backdrop-filter: blur(14px);
     border-bottom: 1px solid var(--border);
 }
-.nav-name { display: none; }
+.nav-name { display: none; }  /* still load-bearing for writing.html, which is untouched */
 .nav-links { display: flex; gap: 2.25rem; }
 .nav-link {
     font-size: 0.825rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
@@ -313,3 +313,80 @@ body:has(.home) { overflow: hidden; }
     .book-cover { width: 115px; height: 174px; }
     .track-inner { gap: 0.75rem; }
 }
+
+/* ═══════════════════════════════════════════
+   BOOK DETAIL OVERLAY
+   ═══════════════════════════════════════════ */
+.book-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: var(--overlay-bg);
+    display: flex; align-items: center; justify-content: center;
+    padding: clamp(1.5rem, 5vw, 3rem);
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.35s ease, visibility 0.35s;
+}
+.book-overlay.active { opacity: 1; visibility: visible; }
+.book-overlay-close {
+    position: absolute; top: 1.5rem; right: 1.5rem;
+    background: none; border: none; cursor: pointer;
+    font-size: 2rem; line-height: 1; color: var(--text);
+    transition: opacity 0.2s;
+}
+.book-overlay-close:hover { opacity: 0.6; }
+.book-overlay-inner {
+    display: flex; gap: 2.5rem; align-items: flex-start;
+    max-width: 720px; width: 100%;
+}
+.book-overlay-cover {
+    flex-shrink: 0; width: 240px; height: 360px;
+    background: var(--surface); border-radius: 2px;
+    box-shadow: var(--cover-shadow-h); overflow: hidden;
+}
+.book-overlay-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.book-overlay-meta { flex: 1; min-width: 0; padding-top: 0.5rem; }
+.book-overlay-title {
+    font-family: var(--serif); font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 500; color: var(--text); letter-spacing: -0.01em;
+    line-height: 1.2; margin-bottom: 0.5rem;
+}
+.book-overlay-author { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 0.35rem; }
+.book-overlay-series { font-size: 0.85rem; color: var(--text-faint); margin-bottom: 1.5rem; font-style: italic; }
+.book-overlay-link {
+    display: inline-block; font-size: 0.8rem; font-weight: 500;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent);
+    border-bottom: 1px solid var(--accent); padding-bottom: 1px;
+    transition: color 0.2s, border-color 0.2s;
+}
+.book-overlay-link:hover { color: var(--accent-hover); border-color: var(--accent-hover); }
+
+@media (max-width: 640px) {
+    .book-overlay-inner { flex-direction: column; gap: 1.5rem; align-items: center; text-align: center; }
+    .book-overlay-cover { width: 180px; height: 270px; }
+}
+
+/* Bookshelf graceful failure */
+.shelf-empty { color: var(--text-muted); font-size: 0.88rem; padding: 2rem 0; text-align: center; }
+
+/* ═══════════════════════════════════════════
+   404 PAGE
+   ═══════════════════════════════════════════ */
+.not-found-page {
+    flex: 1; width: 100%; max-width: var(--max-w); margin: 0 auto;
+    padding: calc(var(--nav-h) + 6rem) clamp(1.5rem, 5vw, 4rem) 4rem;
+    text-align: center;
+    animation: fadeUp 0.8s ease both;
+}
+.not-found-title {
+    font-family: var(--serif); font-size: clamp(2rem, 4vw, 2.6rem);
+    font-weight: 500; color: var(--text); letter-spacing: -0.01em;
+    margin-bottom: 0.25rem;
+}
+.not-found-rule { width: 48px; height: 2px; background: var(--accent-bright); margin: 1rem auto 1.5rem; }
+.not-found-sub { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 2rem; }
+.not-found-actions { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; }
+.not-found-actions a {
+    font-size: 0.8rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 1px solid var(--accent);
+    padding-bottom: 1px; transition: color 0.2s, border-color 0.2s;
+}
+.not-found-actions a:hover { color: var(--accent-hover); border-color: var(--accent-hover); }
