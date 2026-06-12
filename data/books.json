@@ -3,222 +3,238 @@
     {
       "name": "The Wheel of Time",
       "author": "Robert Jordan & Brandon Sanderson",
-      "tags": ["Epic Fantasy"],
+      "tags": [
+        "Epic Fantasy"
+      ],
       "books": [
         {
           "title": "The Eye of the World",
           "isbn": "9780312850098",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9780312850098.jpg?w=600"
+          "cover_url": "covers/the-eye-of-the-world.jpg"
         },
         {
           "title": "The Great Hunt",
           "isbn": "9780312851408",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9780312851408.jpg?w=600"
+          "cover_url": "covers/the-great-hunt.jpg"
         },
         {
           "title": "The Dragon Reborn",
           "isbn": "9780312852481",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9780312852481.jpg?w=600"
+          "cover_url": "covers/the-dragon-reborn.jpg"
         },
         {
           "title": "The Shadow Rising",
           "isbn": "9780312854317",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9780312854317.jpg?w=600"
+          "cover_url": "covers/the-shadow-rising.jpg"
         },
         {
           "title": "The Fires of Heaven",
           "isbn": "9780312854270",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9780312854270.jpg?w=600"
+          "cover_url": "covers/the-fires-of-heaven.jpg"
         },
         {
           "title": "Lord of Chaos",
           "isbn": "9780312854287",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9780312854287.jpg?w=600"
+          "cover_url": "covers/lord-of-chaos.jpg"
         },
         {
           "title": "A Crown of Swords",
           "isbn": "9780312857677",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9780312857677.jpg?w=600"
+          "cover_url": "covers/a-crown-of-swords.jpg"
         },
         {
           "title": "The Path of Daggers",
           "isbn": "9780312857691",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9780312857691.jpg?w=600"
+          "cover_url": "covers/the-path-of-daggers.jpg"
         },
         {
           "title": "Winter's Heart",
           "isbn": "9780312864255",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9780312864255.jpg?w=600"
+          "cover_url": "covers/winter-s-heart.jpg"
         },
         {
           "title": "Crossroads of Twilight",
           "isbn": "9780312864590",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9780312864590.jpg?w=600"
+          "cover_url": "covers/crossroads-of-twilight.jpg"
         },
         {
           "title": "Knife of Dreams",
           "isbn": "9780312873073",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9780312873073.jpg?w=600"
+          "cover_url": "covers/knife-of-dreams.jpg"
         },
         {
           "title": "The Gathering Storm",
           "isbn": "9780765302304",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9780765302304.jpg?w=600"
+          "cover_url": "covers/the-gathering-storm.jpg"
         },
         {
           "title": "Towers of Midnight",
           "isbn": "9780765325945",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9780765325945.jpg?w=600"
+          "cover_url": "covers/towers-of-midnight.jpg"
         },
         {
           "title": "A Memory of Light",
           "isbn": "9780765325952",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9780765325952.jpg?w=600"
+          "cover_url": "covers/a-memory-of-light.jpg"
         }
       ]
     },
     {
       "name": "The Sun Eater",
       "author": "Christopher Ruocchio",
-      "tags": ["Science Fiction", "Space Opera"],
+      "tags": [
+        "Science Fiction",
+        "Space Opera"
+      ],
       "books": [
         {
           "title": "Empire of Silence",
           "isbn": "",
-          "cover_url": "https://images.squarespace-cdn.com/content/v1/67f034f6a244851f8815be5d/1743795545956-59UL6YPTPFOA3MJXED2U/empire_of_silence.jpg?"
+          "cover_url": "covers/empire-of-silence.jpg"
         },
         {
           "title": "Howling Dark",
           "isbn": "",
-          "cover_url": "https://images.squarespace-cdn.com/content/v1/67f034f6a244851f8815be5d/eb6a1d90-38e6-48c8-9a3f-278e79cb6c88/howling_dark.jpg?"
+          "cover_url": "covers/howling-dark.jpg"
         },
         {
           "title": "Demon in White",
           "isbn": "",
-          "cover_url": "https://images.squarespace-cdn.com/content/v1/67f034f6a244851f8815be5d/192eda4a-b617-4726-b636-7424e3774da6/demon_in_white.jpg?"
+          "cover_url": "covers/demon-in-white.jpg"
         },
         {
           "title": "Kingdoms of Death",
           "isbn": "",
-          "cover_url": "https://images.squarespace-cdn.com/content/v1/67f034f6a244851f8815be5d/d7f82198-8cb3-4d76-9a4e-771a77204b18/kingdoms_of_death.jpg?"
+          "cover_url": "covers/kingdoms-of-death.jpg"
         },
         {
           "title": "Ashes of Man",
           "isbn": "",
-          "cover_url": "https://images.squarespace-cdn.com/content/v1/67f034f6a244851f8815be5d/1743795473652-7DOTBTA1YZCSNYB9VZ84/aom_us_english.jpg?"
+          "cover_url": "covers/ashes-of-man.jpg"
         },
         {
           "title": "Disquiet Gods",
           "isbn": "",
-          "cover_url": "https://images.squarespace-cdn.com/content/v1/67f034f6a244851f8815be5d/5167b6ad-ac36-4cba-a71f-66c2c3934f30/disquiet_gods.jpg?"
+          "cover_url": "covers/disquiet-gods.jpg"
         },
         {
           "title": "Shadows Upon Time",
           "isbn": "",
-          "cover_url": "https://images.squarespace-cdn.com/content/v1/67f034f6a244851f8815be5d/b312c576-72fb-455b-8107-48f16a96f529/shadows_upon_time.jpeg?"
+          "cover_url": "covers/shadows-upon-time.jpg"
         }
       ]
     },
     {
       "name": "Middle-earth",
       "author": "J.R.R. Tolkien",
-      "tags": ["Epic Fantasy", "Classic"],
+      "tags": [
+        "Epic Fantasy",
+        "Classic"
+      ],
       "books": [
         {
           "title": "The Hobbit",
           "isbn": "9780547928227",
-          "cover_url": "https://prodimage.images-bn.com/pimages/9780547928227_p0_v4_s600x595.jpg"
+          "cover_url": "covers/the-hobbit.jpg"
         },
         {
           "title": "The Fellowship of the Ring",
           "isbn": "9780547928210",
-          "cover_url": "https://prodimage.images-bn.com/pimages/9780547928210_p0_v5_s600x595.jpg"
+          "cover_url": "covers/the-fellowship-of-the-ring.jpg"
         },
         {
           "title": "The Two Towers",
           "isbn": "9780547928203",
-          "cover_url": "https://prodimage.images-bn.com/pimages/9780547928203_p0_v4_s600x595.jpg"
+          "cover_url": "covers/the-two-towers.jpg"
         },
         {
           "title": "The Return of the King",
           "isbn": "9780547928197",
-          "cover_url": "https://prodimage.images-bn.com/pimages/9780547928197_p0_v4_s600x595.jpg"
+          "cover_url": "covers/the-return-of-the-king.jpg"
         }
       ]
     },
     {
       "name": "The First Law",
       "author": "Joe Abercrombie",
-      "tags": ["Grimdark", "Fantasy"],
+      "tags": [
+        "Grimdark",
+        "Fantasy"
+      ],
       "books": [
         {
           "title": "The Blade Itself",
           "isbn": "",
-          "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1747782133i/944073.jpg"
+          "cover_url": "covers/the-blade-itself.jpg"
         },
         {
           "title": "Before They Are Hanged",
           "isbn": "",
-          "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1737810309i/902715.jpg"
+          "cover_url": "covers/before-they-are-hanged.jpg"
         },
         {
           "title": "Last Argument of Kings",
           "isbn": "",
-          "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1737810948i/944076.jpg"
+          "cover_url": "covers/last-argument-of-kings.jpg"
         }
       ]
     },
     {
       "name": "Mistborn",
       "author": "Brandon Sanderson",
-      "tags": ["Fantasy", "Heist"],
+      "tags": [
+        "Fantasy",
+        "Heist"
+      ],
       "books": [
         {
           "title": "The Final Empire",
           "isbn": "9780765311788",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9780765311788.jpg?w=600"
+          "cover_url": "covers/the-final-empire.jpg"
         },
         {
           "title": "The Well of Ascension",
           "isbn": "9780765316882",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9780765316882.jpg?w=600"
+          "cover_url": "covers/the-well-of-ascension.jpg"
         },
         {
           "title": "The Hero of Ages",
           "isbn": "9780765316899",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9780765316899.jpg?w=600"
+          "cover_url": "covers/the-hero-of-ages.jpg"
         }
       ]
     },
     {
       "name": "The Stormlight Archive",
       "author": "Brandon Sanderson",
-      "tags": ["Epic Fantasy"],
+      "tags": [
+        "Epic Fantasy"
+      ],
       "books": [
         {
           "title": "The Way of Kings",
           "isbn": "9780765326355",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9780765326355.jpg?w=600"
+          "cover_url": "covers/the-way-of-kings.jpg"
         },
         {
           "title": "Words of Radiance",
           "isbn": "9780765326362",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9780765326362.jpg?w=600"
+          "cover_url": "covers/words-of-radiance.jpg"
         },
         {
           "title": "Oathbringer",
           "isbn": "9780765326379",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9780765326379.jpg?w=600"
+          "cover_url": "covers/oathbringer.jpg"
         },
         {
           "title": "Rhythm of War",
           "isbn": "9780765326386",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9780765326386.jpg?w=600"
+          "cover_url": "covers/rhythm-of-war.jpg"
         },
         {
           "title": "Wind and Truth",
           "isbn": "9781250319180",
-          "cover_url": "https://mpd-biblio-covers.imgix.net/9781250319180.jpg?w=600"
+          "cover_url": "covers/wind-and-truth.jpg"
         }
       ]
     }
