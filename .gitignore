@@ -1,0 +1,9 @@
+# Internal AI tooling docs — local only, never publish
+CLAUDE.md
+REPORT.md
+SKILL.md
+.claude/
+
+# Plan / scratch files
+*.plan.md
+og-card.html
