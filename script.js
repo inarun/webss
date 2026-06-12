@@ -388,6 +388,14 @@
     // Feature-detects #bookshelf-root; fetches data/books.json; builds the
     // DOM blocks 4 and 5 expect; then calls initCoverLoader / initTrackScroll
     // scoped to the newly-rendered subtree.
+    //
+    // data/books.json schema — every book field except title is optional:
+    //   series[]: { name, author, tags[], standalone?, books[] }
+    //     standalone: true → a row of unrelated books; each book carries
+    //     its own author and the group's author line is omitted.
+    //   books[]: { title, isbn, cover_url, author?, rating?, year_read?, note? }
+    //     rating (0–5, halves ok), year_read (YYYY), note (one line) show
+    //     only in the detail modal, and only when present.
     (function () {
         const root = document.getElementById('bookshelf-root');
         if (!root) return;
@@ -446,7 +454,9 @@
             const authorP = document.createElement('p');
             authorP.className = 'series-author';
             const n = Array.isArray(series.books) ? series.books.length : 0;
-            authorP.appendChild(document.createTextNode((series.author || '') + ' · '));
+            if (!series.standalone && series.author) {
+                authorP.appendChild(document.createTextNode(series.author + ' · '));
+            }
             const countSpan = document.createElement('span');
             countSpan.className = 'series-count';
             countSpan.textContent = n + ' book' + (n === 1 ? '' : 's');
@@ -491,6 +501,7 @@
         function buildBook(book, series) {
             const bookEl = document.createElement('div');
             bookEl.className = 'book';
+            const author = book.author || series.author || '';
 
             const cover = document.createElement('div');
             cover.className = 'book-cover';
@@ -498,12 +509,15 @@
             cover.setAttribute('tabindex', '0');
             cover.setAttribute('aria-label', 'Open details for ' + (book.title || ''));
             cover.dataset.title = book.title || '';
-            cover.dataset.author = series.author || '';
+            cover.dataset.author = author;
             cover.dataset.isbn = book.isbn || '';
-            cover.dataset.seriesName = series.name || '';
+            cover.dataset.seriesName = series.standalone ? '' : (series.name || '');
+            if (book.rating != null && book.rating !== '') cover.dataset.rating = book.rating;
+            if (book.year_read) cover.dataset.yearRead = book.year_read;
+            if (book.note) cover.dataset.note = book.note;
 
             const img = document.createElement('img');
-            img.alt = (book.title || '') + ' by ' + (series.author || '') + ' — book cover';
+            img.alt = (book.title || '') + ' by ' + author + ' — book cover';
             img.loading = 'lazy';
             img.decoding = 'async';
             if (book.cover_url) {
@@ -537,6 +551,10 @@
         const titleEl  = overlay.querySelector('.book-overlay-title');
         const authorEl = overlay.querySelector('.book-overlay-author');
         const seriesEl = overlay.querySelector('.book-overlay-series');
+        const ratingEl = overlay.querySelector('.book-overlay-rating');
+        const starsEl  = overlay.querySelector('.book-overlay-stars');
+        const yearEl   = overlay.querySelector('.book-overlay-year');
+        const noteEl   = overlay.querySelector('.book-overlay-note');
         const linkEl   = overlay.querySelector('.book-overlay-link');
         const imgEl    = overlay.querySelector('.book-overlay-cover img');
 
@@ -549,6 +567,26 @@
             titleEl.textContent  = cover.dataset.title || '';
             authorEl.textContent = cover.dataset.author || '';
             seriesEl.textContent = cover.dataset.seriesName || '';
+            seriesEl.style.display = cover.dataset.seriesName ? '' : 'none';
+
+            // Personal layer — rating / year read / note, each optional
+            const rating = parseFloat(cover.dataset.rating);
+            const year = cover.dataset.yearRead || '';
+            if (!isNaN(rating) || year) {
+                let stars = '';
+                if (!isNaN(rating)) {
+                    stars = '★'.repeat(Math.max(0, Math.floor(rating))) + (rating % 1 >= 0.5 ? '½' : '');
+                    starsEl.setAttribute('aria-label', 'Rated ' + rating + ' out of 5');
+                }
+                starsEl.textContent = stars;
+                yearEl.textContent = stars && year ? '· ' + year : year;
+                ratingEl.style.display = '';
+            } else {
+                ratingEl.style.display = 'none';
+            }
+            noteEl.textContent = cover.dataset.note || '';
+            noteEl.style.display = cover.dataset.note ? '' : 'none';
+
             if (isbn) {
                 linkEl.href = 'https://openlibrary.org/isbn/' + isbn;
                 linkEl.style.display = '';
