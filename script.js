@@ -544,6 +544,8 @@
         if (!overlay || !shelfRoot) return;
 
         const closeBtn = overlay.querySelector('.book-overlay-close');
+        const prevBtn  = overlay.querySelector('.book-overlay-prev');
+        const nextBtn  = overlay.querySelector('.book-overlay-next');
         const titleEl  = overlay.querySelector('.book-overlay-title');
         const authorEl = overlay.querySelector('.book-overlay-author');
         const seriesEl = overlay.querySelector('.book-overlay-series');
@@ -595,10 +597,25 @@
             imgEl.alt = (cover.dataset.title || '') + ' — book cover';
 
             lastTrigger = cover;
+            prevBtn.disabled = !adjacentCover(-1);
+            nextBtn.disabled = !adjacentCover(1);
             overlay.classList.add('active');
             overlay.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
             setTimeout(() => closeBtn.focus(), 50);
+        }
+
+        // Prev/next across the whole shelf in DOM order (no wrap)
+        function adjacentCover(offset) {
+            if (!lastTrigger) return null;
+            const covers = Array.from(shelfRoot.querySelectorAll('.book-cover'));
+            const idx = covers.indexOf(lastTrigger);
+            return idx === -1 ? null : (covers[idx + offset] || null);
+        }
+
+        function stepDetail(offset) {
+            const next = adjacentCover(offset);
+            if (next) openDetail(next);
         }
 
         function closeDetail() {
@@ -628,27 +645,161 @@
         });
         shelfRoot.addEventListener('pointercancel', e => { pointerStart.delete(e.pointerId); });
 
-        // Keyboard: Enter/Space on focused .book-cover
+        // Keyboard on focused .book-cover: Enter/Space opens details,
+        // ←/→ rove focus along the track (focusin steering scrolls it).
         shelfRoot.addEventListener('keydown', e => {
-            if (e.key !== 'Enter' && e.key !== ' ') return;
             const cover = e.target.closest('.book-cover');
             if (!cover) return;
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                e.preventDefault();
+                const covers = Array.from(cover.closest('.track-inner').querySelectorAll('.book-cover'));
+                const next = covers[covers.indexOf(cover) + (e.key === 'ArrowRight' ? 1 : -1)];
+                if (next) next.focus();
+                return;
+            }
+            if (e.key !== 'Enter' && e.key !== ' ') return;
             e.preventDefault();
             openDetail(cover);
         });
 
-        // Close: ×, backdrop click, Escape, focus trap
+        // Close: ×, backdrop click, Escape, focus trap. Arrows: prev/next book.
         closeBtn.addEventListener('click', closeDetail);
+        prevBtn.addEventListener('click', () => stepDetail(-1));
+        nextBtn.addEventListener('click', () => stepDetail(1));
         overlay.addEventListener('click', e => { if (e.target === overlay) closeDetail(); });
         document.addEventListener('keydown', e => {
             if (!overlay.classList.contains('active')) return;
             if (e.key === 'Escape') { closeDetail(); return; }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); stepDetail(-1); return; }
+            if (e.key === 'ArrowRight') { e.preventDefault(); stepDetail(1); return; }
             if (e.key === 'Tab') {
-                const focusables = [closeBtn, linkEl].filter(el => el && el.offsetParent !== null);
+                const focusables = [prevBtn, nextBtn, closeBtn, linkEl]
+                    .filter(el => el && !el.disabled && el.offsetParent !== null);
                 if (!focusables.length) { e.preventDefault(); return; }
                 const first = focusables[0], last = focusables[focusables.length - 1];
                 if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
                 else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+            }
+        });
+    })();
+
+    // ─── KEYBOARD SHORTCUTS ──────────────────
+    // Single keys, guarded against modifiers and form fields:
+    //   ?  shortcuts overlay   t  theme   h/b/w  navigate   r  resume
+    // Arrow keys: ←/→ rove focus across covers on the
+    // shelf and step prev/next inside the detail modal.
+    (function () {
+        let help = null;
+        let lastFocus = null;
+
+        function buildHelp() {
+            help = document.createElement('div');
+            help.className = 'help-overlay';
+            help.setAttribute('role', 'dialog');
+            help.setAttribute('aria-modal', 'true');
+            help.setAttribute('aria-label', 'Keyboard shortcuts');
+            help.setAttribute('aria-hidden', 'true');
+
+            const close = document.createElement('button');
+            close.className = 'help-close';
+            close.setAttribute('aria-label', 'Close');
+            close.innerHTML = '&times;';
+            close.addEventListener('click', () => toggleHelp(false));
+            help.appendChild(close);
+
+            const card = document.createElement('div');
+            card.className = 'help-card';
+            const title = document.createElement('p');
+            title.className = 'help-title';
+            title.textContent = 'Shortcuts';
+            card.appendChild(title);
+            const rows = document.createElement('div');
+            rows.className = 'help-rows';
+            card.appendChild(rows);
+            help.appendChild(card);
+
+            help.addEventListener('click', e => { if (e.target === help) toggleHelp(false); });
+            document.body.appendChild(help);
+        }
+
+        // Rows reflect what's actually available on the current page
+        function renderRows() {
+            const rows = help.querySelector('.help-rows');
+            rows.textContent = '';
+            const items = [['T', 'Theme']];
+            if (findNav('home')) items.push(['H', 'Home']);
+            if (findNav('interests')) items.push(['B', 'Bookshelf']);
+            if (findNav('writing')) items.push(['W', 'Writing']);
+            if (document.querySelector('.btn-primary[href*="Resume"]')) items.push(['R', 'Resume']);
+            if (document.getElementById('bookshelf-root')) items.push(['← →', 'Browse books']);
+            items.push(['Esc', 'Close']);
+            items.forEach(item => {
+                const k = document.createElement('kbd');
+                k.className = 'key';
+                k.textContent = item[0];
+                const l = document.createElement('span');
+                l.className = 'help-label';
+                l.textContent = item[1];
+                rows.appendChild(k);
+                rows.appendChild(l);
+            });
+        }
+
+        function toggleHelp(show) {
+            if (!help) buildHelp();
+            const active = help.classList.contains('active');
+            const next = typeof show === 'boolean' ? show : !active;
+            if (next === active) return;
+            if (next) {
+                renderRows();
+                lastFocus = document.activeElement;
+                help.classList.add('active');
+                help.setAttribute('aria-hidden', 'false');
+                setTimeout(() => help.querySelector('.help-close').focus(), 50);
+            } else {
+                help.classList.remove('active');
+                help.setAttribute('aria-hidden', 'true');
+                if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+                lastFocus = null;
+            }
+        }
+
+        // 404.html links Home as "/"; other pages as "index.html"
+        function findNav(page) {
+            return Array.from(document.querySelectorAll('.nav-links .nav-link')).find(a => {
+                const href = a.getAttribute('href') || '';
+                return page === 'home'
+                    ? (href === '/' || href.indexOf('index') !== -1)
+                    : href.indexOf(page) !== -1;
+            }) || null;
+        }
+
+        function clickNav(link) {
+            if (link && !link.classList.contains('active')) link.click();
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+            const t = e.target;
+            if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+
+            if (help && help.classList.contains('active')) {
+                if (e.key === 'Escape' || e.key === '?') { e.preventDefault(); toggleHelp(false); }
+                else if (e.key === 'Tab') { e.preventDefault(); help.querySelector('.help-close').focus(); }
+                return;
+            }
+
+            // An open modal owns its keys (Esc, arrows, Tab trap)
+            if (document.querySelector('.resume-overlay.active, .book-overlay.active')) return;
+
+            if (e.key === '?') { e.preventDefault(); toggleHelp(true); return; }
+
+            switch (e.key.length === 1 ? e.key.toLowerCase() : '') {
+                case 't': { const b = document.querySelector('.theme-toggle'); if (b) b.click(); break; }
+                case 'h': clickNav(findNav('home')); break;
+                case 'b': clickNav(findNav('interests')); break;
+                case 'w': clickNav(findNav('writing')); break;
+                case 'r': { const r = document.querySelector('.btn-primary[href*="Resume"]'); if (r) r.click(); break; }
             }
         });
     })();

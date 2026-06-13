@@ -375,10 +375,55 @@ body:has(.home) { overflow: hidden; }
 }
 .book-overlay-link:hover { color: var(--accent-hover); border-color: var(--accent-hover); }
 
+.book-overlay-prev, .book-overlay-next {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer;
+    font-family: var(--serif); font-size: 3rem; line-height: 1;
+    color: var(--text); opacity: 0.45; padding: 0.5rem 1rem;
+    transition: opacity 0.2s;
+}
+.book-overlay-prev { left: clamp(0.25rem, 2vw, 1.5rem); }
+.book-overlay-next { right: clamp(0.25rem, 2vw, 1.5rem); }
+.book-overlay-prev:hover, .book-overlay-next:hover { opacity: 1; }
+.book-overlay-prev:disabled, .book-overlay-next:disabled { opacity: 0.12; cursor: default; }
+
 @media (max-width: 640px) {
     .book-overlay-inner { flex-direction: column; gap: 1.5rem; align-items: center; text-align: center; }
     .book-overlay-cover { width: 180px; height: 270px; }
+    .book-overlay-prev, .book-overlay-next { font-size: 2.4rem; padding: 0.5rem; }
 }
+
+/* ═══════════════════════════════════════════
+   KEYBOARD HELP OVERLAY
+   ═══════════════════════════════════════════ */
+.help-overlay {
+    position: fixed; inset: 0; z-index: 300;
+    background: var(--overlay-bg);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.35s ease, visibility 0.35s;
+}
+.help-overlay.active { opacity: 1; visibility: visible; }
+.help-close {
+    position: absolute; top: 1.5rem; right: 1.5rem;
+    background: none; border: none; cursor: pointer;
+    font-size: 2rem; line-height: 1; color: var(--text);
+    transition: opacity 0.2s;
+}
+.help-close:hover { opacity: 0.6; }
+.help-title {
+    font-family: var(--serif); font-size: 1.7rem; font-weight: 500;
+    color: var(--text); text-align: center; margin-bottom: 1.5rem;
+}
+.help-rows { display: grid; grid-template-columns: auto auto; gap: 0.65rem 1.25rem; align-items: center; }
+.help-rows kbd.key {
+    justify-self: end;
+    font-family: var(--sans); font-size: 0.7rem; font-weight: 500; letter-spacing: 0.05em;
+    color: var(--text-secondary); background: var(--tag-bg);
+    border: 1px solid var(--tag-border); border-radius: 5px;
+    padding: 0.2rem 0.5rem; min-width: 2em; text-align: center;
+}
+.help-label { font-size: 0.85rem; color: var(--text-muted); }
 
 /* Bookshelf graceful failure */
 .shelf-empty { color: var(--text-muted); font-size: 0.88rem; padding: 2rem 0; text-align: center; }
