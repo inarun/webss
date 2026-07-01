@@ -361,12 +361,11 @@ body:has(.home) { overflow: hidden; }
 .book-overlay-year { font-size: 0.8rem; color: var(--text-muted); margin-left: 0.45rem; }
 .book-overlay-note { font-size: 0.92rem; color: var(--text-secondary); font-style: italic; line-height: 1.6; margin-top: 0.65rem; max-width: 42ch; }
 .book-overlay-link {
-    display: inline-block; margin-top: 1.15rem; font-size: 0.8rem; font-weight: 500;
-    letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent);
-    border-bottom: 1px solid var(--accent); padding-bottom: 1px;
+    display: inline-block; margin-top: 1.15rem; font-size: 0.75rem;
+    color: var(--text-muted); border-bottom: 1px solid transparent; padding-bottom: 1px;
     transition: color 0.2s, border-color 0.2s;
 }
-.book-overlay-link:hover { color: var(--accent-hover); border-color: var(--accent-hover); }
+.book-overlay-link:hover { color: var(--accent); border-color: currentColor; }
 
 .book-overlay-prev, .book-overlay-next {
     position: absolute; top: 50%; transform: translateY(-50%);
