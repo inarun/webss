@@ -338,13 +338,6 @@ body:has(.home) { overflow: hidden; }
     transition: opacity 0.35s ease, visibility 0.35s;
 }
 .book-overlay.active { opacity: 1; visibility: visible; }
-.book-overlay-close {
-    position: absolute; top: 1.5rem; right: 1.5rem;
-    background: none; border: none; cursor: pointer;
-    font-size: 2rem; line-height: 1; color: var(--text);
-    transition: opacity 0.2s;
-}
-.book-overlay-close:hover { opacity: 0.6; }
 .book-overlay-inner {
     display: flex; gap: 2.5rem; align-items: flex-start;
     max-width: 720px; width: 100%;

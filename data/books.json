@@ -89,37 +89,37 @@
       "books": [
         {
           "title": "Empire of Silence",
-          "isbn": "",
+          "isbn": "9780756413002",
           "cover_url": "covers/empire-of-silence.jpg"
         },
         {
           "title": "Howling Dark",
-          "isbn": "",
+          "isbn": "9780756413033",
           "cover_url": "covers/howling-dark.jpg"
         },
         {
           "title": "Demon in White",
-          "isbn": "",
+          "isbn": "9781473218338",
           "cover_url": "covers/demon-in-white.jpg"
         },
         {
           "title": "Kingdoms of Death",
-          "isbn": "",
+          "isbn": "9781803287485",
           "cover_url": "covers/kingdoms-of-death.jpg"
         },
         {
           "title": "Ashes of Man",
-          "isbn": "",
+          "isbn": "9781803287539",
           "cover_url": "covers/ashes-of-man.jpg"
         },
         {
           "title": "Disquiet Gods",
-          "isbn": "",
+          "isbn": "9781803287614",
           "cover_url": "covers/disquiet-gods.jpg"
         },
         {
           "title": "Shadows Upon Time",
-          "isbn": "",
+          "isbn": "9781035920662",
           "cover_url": "covers/shadows-upon-time.jpg"
         }
       ]
@@ -164,17 +164,17 @@
       "books": [
         {
           "title": "The Blade Itself",
-          "isbn": "",
+          "isbn": "9780575091085",
           "cover_url": "covers/the-blade-itself.jpg"
         },
         {
           "title": "Before They Are Hanged",
-          "isbn": "",
+          "isbn": "9781591026419",
           "cover_url": "covers/before-they-are-hanged.jpg"
         },
         {
           "title": "Last Argument of Kings",
-          "isbn": "",
+          "isbn": "9780575091115",
           "cover_url": "covers/last-argument-of-kings.jpg"
         }
       ]
