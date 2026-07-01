@@ -547,7 +547,6 @@
         const shelfRoot = document.getElementById('bookshelf-root');
         if (!overlay || !shelfRoot) return;
 
-        const closeBtn = overlay.querySelector('.book-overlay-close');
         const prevBtn  = overlay.querySelector('.book-overlay-prev');
         const nextBtn  = overlay.querySelector('.book-overlay-next');
         const titleEl  = overlay.querySelector('.book-overlay-title');
@@ -606,7 +605,10 @@
             overlay.classList.add('active');
             overlay.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
-            setTimeout(() => closeBtn.focus(), 50);
+            // No × button — close is Esc / backdrop. Focus a chevron so
+            // arrow-browsing continues naturally from the keyboard.
+            const focusTarget = [nextBtn, prevBtn, linkEl].find(el => el && !el.disabled && el.offsetParent !== null);
+            if (focusTarget) setTimeout(() => focusTarget.focus(), 50);
         }
 
         // Prev/next across the whole shelf in DOM order (no wrap)
@@ -666,8 +668,7 @@
             openDetail(cover);
         });
 
-        // Close: ×, backdrop click, Escape, focus trap. Arrows: prev/next book.
-        closeBtn.addEventListener('click', closeDetail);
+        // Close: backdrop click or Escape. Arrows: prev/next book.
         prevBtn.addEventListener('click', () => stepDetail(-1));
         nextBtn.addEventListener('click', () => stepDetail(1));
         overlay.addEventListener('click', e => { if (e.target === overlay) closeDetail(); });
@@ -677,7 +678,7 @@
             if (e.key === 'ArrowLeft') { e.preventDefault(); stepDetail(-1); return; }
             if (e.key === 'ArrowRight') { e.preventDefault(); stepDetail(1); return; }
             if (e.key === 'Tab') {
-                const focusables = [prevBtn, nextBtn, closeBtn, linkEl]
+                const focusables = [prevBtn, nextBtn, linkEl]
                     .filter(el => el && !el.disabled && el.offsetParent !== null);
                 if (!focusables.length) { e.preventDefault(); return; }
                 const first = focusables[0], last = focusables[focusables.length - 1];
@@ -689,7 +690,7 @@
 
     // ─── KEYBOARD SHORTCUTS ──────────────────
     // Single keys, guarded against modifiers and form fields:
-    //   ?  shortcuts overlay   t  theme   h/b/w  navigate   r  resume
+    //   ?  shortcuts overlay   h/b/w  navigate   r  resume
     // Arrow keys live in block 10: ←/→ rove focus across covers on the
     // shelf and step prev/next inside the detail modal.
     (function () {
@@ -730,7 +731,7 @@
         function renderRows() {
             const rows = help.querySelector('.help-rows');
             rows.textContent = '';
-            const items = [['T', 'Theme']];
+            const items = [];
             if (findNav('home')) items.push(['H', 'Home']);
             if (findNav('interests')) items.push(['B', 'Bookshelf']);
             if (findNav('writing')) items.push(['W', 'Writing']);
@@ -799,7 +800,6 @@
             if (e.key === '?') { e.preventDefault(); toggleHelp(true); return; }
 
             switch (e.key.length === 1 ? e.key.toLowerCase() : '') {
-                case 't': { const b = document.querySelector('.theme-toggle'); if (b) b.click(); break; }
                 case 'h': clickNav(findNav('home')); break;
                 case 'b': clickNav(findNav('interests')); break;
                 case 'w': clickNav(findNav('writing')); break;
