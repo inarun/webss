@@ -396,6 +396,8 @@
         const root = document.getElementById('bookshelf-root');
         if (!root) return;
 
+        let eagerBudget = 6;  // first row loads at full priority; the rest lazy-load
+
         fetch('data/books.json')
             .then(r => { if (!r.ok) throw new Error('fetch failed: ' + r.status); return r.json(); })
             .then(data => {
@@ -514,7 +516,12 @@
 
             const img = document.createElement('img');
             img.alt = (book.title || '') + ' by ' + author + ' — book cover';
-            img.loading = 'lazy';
+            if (eagerBudget > 0) {
+                eagerBudget--;
+                img.setAttribute('fetchpriority', 'high');
+            } else {
+                img.loading = 'lazy';
+            }
             img.decoding = 'async';
             if (book.cover_url) {
                 img.src = book.cover_url;
