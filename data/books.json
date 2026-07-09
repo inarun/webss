@@ -10,72 +10,72 @@
         {
           "title": "The Eye of the World",
           "isbn": "9780312850098",
-          "cover_url": "covers/the-eye-of-the-world.jpg"
+          "cover_url": "covers/the-eye-of-the-world.webp"
         },
         {
           "title": "The Great Hunt",
           "isbn": "9780312851408",
-          "cover_url": "covers/the-great-hunt.jpg"
+          "cover_url": "covers/the-great-hunt.webp"
         },
         {
           "title": "The Dragon Reborn",
           "isbn": "9780312852481",
-          "cover_url": "covers/the-dragon-reborn.jpg"
+          "cover_url": "covers/the-dragon-reborn.webp"
         },
         {
           "title": "The Shadow Rising",
           "isbn": "9780312854317",
-          "cover_url": "covers/the-shadow-rising.jpg"
+          "cover_url": "covers/the-shadow-rising.webp"
         },
         {
           "title": "The Fires of Heaven",
           "isbn": "9780312854270",
-          "cover_url": "covers/the-fires-of-heaven.jpg"
+          "cover_url": "covers/the-fires-of-heaven.webp"
         },
         {
           "title": "Lord of Chaos",
           "isbn": "9780312854287",
-          "cover_url": "covers/lord-of-chaos.jpg"
+          "cover_url": "covers/lord-of-chaos.webp"
         },
         {
           "title": "A Crown of Swords",
           "isbn": "9780312857677",
-          "cover_url": "covers/a-crown-of-swords.jpg"
+          "cover_url": "covers/a-crown-of-swords.webp"
         },
         {
           "title": "The Path of Daggers",
           "isbn": "9780312857691",
-          "cover_url": "covers/the-path-of-daggers.jpg"
+          "cover_url": "covers/the-path-of-daggers.webp"
         },
         {
           "title": "Winter's Heart",
           "isbn": "9780312864255",
-          "cover_url": "covers/winter-s-heart.jpg"
+          "cover_url": "covers/winter-s-heart.webp"
         },
         {
           "title": "Crossroads of Twilight",
           "isbn": "9780312864590",
-          "cover_url": "covers/crossroads-of-twilight.jpg"
+          "cover_url": "covers/crossroads-of-twilight.webp"
         },
         {
           "title": "Knife of Dreams",
           "isbn": "9780312873073",
-          "cover_url": "covers/knife-of-dreams.jpg"
+          "cover_url": "covers/knife-of-dreams.webp"
         },
         {
           "title": "The Gathering Storm",
           "isbn": "9780765302304",
-          "cover_url": "covers/the-gathering-storm.jpg"
+          "cover_url": "covers/the-gathering-storm.webp"
         },
         {
           "title": "Towers of Midnight",
           "isbn": "9780765325945",
-          "cover_url": "covers/towers-of-midnight.jpg"
+          "cover_url": "covers/towers-of-midnight.webp"
         },
         {
           "title": "A Memory of Light",
           "isbn": "9780765325952",
-          "cover_url": "covers/a-memory-of-light.jpg"
+          "cover_url": "covers/a-memory-of-light.webp"
         }
       ]
     },
@@ -90,37 +90,37 @@
         {
           "title": "Empire of Silence",
           "isbn": "9780756413002",
-          "cover_url": "covers/empire-of-silence.jpg"
+          "cover_url": "covers/empire-of-silence.webp"
         },
         {
           "title": "Howling Dark",
           "isbn": "9780756413033",
-          "cover_url": "covers/howling-dark.jpg"
+          "cover_url": "covers/howling-dark.webp"
         },
         {
           "title": "Demon in White",
           "isbn": "9781473218338",
-          "cover_url": "covers/demon-in-white.jpg"
+          "cover_url": "covers/demon-in-white.webp"
         },
         {
           "title": "Kingdoms of Death",
           "isbn": "9781803287485",
-          "cover_url": "covers/kingdoms-of-death.jpg"
+          "cover_url": "covers/kingdoms-of-death.webp"
         },
         {
           "title": "Ashes of Man",
           "isbn": "9781803287539",
-          "cover_url": "covers/ashes-of-man.jpg"
+          "cover_url": "covers/ashes-of-man.webp"
         },
         {
           "title": "Disquiet Gods",
           "isbn": "9781803287614",
-          "cover_url": "covers/disquiet-gods.jpg"
+          "cover_url": "covers/disquiet-gods.webp"
         },
         {
           "title": "Shadows Upon Time",
           "isbn": "9781035920662",
-          "cover_url": "covers/shadows-upon-time.jpg"
+          "cover_url": "covers/shadows-upon-time.webp"
         }
       ]
     },
@@ -135,22 +135,22 @@
         {
           "title": "The Hobbit",
           "isbn": "9780547928227",
-          "cover_url": "covers/the-hobbit.jpg"
+          "cover_url": "covers/the-hobbit.webp"
         },
         {
           "title": "The Fellowship of the Ring",
           "isbn": "9780547928210",
-          "cover_url": "covers/the-fellowship-of-the-ring.jpg"
+          "cover_url": "covers/the-fellowship-of-the-ring.webp"
         },
         {
           "title": "The Two Towers",
           "isbn": "9780547928203",
-          "cover_url": "covers/the-two-towers.jpg"
+          "cover_url": "covers/the-two-towers.webp"
         },
         {
           "title": "The Return of the King",
           "isbn": "9780547928197",
-          "cover_url": "covers/the-return-of-the-king.jpg"
+          "cover_url": "covers/the-return-of-the-king.webp"
         }
       ]
     },
@@ -165,17 +165,17 @@
         {
           "title": "The Blade Itself",
           "isbn": "9780575091085",
-          "cover_url": "covers/the-blade-itself.jpg"
+          "cover_url": "covers/the-blade-itself.webp"
         },
         {
           "title": "Before They Are Hanged",
           "isbn": "9781591026419",
-          "cover_url": "covers/before-they-are-hanged.jpg"
+          "cover_url": "covers/before-they-are-hanged.webp"
         },
         {
           "title": "Last Argument of Kings",
           "isbn": "9780575091115",
-          "cover_url": "covers/last-argument-of-kings.jpg"
+          "cover_url": "covers/last-argument-of-kings.webp"
         }
       ]
     },
@@ -190,17 +190,17 @@
         {
           "title": "The Final Empire",
           "isbn": "9780765311788",
-          "cover_url": "covers/the-final-empire.jpg"
+          "cover_url": "covers/the-final-empire.webp"
         },
         {
           "title": "The Well of Ascension",
           "isbn": "9780765316882",
-          "cover_url": "covers/the-well-of-ascension.jpg"
+          "cover_url": "covers/the-well-of-ascension.webp"
         },
         {
           "title": "The Hero of Ages",
           "isbn": "9780765316899",
-          "cover_url": "covers/the-hero-of-ages.jpg"
+          "cover_url": "covers/the-hero-of-ages.webp"
         }
       ]
     },
@@ -214,27 +214,27 @@
         {
           "title": "The Way of Kings",
           "isbn": "9780765326355",
-          "cover_url": "covers/the-way-of-kings.jpg"
+          "cover_url": "covers/the-way-of-kings.webp"
         },
         {
           "title": "Words of Radiance",
           "isbn": "9780765326362",
-          "cover_url": "covers/words-of-radiance.jpg"
+          "cover_url": "covers/words-of-radiance.webp"
         },
         {
           "title": "Oathbringer",
           "isbn": "9780765326379",
-          "cover_url": "covers/oathbringer.jpg"
+          "cover_url": "covers/oathbringer.webp"
         },
         {
           "title": "Rhythm of War",
           "isbn": "9780765326386",
-          "cover_url": "covers/rhythm-of-war.jpg"
+          "cover_url": "covers/rhythm-of-war.webp"
         },
         {
           "title": "Wind and Truth",
           "isbn": "9781250319180",
-          "cover_url": "covers/wind-and-truth.jpg"
+          "cover_url": "covers/wind-and-truth.webp"
         }
       ]
     }

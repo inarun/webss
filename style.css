@@ -2,9 +2,28 @@
    Nusayb Nurani — v6
    ============================================ */
 
-/* Fonts are loaded via <link rel="preconnect"> + <link rel="stylesheet">
-   in each page's <head> — an @import here would serialize the request
-   chain (CSS → fonts CSS) and delay first paint. */
+/* latin subset, variable weight */
+@font-face {
+    font-family: 'Cormorant Garamond';
+    font-style: normal;
+    font-weight: 400 600;
+    font-display: swap;
+    src: url('fonts/cormorant-garamond.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Cormorant Garamond';
+    font-style: italic;
+    font-weight: 400;
+    font-display: swap;
+    src: url('fonts/cormorant-garamond-italic.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Libre Franklin';
+    font-style: normal;
+    font-weight: 400 500;
+    font-display: swap;
+    src: url('fonts/libre-franklin.woff2') format('woff2');
+}
 
 :root {
     --serif: 'Cormorant Garamond', Georgia, serif;

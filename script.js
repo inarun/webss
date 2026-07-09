@@ -519,6 +519,7 @@
             if (book.cover_url) {
                 img.src = book.cover_url;
                 img.classList.add('loaded');  // the cover loader skips images already marked loaded
+                cover.dataset.coverLarge = book.cover_url.replace('covers/', 'covers/large/');
             }
             // No cover_url: leave src unset — the cover-loader pipeline fills it in.
             // (src='' would make some browsers request the page URL itself.)
@@ -594,6 +595,12 @@
             const srcImg = cover.querySelector('img');
             imgEl.src = srcImg && srcImg.src ? srcImg.src : '';
             imgEl.alt = (cover.dataset.title || '') + ' — book cover';
+            const large = cover.dataset.coverLarge;
+            if (large && large !== imgEl.src) {
+                const pre = new Image();
+                pre.onload = () => { if (lastTrigger === cover) imgEl.src = large; };
+                pre.src = large;
+            }
 
             lastTrigger = cover;
             prevBtn.disabled = !adjacentCover(-1);

@@ -1,5 +1,6 @@
 # Internal AI tooling docs — local only, never publish
 CLAUDE.md
+AGENTS.md
 REPORT.md
 SKILL.md
 .claude/
