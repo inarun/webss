@@ -142,7 +142,7 @@ a:hover { color: var(--accent-hover); }
 .home {
     flex: 1; display: flex; align-items: center; justify-content: center;
     padding: calc(var(--nav-h) + 2rem) clamp(1.5rem, 5vw, 4rem) 4rem;
-    height: 100vh; text-align: center; overflow: hidden;
+    height: 100vh; height: 100dvh; text-align: center; overflow: hidden;
 }
 body:has(.home) { overflow: hidden; }
 .home-content { max-width: var(--max-w); width: 100%; animation: fadeUp 0.8s ease both; }
