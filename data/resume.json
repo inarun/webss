@@ -1,0 +1,140 @@
+{
+  "basics": {
+    "name": "Nusayb Nurani",
+    "email": "nusayb.nurani@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/nusayb-nurani",
+    "url": "https://nusayb.me/"
+  },
+  "sections": [
+    {
+      "title": "Education",
+      "id": "education",
+      "entries": [
+        {
+          "role": "Paralegal Certificate (ABA-Approved)",
+          "dates": "Jun 2026 – Expected Mar 2027",
+          "org": "University of California, Irvine, Division of Continuing Education",
+          "note": "",
+          "bullets": [
+            "Completing a 30-unit, ABA-approved program in California paralegal practice; 8 units completed in the first term",
+            "Applying electronic legal research platforms and case management tools used in California practice",
+            "Extending prior policy research and legislative analysis experience toward substantive legal work"
+          ],
+          "coursework": "Legal Research, Fundamentals of the Paralegal Profession, Ethics for the Paralegal"
+        },
+        {
+          "role": "Bachelor of Arts, Environmental Science & Policy",
+          "dates": "Sept 2021 – Aug 2024",
+          "org": "University of California, Irvine",
+          "note": "",
+          "bullets": [],
+          "coursework": "Environmental Law & Policy, Urban Design Policy, Food & Water Systems, Poverty & Inequality, Urban Politics & Policy, Remote Sensing, Environmental Data Science, GIS Software (ArcGIS, QGIS)"
+        }
+      ],
+      "skills": []
+    },
+    {
+      "title": "Professional Experience",
+      "id": "professional-experience",
+      "entries": [
+        {
+          "role": "Director of Technology – Board Member",
+          "dates": "Jul 2023 – Present",
+          "org": "United Nations Association, Orange County",
+          "note": "Elected Board Member, Jan 2026 – Present",
+          "bullets": [
+            "Manage the organization’s digital presence and run audio/visual operations for high-profile events, including the UN Day Gala and UN Human Rights Day (2023–25), gatherings of 40–150 participants",
+            "Currently leading a website overhaul project, collaborating with the UNA Board President and other Board Directors, and managing student interns",
+            "Troubleshoot and update event management software and any other issues related to technology, community relations, and beyond",
+            "Coordinate community engagement events to raise awareness of global affairs, sustainability, and international policy frameworks, including facilitating programming for the 2024 UNA-OC Women’s Day event and supporting participation in the Annual Great American Write-In events, advancing advocacy for marginalized communities"
+          ],
+          "coursework": ""
+        },
+        {
+          "role": "Associate",
+          "dates": "Aug 2025 – Present",
+          "org": "In-N-Out",
+          "note": "",
+          "bullets": [
+            "Delivered high-quality customer service in a fast-paced environment while maintaining strict adherence to food safety standards",
+            "Collaborated with team members to ensure smooth operations during peak hours, consistently meeting performance expectations"
+          ],
+          "coursework": ""
+        },
+        {
+          "role": "Policy Intern",
+          "dates": "Apr 2024 – Jun 2024",
+          "org": "The Kennedy Commission",
+          "note": "",
+          "bullets": [
+            "Synthesized diverse datasets to analyze policy impact, generating insights crucial for organizational decision-making on affordable housing issues",
+            "Prepared comprehensive policy reports presenting findings and recommendations to support informed legislative discussions",
+            "Created data visualizations for presentation to public officials and local stakeholders, translating complex data into actionable intelligence"
+          ],
+          "coursework": ""
+        },
+        {
+          "role": "Crew Lead",
+          "dates": "Sept 2022 – Aug 2024",
+          "org": "UC Irvine, Student Center & Event Services",
+          "note": "",
+          "bullets": [
+            "Led crews of up to 20 staff members, orchestrating large-scale events for gatherings of up to 1,500 participants",
+            "Assumed full operational responsibility for professional audio-visual services during morning, evening, and weekend shifts in the absence of career staff"
+          ],
+          "coursework": ""
+        },
+        {
+          "role": "Sales Associate",
+          "dates": "Aug 2021 – Sept 2021",
+          "org": "Macy’s Inc.",
+          "note": "",
+          "bullets": [
+            "Assisted customers with product selection and transactions while meeting sales goals in a fast-paced retail environment"
+          ],
+          "coursework": ""
+        }
+      ],
+      "skills": []
+    },
+    {
+      "title": "Research & Analysis",
+      "id": "research-analysis",
+      "entries": [
+        {
+          "role": "Research Contributor",
+          "dates": "Jun 2020 – Jul 2024",
+          "org": "University of California, Irvine & UNDP",
+          "note": "",
+          "bullets": [
+            "California Rainfall Anomalies: Analyzed the interplay between anomalous weather events, temperature fluctuations, and statewide precipitation patterns",
+            "Gulf of Mexico Sea Temperature Study: Utilized data from USGS, NASA OceanColor, and EarthDATA to examine the correlation between sea surface temperature and chlorophyll-a concentration",
+            "Supported research and data analysis on the Fourth Industrial Revolution and AI’s potential impact on multilateral development policy at the UNDP Seoul Policy Center"
+          ],
+          "coursework": ""
+        }
+      ],
+      "skills": []
+    },
+    {
+      "title": "Skills & Competencies",
+      "id": "skills-competencies",
+      "entries": [],
+      "skills": [
+        {
+          "label": "Research & Analysis",
+          "items": "Policy Research, Data Analysis, Data Visualization, Environmental Impact Assessment, Legislative Analysis"
+        },
+        {
+          "label": "Technical",
+          "items": "Python, C, GIS Software (ArcGIS, QGIS), Remote Sensing, Microsoft Suite, Google Suite"
+        },
+        {
+          "label": "Professional",
+          "items": "Event Management, Team Leadership, Public Speaking, Stakeholder Engagement, Community Advocacy"
+        }
+      ]
+    }
+  ],
+  "updated": "2026-08-21"
+}

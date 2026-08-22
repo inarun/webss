@@ -1,0 +1,59 @@
+name: Build resume page
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - resume.docx
+      - Nusayb-Nurani-Resume.pdf
+      - data/resume-links.json
+      - tools/build_resume.py
+      - .github/workflows/resume.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-resume
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # No dependency step: the script is standard library only. A failure here
+      # commits nothing, so the deployed page keeps its last good version.
+      - name: Regenerate resume.html and data/resume.json
+        run: python tools/build_resume.py
+
+      - name: Warn if the PDF download is older than the Word source
+        run: |
+          docx=$(git log -1 --format=%ct -- resume.docx)
+          pdf=$(git log -1 --format=%ct -- Nusayb-Nurani-Resume.pdf)
+          if [ -n "$docx" ] && [ -n "$pdf" ] && [ "$docx" -gt "$pdf" ]; then
+            msg="resume.docx is newer than the PDF. The page rebuilt fine, but the Download"
+            msg="$msg PDF button still serves the older export - save the Word file as PDF"
+            msg="$msg over Nusayb-Nurani-Resume.pdf and commit it."
+            echo "::warning file=Nusayb-Nurani-Resume.pdf::$msg"
+          fi
+
+      - name: Commit if the output changed
+        run: |
+          if git diff --quiet -- resume.html data/resume.json; then
+            echo "No change to the generated files."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add resume.html data/resume.json
+          git commit -m "Rebuild resume page from resume.docx"
+          git push
