@@ -1,6 +1,6 @@
 /* ============================================
    Nusayb Nurani — v6
-   Nav · Theme · Covers · Scroll · Resume Overlay
+   Nav · Theme · Covers · Scroll
    ============================================ */
 
 (function () {
@@ -269,34 +269,6 @@
     }
     initTrackScroll(document);
 
-    // ─── RESUME OVERLAY ──────────────────────
-    const resumeLink = document.querySelector('.btn-primary[href*="Resume"]');
-    const overlay = document.querySelector('.resume-overlay');
-    if (resumeLink && overlay && window.innerWidth > 640) {
-        const frame = overlay.querySelector('iframe');
-        const closeBtn = overlay.querySelector('.resume-close');
-
-        function openResume(e) {
-            e.preventDefault();
-            frame.src = resumeLink.getAttribute('href');
-            overlay.classList.add('active');
-            overlay.setAttribute('aria-hidden', 'false');
-        }
-
-        function closeResume() {
-            overlay.classList.remove('active');
-            overlay.setAttribute('aria-hidden', 'true');
-            setTimeout(() => { frame.src = ''; }, 350);
-        }
-
-        resumeLink.addEventListener('click', openResume);
-        if (closeBtn) closeBtn.addEventListener('click', closeResume);
-        overlay.addEventListener('click', e => { if (e.target === overlay) closeResume(); });
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape' && overlay.classList.contains('active')) closeResume();
-        });
-    }
-
     // ─── PAGE TRANSITION ──────────────────────
     // Scale fade: current page shrinks + fades, new page grows in
     (function () {
@@ -320,10 +292,11 @@
             main.style.transform = 'scale(1)';
         }
 
-        // Intercept nav link clicks (delegated so links added dynamically
-        // — see the conditional Writing nav below — also get the transition).
+        // Delegated so links added dynamically — see the conditional Writing
+        // nav below — also get the transition. a[data-page-link] opts in any
+        // internal link outside the nav (the homepage Resume button).
         document.addEventListener('click', function (e) {
-            const link = e.target.closest('.nav-links .nav-link');
+            const link = e.target.closest('.nav-links .nav-link, a[data-page-link]');
             if (!link || link.classList.contains('active')) return;
             e.preventDefault();
             const href = link.getAttribute('href');
@@ -700,7 +673,7 @@
 
     // ─── KEYBOARD SHORTCUTS ──────────────────
     // Single keys, guarded against modifiers and form fields:
-    //   ?  shortcuts overlay   h/b/w  navigate   r  resume
+    //   ?  shortcuts overlay   h/r/b/w  navigate
     // Arrow keys: ←/→ rove focus across covers on the
     // shelf and step prev/next inside the detail modal.
     (function () {
@@ -743,9 +716,9 @@
             rows.textContent = '';
             const items = [];
             if (findNav('home')) items.push(['H', 'Home']);
+            if (findNav('resume')) items.push(['R', 'Resume']);
             if (findNav('interests')) items.push(['B', 'Bookshelf']);
             if (findNav('writing')) items.push(['W', 'Writing']);
-            if (document.querySelector('.btn-primary[href*="Resume"]')) items.push(['R', 'Resume']);
             if (document.getElementById('bookshelf-root')) items.push(['← →', 'Browse books']);
             items.push(['Esc', 'Close']);
             items.forEach(item => {
@@ -805,15 +778,15 @@
             }
 
             // An open modal owns its keys (Esc, arrows, Tab trap)
-            if (document.querySelector('.resume-overlay.active, .book-overlay.active')) return;
+            if (document.querySelector('.book-overlay.active')) return;
 
             if (e.key === '?') { e.preventDefault(); toggleHelp(true); return; }
 
             switch (e.key.length === 1 ? e.key.toLowerCase() : '') {
                 case 'h': clickNav(findNav('home')); break;
+                case 'r': clickNav(findNav('resume')); break;
                 case 'b': clickNav(findNav('interests')); break;
                 case 'w': clickNav(findNav('writing')); break;
-                case 'r': { const r = document.querySelector('.btn-primary[href*="Resume"]'); if (r) r.click(); break; }
             }
         });
     })();
