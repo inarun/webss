@@ -1,0 +1,15 @@
+{
+  "organizations": {
+    "United Nations Association, Orange County": "https://www.una-oc.org/",
+    "University of California, Irvine": {
+      "url": "https://uci.edu/",
+      "@type": "CollegeOrUniversity"
+    },
+    "University of California, Irvine, Division of Continuing Education": {
+      "url": "https://ce.uci.edu/",
+      "@type": "EducationalOrganization"
+    },
+    "UC Irvine, Student Center & Event Services": "https://studentcenter.uci.edu/",
+    "The Kennedy Commission": "https://kennedycommission.org/"
+  }
+}

@@ -8,3 +8,6 @@ SKILL.md
 # Plan / scratch files
 *.plan.md
 og-card.html
+
+# Python bytecode from running tools/
+__pycache__/
