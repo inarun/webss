@@ -31,16 +31,117 @@
     </nav>
 
     <main class="not-found-page">
-        <h1 class="not-found-title">Not found.</h1>
+        <p class="not-found-label">404</p>
+        <h1 class="not-found-title">Not on the shelf.</h1>
         <div class="not-found-rule"></div>
-        <p class="not-found-sub">That page doesn't exist, or has moved.</p>
+        <p class="not-found-sub"><span class="not-found-path">That page</span> was checked out and never returned.</p>
+        <p class="not-found-suggest" hidden>Did you mean <a href="/" data-page-link>Home</a>?</p>
         <div class="not-found-actions">
-            <a href="/">Home</a>
-            <a href="/bookshelf.html">Bookshelf</a>
+            <a href="/" data-page-link>Home</a>
+            <a href="/bookshelf.html" data-page-link>Bookshelf</a>
         </div>
+
+        <section class="not-found-picks" hidden aria-labelledby="not-found-picks-label">
+            <h2 class="not-found-picks-label" id="not-found-picks-label">Meanwhile, from the shelf</h2>
+            <ul role="list"></ul>
+        </section>
     </main>
 
     <footer class="footer"><p><a href="https://github.com/inarun" target="_blank" rel="noopener" class="footer-link">GitHub</a></p></footer>
+
     <script src="/script.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        var PAGES = [
+            { href: '/',               name: 'Home',      keys: ['home', 'index', 'about', 'me', 'contact', 'email'] },
+            { href: '/resume.html',    name: 'Resume',    keys: ['resume', 'cv', 'pdf', 'work', 'experience'] },
+            { href: '/bookshelf.html', name: 'Bookshelf', keys: ['bookshelf', 'books', 'book', 'shelf', 'reading', 'read', 'library', 'interests', 'series', 'favorites'] }
+        ];
+
+        var path = location.pathname;
+        var slug = path.replace(/\.html?$/i, '').replace(/^\/+|\/+$/g, '').split('/')[0].toLowerCase();
+
+        // Echo the missing path when it is short and plain enough to read as prose.
+        if (slug && /^[\w\-.\/~]{1,40}$/.test(path)) {
+            document.querySelector('.not-found-path').textContent = path;
+        }
+
+        // Did you mean: exact alias, then shared prefix, then bigram overlap.
+        function bigrams(s) {
+            var out = [];
+            for (var i = 0; i < s.length - 1; i++) out.push(s.slice(i, i + 2));
+            return out;
+        }
+        function dice(a, b) {
+            if (a.length < 2 || b.length < 2) return 0;
+            var x = bigrams(a), y = bigrams(b), total = x.length + y.length, hits = 0;
+            x.forEach(function (g) { var i = y.indexOf(g); if (i !== -1) { hits++; y.splice(i, 1); } });
+            return (2 * hits) / total;
+        }
+        function score(key) {
+            if (key === slug) return 1;
+            if (slug.length >= 3 && (key.indexOf(slug) === 0 || slug.indexOf(key) === 0)) return 0.8;
+            return dice(slug, key);
+        }
+        if (slug) {
+            var best = null, bestScore = 0;
+            PAGES.forEach(function (p) {
+                p.keys.forEach(function (k) {
+                    var s = score(k);
+                    if (s > bestScore) { bestScore = s; best = p; }
+                });
+            });
+            if (best && bestScore >= 0.5) {
+                var suggest = document.querySelector('.not-found-suggest');
+                var link = suggest.querySelector('a');
+                link.href = best.href;
+                link.textContent = best.name;
+                suggest.hidden = false;
+            }
+        }
+
+        // Three covers from the shelf, each linking to its series.
+        var picks = document.querySelector('.not-found-picks');
+        var list = picks.querySelector('ul');
+        fetch('/data/books.json')
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (data) {
+                var books = data && Array.isArray(data.books) ? data.books.slice() : [];
+                for (var i = books.length - 1; i > 0; i--) {
+                    var j = Math.floor(Math.random() * (i + 1));
+                    var t = books[i]; books[i] = books[j]; books[j] = t;
+                }
+                books.slice(0, 3).forEach(function (book) {
+                    var li = document.createElement('li');
+                    li.className = 'book';
+                    var a = document.createElement('a');
+                    a.className = 'book-cover';
+                    a.href = '/bookshelf.html#' + (book.series ? 'series-' + book.series : 'standalone');
+                    a.setAttribute('data-page-link', '');
+                    a.setAttribute('aria-label', book.title);
+                    var img = document.createElement('img');
+                    img.src = '/covers/' + book.id + '.webp';
+                    img.width = 155; img.height = 235;
+                    img.alt = '';
+                    img.decoding = 'async';
+                    img.onerror = function () { li.remove(); if (!list.children.length) picks.hidden = true; };
+                    a.appendChild(img);
+                    var cap = document.createElement('p');
+                    cap.className = 'book-caption';
+                    var title = document.createElement('span');
+                    title.className = 'book-title';
+                    title.textContent = book.title;
+                    cap.appendChild(title);
+                    li.appendChild(a);
+                    li.appendChild(cap);
+                    list.appendChild(li);
+                });
+                if (list.children.length) picks.hidden = false;
+            })
+            .catch(function () {});
+    })();
+    </script>
 </body>
 </html>
