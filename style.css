@@ -438,24 +438,46 @@ html:has(.book-dialog[open]) { overflow: hidden; }
    ═══════════════════════════════════════════ */
 .not-found-page {
     flex: 1; width: 100%; max-width: var(--max-w); margin: 0 auto;
-    padding: calc(var(--nav-h) + 6rem) var(--gutter) 4rem;
+    padding: calc(var(--nav-h) + 5rem) var(--gutter) 4rem;
     text-align: center;
     animation: fadeUp 0.8s ease both;
 }
+.not-found-label { margin-bottom: 0.75rem; }
 .not-found-title {
     font-family: var(--serif); font-size: clamp(2rem, 4vw, 2.6rem);
     font-weight: 500; color: var(--text); letter-spacing: -0.01em;
     margin-bottom: 0.25rem;
 }
 .not-found-rule { width: 48px; height: 2px; background: var(--accent-bright); margin: 1rem auto 1.5rem; }
-.not-found-sub { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 2rem; }
-.not-found-actions { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; }
+.not-found-sub, .not-found-suggest { font-size: 0.95rem; color: var(--text-muted); }
+.not-found-suggest { margin-top: 0.35rem; }
+.not-found-suggest a { color: var(--accent); border-bottom: 1px solid currentColor; padding-bottom: 1px; }
+.not-found-path {
+    font-family: var(--serif); font-style: italic; font-size: 1.15em;
+    color: var(--text-secondary); overflow-wrap: anywhere;
+}
+.not-found-actions { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem; }
 .not-found-actions a {
     font-size: 0.8rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
     color: var(--accent); border-bottom: 1px solid var(--accent);
     padding-bottom: 1px; transition: color 0.2s, border-color 0.2s;
 }
 .not-found-actions a:hover { color: var(--accent-hover); border-color: var(--accent-hover); }
+
+/* Random covers, filled in by the page's own script once books.json arrives */
+.not-found-picks { margin-top: 4.5rem; animation: fadeUp 0.8s ease both; }
+.not-found-picks-label { margin-bottom: 1.5rem; }
+.not-found-picks ul {
+    --cover-w: 110px;
+    display: flex; justify-content: center; gap: clamp(1rem, 3vw, 1.5rem); list-style: none;
+}
+.not-found-picks .book-cover { color: inherit; }
+.not-found-picks .book-cover:focus-visible { outline: 2px solid var(--accent-bright); outline-offset: 3px; }
+.not-found-picks .book-caption { text-align: center; }
+
+@media (max-width: 640px) {
+    .not-found-picks ul { --cover-w: 88px; }
+}
 
 /* ═══════════════════════════════════════════
    RESUME PAGE
@@ -478,7 +500,8 @@ html:has(.book-dialog[open]) { overflow: hidden; }
 .rp-download:hover { color: var(--accent-hover); border-color: var(--accent-hover); }
 
 /* one label recipe; its users differ only in position */
-.rp-updated, .rp-dates, .rp-course-label, .rp-skill-label, .shelf-label {
+.rp-updated, .rp-dates, .rp-course-label, .rp-skill-label,
+.shelf-label, .not-found-label, .not-found-picks-label {
     font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
     color: var(--text-muted);
 }
