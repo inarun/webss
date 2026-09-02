@@ -311,7 +311,24 @@ body:has(.home) { overflow: hidden; }
 .book-read { color: var(--text-muted); }
 .book-rating + .book-read { margin-top: 0.1rem; }
 
+/* Mouse affordances, added by script.js only to rows that overflow */
+.shelf-head { position: relative; }
+.shelf-nav { position: absolute; right: 0; bottom: 0; display: none; gap: 0.25rem; }
+.shelf.can-scroll .shelf-nav { display: flex; }
+.shelf-chevron {
+    background: none; border: 0; cursor: pointer; padding: 0 0.4rem;
+    font-family: var(--serif); font-size: 1.9rem; line-height: 1;
+    color: var(--text); opacity: 0.45; transition: opacity 0.2s;
+}
+.shelf-chevron:hover, .shelf-chevron:focus-visible { opacity: 1; }
+.shelf-chevron:focus-visible { outline: 2px solid var(--accent-bright); outline-offset: 2px; }
+.shelf-chevron:disabled { opacity: 0.12; cursor: default; }
+@media (pointer: fine) { .shelf.can-scroll .shelf-row { cursor: grab; } }
+.shelf-row.dragging { cursor: grabbing; scroll-snap-type: none; user-select: none; }
+.shelf-row.dragging .book-cover { cursor: grabbing; }
+
 @media (max-width: 640px) {
+    .shelf.can-scroll .shelf-nav { display: none; }
     .shelf-row { --cover-w: 130px; }
     .shelf-page > .sp-sub { margin-bottom: 2.5rem; }
     .shelf + .shelf, .shelf + .shelf-group { margin-top: 3rem; padding-top: 2.5rem; }
@@ -545,7 +562,7 @@ html:has(.book-dialog[open]) { overflow: hidden; }
     body { display: block; min-height: 0; background: #fff; color: #000; }
 
     .nav, .footer, .theme-toggle, .nav-toggle,
-    .help-overlay, .book-dialog, .rp-actions { display: none !important; }
+    .help-overlay, .book-dialog, .shelf-nav, .rp-actions { display: none !important; }
 
     /* defeats the inline opacity/transform written by the page-transition script */
     main { opacity: 1 !important; transform: none !important; }
