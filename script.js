@@ -250,6 +250,9 @@
             }
             row.addEventListener('pointerup', endDrag);
             row.addEventListener('pointercancel', endDrag);
+            // Covers are <img>s; without this the browser starts a native image
+            // drag on the first move and stops delivering pointer events.
+            row.addEventListener('dragstart', e => e.preventDefault());
         });
     })();
 
