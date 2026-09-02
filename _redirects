@@ -1,2 +1,5 @@
 # /files/Resume.pdf may appear on prior job applications; keep it resolving.
 /files/Resume.pdf /Nusayb-Nurani-Resume.pdf 301
+# The bookshelf lived at /interests.html until 2026-09; old links and search results still point there.
+/interests.html /bookshelf 301
+/interests /bookshelf 301
