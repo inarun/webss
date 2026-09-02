@@ -168,6 +168,91 @@
             .catch(() => { /* silent: no feed, no link */ });
     })();
 
+    // ─── SHELF ROWS ──────────────────────────
+    // Rows are native scrollers, so touch and trackpads need nothing. A mouse
+    // cannot move one on its own (scrollbars are hidden and its wheel is
+    // vertical), so every row that overflows gets drag-to-scroll and a pair
+    // of chevrons in the shelf header.
+    (function () {
+        const rows = document.querySelectorAll('.shelf-row');
+        if (!rows.length) return;
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const DRAG_THRESHOLD = 6;
+
+        rows.forEach(row => {
+            const shelf = row.parentElement;
+            const head = shelf.querySelector('.shelf-head');
+            const prev = chevron('Scroll left', '‹');
+            const next = chevron('Scroll right', '›');
+            if (head) {
+                const nav = document.createElement('div');
+                nav.className = 'shelf-nav';
+                nav.append(prev, next);
+                head.appendChild(nav);
+            }
+
+            function chevron(label, glyph) {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'shelf-chevron';
+                b.setAttribute('aria-label', label);
+                b.textContent = glyph;
+                return b;
+            }
+
+            function page(dir) {
+                const gutter = parseFloat(getComputedStyle(row).paddingLeft) || 0;
+                const step = (row.clientWidth - 2 * gutter) * 0.8;
+                row.scrollBy({ left: dir * step, behavior: reduceMotion ? 'auto' : 'smooth' });
+            }
+            prev.addEventListener('click', () => page(-1));
+            next.addEventListener('click', () => page(1));
+
+            function update() {
+                const max = row.scrollWidth - row.clientWidth;
+                shelf.classList.toggle('can-scroll', max > 1);
+                prev.disabled = row.scrollLeft <= 1;
+                next.disabled = row.scrollLeft >= max - 1;
+            }
+            row.addEventListener('scroll', update, { passive: true });
+            new ResizeObserver(update).observe(row);
+            update();
+
+            // Mouse drag. Touch already pans natively, so it is left alone.
+            let start = null, dragged = false;
+            const swallowClick = e => { e.stopPropagation(); e.preventDefault(); };
+
+            row.addEventListener('pointerdown', e => {
+                if (e.pointerType !== 'mouse' || e.button !== 0) return;
+                start = { x: e.clientX, left: row.scrollLeft, id: e.pointerId };
+                dragged = false;
+            });
+            row.addEventListener('pointermove', e => {
+                if (!start || e.pointerId !== start.id) return;
+                const dx = e.clientX - start.x;
+                if (!dragged) {
+                    if (Math.abs(dx) < DRAG_THRESHOLD) return;
+                    dragged = true;
+                    row.classList.add('dragging');
+                    row.setPointerCapture(e.pointerId);
+                }
+                row.scrollLeft = start.left - dx;
+            });
+            function endDrag(e) {
+                if (!start || e.pointerId !== start.id) return;
+                start = null;
+                if (!dragged) return;
+                row.classList.remove('dragging');
+                // The click that follows a drag's pointerup must not open the cover under it.
+                // The listener is dropped on the next task in case no click arrives.
+                row.addEventListener('click', swallowClick, true);
+                setTimeout(() => row.removeEventListener('click', swallowClick, true), 0);
+            }
+            row.addEventListener('pointerup', endDrag);
+            row.addEventListener('pointercancel', endDrag);
+        });
+    })();
+
     // ─── BOOK DETAIL DIALOG ──────────────────
     // Every .book-cover is a <button> carrying the book as data-*; the
     // shelf itself is static HTML. Native <dialog> owns focus, Esc, and
