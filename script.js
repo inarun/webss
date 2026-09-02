@@ -1,6 +1,6 @@
 /* ============================================
    Nusayb Nurani — v6
-   Nav · Theme · Covers · Scroll
+   Nav · Theme · Bookshelf dialog · Shortcuts
    ============================================ */
 
 (function () {
@@ -84,191 +84,6 @@
         getLinks().forEach(initLink);
     }
 
-    // ─── COVER LOADING ──────────────────────
-    //
-    // Strategy (ordered by reliability):
-    //   1. bookcover.longitood.com — fetches from Goodreads by title+author
-    //      Returns a direct Goodreads CDN image URL. Most accurate for popular books.
-    //   2. Same API but by ISBN (less reliable for older ISBNs)
-    //   3. Open Library by ISBN (-L size)
-    //   4. Styled fallback card
-    //
-    // Why not Google Books? Their volume IDs are unstable across editions,
-    // zoom=0 often returns a generic grey placeholder, and the search API
-    // frequently returns graphic novel editions instead of the novel.
-
-    const BCAPI = 'https://bookcover.longitood.com/bookcover';
-    const OL = (isbn) => `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`;
-
-    function initCoverLoader(root) {
-        const scope = root || document;
-        const covers = scope.querySelectorAll('.book-cover[data-title]');
-        if (!covers.length) return;
-
-        // Throttle API calls to avoid rate limiting (120ms between calls)
-        let queue = [];
-        let processing = false;
-
-        function enqueue(fn) {
-            queue.push(fn);
-            if (!processing) processQueue();
-        }
-
-        function processQueue() {
-            if (!queue.length) { processing = false; return; }
-            processing = true;
-            const fn = queue.shift();
-            fn();
-            setTimeout(processQueue, 120);
-        }
-
-        covers.forEach(wrap => {
-            const title = wrap.dataset.title || '';
-            const author = wrap.dataset.author || '';
-            const isbn = wrap.dataset.isbn || '';
-            const img = wrap.querySelector('img');
-            if (!img) return;
-            if (img.classList.contains('loaded')) return;  // skip pre-resolved covers (cover_url in JSON)
-
-            function showFallback() {
-                img.style.display = 'none';
-                if (!wrap.querySelector('.fallback')) {
-                    const fb = document.createElement('div');
-                    fb.className = 'fallback';
-                    const fbTitle = document.createElement('div');
-                    fbTitle.className = 'fallback-title';
-                    fbTitle.textContent = title;
-                    fb.appendChild(fbTitle);
-                    wrap.appendChild(fb);
-                }
-            }
-
-            // Phase 3: Open Library by ISBN
-            function tryOL() {
-                if (!isbn) { showFallback(); return; }
-                img.onload = function () {
-                    if (img.naturalWidth <= 1 || img.naturalHeight <= 1) { showFallback(); return; }
-                    img.classList.add('loaded');
-                };
-                img.onerror = showFallback;
-                img.src = OL(isbn);
-            }
-
-            // Phase 2: API by ISBN
-            function tryAPIByISBN() {
-                if (!isbn) { tryOL(); return; }
-                fetch(`${BCAPI}/${isbn}`)
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.url) { loadURL(data.url, tryOL); }
-                        else { tryOL(); }
-                    })
-                    .catch(() => tryOL());
-            }
-
-            // Phase 1: API by title + author (most accurate)
-            function tryAPIByTitle() {
-                if (!title || !author) { tryAPIByISBN(); return; }
-                const params = new URLSearchParams({ book_title: title, author_name: author });
-                fetch(`${BCAPI}?${params}`)
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.url) { loadURL(data.url, tryAPIByISBN); }
-                        else { tryAPIByISBN(); }
-                    })
-                    .catch(() => tryAPIByISBN());
-            }
-
-            function loadURL(url, fallbackFn) {
-                img.onload = function () {
-                    if (img.naturalWidth <= 1 || img.naturalHeight <= 1) { fallbackFn(); return; }
-                    img.classList.add('loaded');
-                };
-                img.onerror = fallbackFn;
-                img.src = url;
-            }
-
-            enqueue(tryAPIByTitle);
-        });
-    }
-    initCoverLoader(document);
-
-
-    // ─── CURSOR-TRACKING SCROLL ─────────────
-    function initTrackScroll(root) {
-        const scope = root || document;
-        scope.querySelectorAll('.track-wrap').forEach(wrap => {
-            const track = wrap.querySelector('.track');
-            const inner = wrap.querySelector('.track-inner');
-            const bar   = wrap.querySelector('.prog-bar');
-            if (!track || !inner) return;
-
-            let cur = 0, target = 0, raf = null, isTouch = false;
-            const mx = () => Math.max(0, inner.scrollWidth - track.clientWidth);
-
-            function ui() {
-                const m = mx(), p = m > 0 ? (-cur / m) : 0;
-                wrap.classList.toggle('fl', p > 0.01);
-                wrap.classList.toggle('fr', p < 0.99 && m > 0);
-                if (bar) {
-                    const v = track.clientWidth / inner.scrollWidth;
-                    bar.style.width = Math.max(v * 100, 8) + '%';
-                    bar.style.left  = (p * (1 - v) * 100) + '%';
-                }
-            }
-
-            function tick() {
-                const d = target - cur;
-                if (Math.abs(d) < 0.4) { cur = target; raf = null; }
-                else { cur += d * 0.1; raf = requestAnimationFrame(tick); }
-                inner.style.transform = `translateX(${cur}px)`;
-                ui();
-            }
-            function go() { if (!raf) raf = requestAnimationFrame(tick); }
-
-            track.addEventListener('mousemove', e => {
-                if (isTouch) return;
-                const m = mx(); if (m <= 0) return;
-                const r = track.getBoundingClientRect();
-                const p = (e.clientX - r.left) / r.width;
-                const ease = p < 0.06 ? 0 : p > 0.94 ? 1 : (p - 0.06) / 0.88;
-                target = -ease * m; go();
-            });
-
-            let tx = 0, ts = 0;
-            track.addEventListener('touchstart', e => { isTouch = true; tx = e.touches[0].clientX; ts = cur; }, { passive: true });
-            track.addEventListener('touchmove', e => {
-                const dx = e.touches[0].clientX - tx;
-                target = Math.max(-mx(), Math.min(0, ts + dx));
-                cur = target; inner.style.transform = `translateX(${cur}px)`; ui();
-            }, { passive: true });
-            track.addEventListener('touchend', () => { isTouch = false; });
-
-            // Keyboard: focusing an off-screen cover makes the browser natively
-            // scroll the overflow:hidden track (scrollLeft), which stacks with
-            // the translateX lerp and desyncs the progress bar / fade masks.
-            // Undo the native scroll and steer the lerp target instead.
-            track.addEventListener('focusin', e => {
-                const book = e.target.closest('.book');
-                if (!book) return;
-                track.scrollLeft = 0;
-                const center = book.offsetLeft + book.offsetWidth / 2 - track.clientWidth / 2;
-                target = Math.max(-mx(), Math.min(0, -center));
-                cur = target;
-                inner.style.transform = `translateX(${cur}px)`;
-                ui();
-            });
-            track.addEventListener('scroll', () => { if (track.scrollLeft !== 0) track.scrollLeft = 0; });
-
-            window.addEventListener('resize', () => {
-                const m = mx(); if (-cur > m) { cur = -m; target = -m; }
-                inner.style.transform = `translateX(${cur}px)`; ui();
-            });
-            ui();
-        });
-    }
-    initTrackScroll(document);
-
     // ─── PAGE TRANSITION ──────────────────────
     // Scale fade: current page shrinks + fades, new page grows in
     (function () {
@@ -343,7 +158,7 @@
                 }
 
                 // Insert before Bookshelf if present, otherwise append at end
-                const bookshelf = navLinks.querySelector('a[href="interests.html"]');
+                const bookshelf = navLinks.querySelector('a[href="bookshelf.html"]');
                 if (bookshelf) {
                     navLinks.insertBefore(link, bookshelf);
                 } else {
@@ -353,321 +168,144 @@
             .catch(() => { /* silent: no feed, no link */ });
     })();
 
-    // ─── BOOKSHELF RENDERER ──────────────────
-    // Feature-detects #bookshelf-root; fetches data/books.json; builds the
-    // shelf DOM; then calls initCoverLoader / initTrackScroll
-    // scoped to the newly-rendered subtree.
-    //
-    // data/books.json schema — every book field except title is optional:
-    //   series[]: { name, author, tags[], standalone?, books[] }
-    //     standalone: true → a row of unrelated books; each book carries
-    //     its own author and the group's author line is omitted.
-    //   books[]: { title, isbn, cover_url, author?, rating?, year_read?, note? }
-    //     rating (0–5, halves ok), year_read (YYYY), note (one line) show
-    //     only in the detail modal, and only when present.
+    // ─── BOOK DETAIL DIALOG ──────────────────
+    // Every .book-cover is a <button> carrying the book as data-*; the
+    // shelf itself is static HTML. Native <dialog> owns focus, Esc, and
+    // the inert background. Prev/next stay inside the row that was open,
+    // because a book can sit in several rows.
     (function () {
-        const root = document.getElementById('bookshelf-root');
-        if (!root) return;
+        const dialog = document.querySelector('.book-dialog');
+        const shelf = document.querySelector('.shelf-page');
+        if (!dialog || !shelf || typeof dialog.showModal !== 'function') return;
 
-        let eagerBudget = 6;  // first row loads at full priority; the rest lazy-load
+        const prevBtn  = dialog.querySelector('.book-dialog-prev');
+        const nextBtn  = dialog.querySelector('.book-dialog-next');
+        const titleEl  = dialog.querySelector('.book-dialog-title');
+        const authorEl = dialog.querySelector('.book-dialog-author');
+        const seriesEl = dialog.querySelector('.book-dialog-series');
+        const ratingEl = dialog.querySelector('.book-dialog-rating');
+        const starsEl  = dialog.querySelector('.book-dialog-stars');
+        const readEl   = dialog.querySelector('.book-dialog-read');
+        const noteEl   = dialog.querySelector('.book-dialog-note');
+        const linkEl   = dialog.querySelector('.book-dialog-link');
+        const imgEl    = dialog.querySelector('.book-dialog-cover img');
+        const fbEl     = dialog.querySelector('.book-dialog-cover .book-fallback');
 
-        fetch('data/books.json')
-            .then(r => { if (!r.ok) throw new Error('fetch failed: ' + r.status); return r.json(); })
-            .then(data => {
-                if (!data || !Array.isArray(data.series) || !data.series.length) {
-                    renderEmpty(root); return;
-                }
-                renderGenreChips(data.series);
-                data.series.forEach(series => root.appendChild(buildSeries(series)));
-                initCoverLoader(root);
-                initTrackScroll(root);
-            })
-            .catch(err => {
-                console.error('[bookshelf] failed to load', err);
-                renderEmpty(root);
-            });
+        let current = null;
 
-        function renderEmpty(target) {
-            const p = document.createElement('p');
-            p.className = 'shelf-empty';
-            p.textContent = 'Unable to load bookshelf right now.';
-            target.appendChild(p);
+        function rowCovers(cover) {
+            const row = cover.closest('.shelf-row');
+            return row ? Array.from(row.querySelectorAll('.book-cover')) : [cover];
         }
 
-        // Header chips are derived from the union of series tags, in JSON
-        // order, so they always reflect what's actually on the shelf.
-        function renderGenreChips(seriesList) {
-            const row = document.querySelector('.genre-tags');
-            if (!row) return;
-            const seen = new Set();
-            seriesList.forEach(s => (s.tags || []).forEach(tag => {
-                if (seen.has(tag)) return;
-                seen.add(tag);
-                const chip = document.createElement('span');
-                chip.className = 'genre-tag';
-                chip.textContent = tag;
-                row.appendChild(chip);
-            }));
+        function adjacent(offset) {
+            if (!current) return null;
+            const covers = rowCovers(current);
+            return covers[covers.indexOf(current) + offset] || null;
         }
 
-        function buildSeries(series) {
-            const section = document.createElement('section');
-            section.className = 'series';
+        function show(cover) {
+            const d = cover.dataset;
+            titleEl.textContent  = d.title || '';
+            authorEl.textContent = d.author || '';
+            seriesEl.textContent = d.series || '';
+            seriesEl.hidden = !d.series;
 
-            const head = document.createElement('div');
-            head.className = 'series-head';
-
-            const h2 = document.createElement('h2');
-            h2.className = 'series-title';
-            h2.textContent = series.name || '';
-            head.appendChild(h2);
-
-            const authorP = document.createElement('p');
-            authorP.className = 'series-author';
-            const n = Array.isArray(series.books) ? series.books.length : 0;
-            if (!series.standalone && series.author) {
-                authorP.appendChild(document.createTextNode(series.author + ' · '));
-            }
-            const countSpan = document.createElement('span');
-            countSpan.className = 'series-count';
-            countSpan.textContent = n + ' book' + (n === 1 ? '' : 's');
-            authorP.appendChild(countSpan);
-            head.appendChild(authorP);
-
-            if (Array.isArray(series.tags) && series.tags.length) {
-                const tagRow = document.createElement('div');
-                tagRow.className = 'series-tags';
-                series.tags.forEach(tag => {
-                    const chip = document.createElement('span');
-                    chip.className = 'genre-tag';
-                    chip.textContent = tag;
-                    tagRow.appendChild(chip);
-                });
-                head.appendChild(tagRow);
-            }
-            section.appendChild(head);
-
-            const trackWrap = document.createElement('div');
-            trackWrap.className = 'track-wrap';
-            const track = document.createElement('div'); track.className = 'track';
-            const inner = document.createElement('div'); inner.className = 'track-inner';
-            (series.books || []).forEach(book => inner.appendChild(buildBook(book, series)));
-            track.appendChild(inner);
-            trackWrap.appendChild(track);
-
-            const fadeL = document.createElement('div'); fadeL.className = 'fade-l';
-            const fadeR = document.createElement('div'); fadeR.className = 'fade-r';
-            trackWrap.appendChild(fadeL);
-            trackWrap.appendChild(fadeR);
-
-            const prog = document.createElement('div'); prog.className = 'prog';
-            const progBar = document.createElement('div'); progBar.className = 'prog-bar';
-            prog.appendChild(progBar);
-            trackWrap.appendChild(prog);
-
-            section.appendChild(trackWrap);
-            return section;
-        }
-
-        function buildBook(book, series) {
-            const bookEl = document.createElement('div');
-            bookEl.className = 'book';
-            const author = book.author || series.author || '';
-
-            const cover = document.createElement('div');
-            cover.className = 'book-cover';
-            cover.setAttribute('role', 'button');
-            cover.setAttribute('tabindex', '0');
-            cover.setAttribute('aria-label', 'Open details for ' + (book.title || ''));
-            cover.dataset.title = book.title || '';
-            cover.dataset.author = author;
-            cover.dataset.isbn = book.isbn || '';
-            cover.dataset.seriesName = series.standalone ? '' : (series.name || '');
-            if (book.rating != null && book.rating !== '') cover.dataset.rating = book.rating;
-            if (book.year_read) cover.dataset.yearRead = book.year_read;
-            if (book.note) cover.dataset.note = book.note;
-
-            const img = document.createElement('img');
-            img.alt = (book.title || '') + ' by ' + author + ' — book cover';
-            if (eagerBudget > 0) {
-                eagerBudget--;
-                img.setAttribute('fetchpriority', 'high');
+            const rating = parseFloat(d.rating);
+            if (!isNaN(rating)) {
+                starsEl.textContent = '★'.repeat(Math.floor(rating)) + (rating % 1 >= 0.5 ? '½' : '');
+                starsEl.setAttribute('aria-label', 'Rated ' + rating + ' out of 5');
             } else {
-                img.loading = 'lazy';
+                starsEl.textContent = '';
+                starsEl.removeAttribute('aria-label');
             }
-            img.decoding = 'async';
-            if (book.cover_url) {
-                img.src = book.cover_url;
-                img.classList.add('loaded');  // the cover loader skips images already marked loaded
-                cover.dataset.coverLarge = book.cover_url.replace('covers/', 'covers/large/');
-            }
-            // No cover_url: leave src unset — the cover-loader pipeline fills it in.
-            // (src='' would make some browsers request the page URL itself.)
-            cover.appendChild(img);
-            bookEl.appendChild(cover);
+            readEl.textContent = d.readLabel || '';
+            if (d.read) readEl.setAttribute('datetime', d.read); else readEl.removeAttribute('datetime');
+            ratingEl.hidden = isNaN(rating) && !d.read;
 
-            const label = document.createElement('p');
-            label.className = 'book-label';
-            label.textContent = book.title || '';
-            bookEl.appendChild(label);
+            noteEl.textContent = d.note || '';
+            noteEl.hidden = !d.note;
 
-            return bookEl;
-        }
-    })();
-
-    // ─── BOOK DETAIL MODAL ──────────────────
-    // Click / tap / keyboard on a .book-cover opens an overlay with a larger
-    // cover, title, author, series, and an Open Library link. Pointer events
-    // + 8px distance threshold distinguish tap from drag/swipe.
-    (function () {
-        const overlay = document.querySelector('.book-overlay');
-        const shelfRoot = document.getElementById('bookshelf-root');
-        if (!overlay || !shelfRoot) return;
-
-        const prevBtn  = overlay.querySelector('.book-overlay-prev');
-        const nextBtn  = overlay.querySelector('.book-overlay-next');
-        const titleEl  = overlay.querySelector('.book-overlay-title');
-        const authorEl = overlay.querySelector('.book-overlay-author');
-        const seriesEl = overlay.querySelector('.book-overlay-series');
-        const ratingEl = overlay.querySelector('.book-overlay-rating');
-        const starsEl  = overlay.querySelector('.book-overlay-stars');
-        const yearEl   = overlay.querySelector('.book-overlay-year');
-        const noteEl   = overlay.querySelector('.book-overlay-note');
-        const linkEl   = overlay.querySelector('.book-overlay-link');
-        const imgEl    = overlay.querySelector('.book-overlay-cover img');
-
-        let lastTrigger = null;
-        const DRAG_THRESHOLD = 8;
-        const pointerStart = new Map();
-
-        function openDetail(cover) {
-            const isbn = cover.dataset.isbn || '';
-            titleEl.textContent  = cover.dataset.title || '';
-            authorEl.textContent = cover.dataset.author || '';
-            seriesEl.textContent = cover.dataset.seriesName || '';
-            seriesEl.style.display = cover.dataset.seriesName ? '' : 'none';
-
-            // Personal layer — rating / year read / note, each optional
-            const rating = parseFloat(cover.dataset.rating);
-            const year = cover.dataset.yearRead || '';
-            if (!isNaN(rating) || year) {
-                let stars = '';
-                if (!isNaN(rating)) {
-                    stars = '★'.repeat(Math.max(0, Math.floor(rating))) + (rating % 1 >= 0.5 ? '½' : '');
-                    starsEl.setAttribute('aria-label', 'Rated ' + rating + ' out of 5');
-                }
-                starsEl.textContent = stars;
-                yearEl.textContent = stars && year ? '· ' + year : year;
-                ratingEl.style.display = '';
-            } else {
-                ratingEl.style.display = 'none';
-            }
-            noteEl.textContent = cover.dataset.note || '';
-            noteEl.style.display = cover.dataset.note ? '' : 'none';
-
-            if (isbn) {
-                linkEl.href = 'https://openlibrary.org/isbn/' + isbn;
-                linkEl.style.display = '';
+            if (d.isbn) {
+                linkEl.href = 'https://openlibrary.org/isbn/' + d.isbn;
+                linkEl.hidden = false;
             } else {
                 linkEl.removeAttribute('href');
-                linkEl.style.display = 'none';
-            }
-            const srcImg = cover.querySelector('img');
-            imgEl.src = srcImg && srcImg.src ? srcImg.src : '';
-            imgEl.alt = (cover.dataset.title || '') + ' — book cover';
-            const large = cover.dataset.coverLarge;
-            if (large && large !== imgEl.src) {
-                const pre = new Image();
-                pre.onload = () => { if (lastTrigger === cover) imgEl.src = large; };
-                pre.src = large;
+                linkEl.hidden = true;
             }
 
-            lastTrigger = cover;
-            prevBtn.disabled = !adjacentCover(-1);
-            nextBtn.disabled = !adjacentCover(1);
-            overlay.classList.add('active');
-            overlay.setAttribute('aria-hidden', 'false');
-            document.body.style.overflow = 'hidden';
-            // No × button — close is Esc / backdrop. Focus a chevron so
-            // arrow-browsing continues naturally from the keyboard.
-            const focusTarget = [nextBtn, prevBtn, linkEl].find(el => el && !el.disabled && el.offsetParent !== null);
-            if (focusTarget) setTimeout(() => focusTarget.focus(), 50);
+            const thumb = cover.querySelector('img');
+            if (thumb) {
+                imgEl.src = thumb.currentSrc || thumb.src;
+                imgEl.alt = (d.title || '') + ' — book cover';
+                imgEl.hidden = false;
+                fbEl.hidden = true;
+                // Swap to the large file once it has loaded, unless the user has moved on.
+                if (d.large && d.large !== imgEl.getAttribute('src')) {
+                    const pre = new Image();
+                    pre.onload = () => { if (current === cover) imgEl.src = d.large; };
+                    pre.src = d.large;
+                }
+            } else {
+                imgEl.removeAttribute('src');
+                imgEl.hidden = true;
+                fbEl.firstElementChild.textContent = d.title || '';
+                fbEl.hidden = false;
+            }
+
+            current = cover;
+            prevBtn.disabled = !adjacent(-1);
+            nextBtn.disabled = !adjacent(1);
+            if (!dialog.open) dialog.showModal();
         }
 
-        // Prev/next across the whole shelf in DOM order (no wrap)
-        function adjacentCover(offset) {
-            if (!lastTrigger) return null;
-            const covers = Array.from(shelfRoot.querySelectorAll('.book-cover'));
-            const idx = covers.indexOf(lastTrigger);
-            return idx === -1 ? null : (covers[idx + offset] || null);
+        function step(offset) {
+            const next = adjacent(offset);
+            if (next) show(next);
         }
 
-        function stepDetail(offset) {
-            const next = adjacentCover(offset);
-            if (next) openDetail(next);
+        // dialog.close() hands focus back to the cover that opened the
+        // dialog; after stepping, the book last shown is the one to land on.
+        function closeDialog() {
+            const last = current;
+            current = null;
+            dialog.close();
+            imgEl.removeAttribute('src');
+            if (last) last.focus();
         }
 
-        function closeDetail() {
-            overlay.classList.remove('active');
-            overlay.setAttribute('aria-hidden', 'true');
-            document.body.style.overflow = '';
-            setTimeout(() => { imgEl.src = ''; }, 350);
-            if (lastTrigger && typeof lastTrigger.focus === 'function') lastTrigger.focus();
-            lastTrigger = null;
-        }
+        shelf.addEventListener('click', e => {
+            const cover = e.target.closest('.book-cover');
+            if (cover) show(cover);
+        });
 
-        // Delegated pointer events: record start, gate on distance threshold at pointerup
-        shelfRoot.addEventListener('pointerdown', e => {
+        // ←/→ on a focused cover roves along its row; focus scrolls the row
+        // into place via scroll-padding. preventDefault stops the scroller
+        // from also stepping on the same keypress.
+        shelf.addEventListener('keydown', e => {
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
             const cover = e.target.closest('.book-cover');
             if (!cover) return;
-            pointerStart.set(e.pointerId, { x: e.clientX, y: e.clientY, cover });
-        });
-        shelfRoot.addEventListener('pointerup', e => {
-            const start = pointerStart.get(e.pointerId);
-            pointerStart.delete(e.pointerId);
-            if (!start) return;
-            const cover = e.target.closest('.book-cover');
-            if (!cover || cover !== start.cover) return;
-            const dx = e.clientX - start.x, dy = e.clientY - start.y;
-            if (Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) return;
-            openDetail(cover);
-        });
-        shelfRoot.addEventListener('pointercancel', e => { pointerStart.delete(e.pointerId); });
-
-        // Keyboard on focused .book-cover: Enter/Space opens details,
-        // ←/→ rove focus along the track (focusin steering scrolls it).
-        shelfRoot.addEventListener('keydown', e => {
-            const cover = e.target.closest('.book-cover');
-            if (!cover) return;
-            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                e.preventDefault();
-                const covers = Array.from(cover.closest('.track-inner').querySelectorAll('.book-cover'));
-                const next = covers[covers.indexOf(cover) + (e.key === 'ArrowRight' ? 1 : -1)];
-                if (next) next.focus();
-                return;
-            }
-            if (e.key !== 'Enter' && e.key !== ' ') return;
             e.preventDefault();
-            openDetail(cover);
+            const covers = rowCovers(cover);
+            const next = covers[covers.indexOf(cover) + (e.key === 'ArrowRight' ? 1 : -1)];
+            if (next) next.focus();
         });
 
-        // Close: backdrop click or Escape. Arrows: prev/next book.
-        prevBtn.addEventListener('click', () => stepDetail(-1));
-        nextBtn.addEventListener('click', () => stepDetail(1));
-        overlay.addEventListener('click', e => { if (e.target === overlay) closeDetail(); });
-        document.addEventListener('keydown', e => {
-            if (!overlay.classList.contains('active')) return;
-            if (e.key === 'Escape') { closeDetail(); return; }
-            if (e.key === 'ArrowLeft') { e.preventDefault(); stepDetail(-1); return; }
-            if (e.key === 'ArrowRight') { e.preventDefault(); stepDetail(1); return; }
-            if (e.key === 'Tab') {
-                const focusables = [prevBtn, nextBtn, linkEl]
-                    .filter(el => el && !el.disabled && el.offsetParent !== null);
-                if (!focusables.length) { e.preventDefault(); return; }
-                const first = focusables[0], last = focusables[focusables.length - 1];
-                if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-                else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-            }
+        prevBtn.addEventListener('click', () => step(-1));
+        nextBtn.addEventListener('click', () => step(1));
+        dialog.addEventListener('click', e => { if (e.target === dialog) closeDialog(); });
+        dialog.addEventListener('keydown', e => {
+            if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
+            else if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
+            else if (e.key === 'Escape') { e.preventDefault(); closeDialog(); }
+        });
+        // A close the page did not initiate (the browser's own Escape handling)
+        dialog.addEventListener('close', () => {
+            imgEl.removeAttribute('src');
+            const last = current;
+            current = null;
+            if (last) last.focus();
         });
     })();
 
@@ -717,9 +355,9 @@
             const items = [];
             if (findNav('home')) items.push(['H', 'Home']);
             if (findNav('resume')) items.push(['R', 'Resume']);
-            if (findNav('interests')) items.push(['B', 'Bookshelf']);
+            if (findNav('bookshelf')) items.push(['B', 'Bookshelf']);
             if (findNav('writing')) items.push(['W', 'Writing']);
-            if (document.getElementById('bookshelf-root')) items.push(['← →', 'Browse books']);
+            if (document.querySelector('.shelf-row')) items.push(['← →', 'Browse books']);
             items.push(['Esc', 'Close']);
             items.forEach(item => {
                 const k = document.createElement('kbd');
@@ -777,15 +415,15 @@
                 return;
             }
 
-            // An open modal owns its keys (Esc, arrows, Tab trap)
-            if (document.querySelector('.book-overlay.active')) return;
+            // An open dialog owns its keys
+            if (document.querySelector('dialog[open]')) return;
 
             if (e.key === '?') { e.preventDefault(); toggleHelp(true); return; }
 
             switch (e.key.length === 1 ? e.key.toLowerCase() : '') {
                 case 'h': clickNav(findNav('home')); break;
                 case 'r': clickNav(findNav('resume')); break;
-                case 'b': clickNav(findNav('interests')); break;
+                case 'b': clickNav(findNav('bookshelf')); break;
                 case 'w': clickNav(findNav('writing')); break;
             }
         });

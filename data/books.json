@@ -1,242 +1,48 @@
 {
   "series": [
-    {
-      "name": "The Wheel of Time",
-      "author": "Robert Jordan & Brandon Sanderson",
-      "tags": [
-        "Epic Fantasy"
-      ],
-      "books": [
-        {
-          "title": "The Eye of the World",
-          "isbn": "9780312850098",
-          "cover_url": "covers/the-eye-of-the-world.webp"
-        },
-        {
-          "title": "The Great Hunt",
-          "isbn": "9780312851408",
-          "cover_url": "covers/the-great-hunt.webp"
-        },
-        {
-          "title": "The Dragon Reborn",
-          "isbn": "9780312852481",
-          "cover_url": "covers/the-dragon-reborn.webp"
-        },
-        {
-          "title": "The Shadow Rising",
-          "isbn": "9780312854317",
-          "cover_url": "covers/the-shadow-rising.webp"
-        },
-        {
-          "title": "The Fires of Heaven",
-          "isbn": "9780312854270",
-          "cover_url": "covers/the-fires-of-heaven.webp"
-        },
-        {
-          "title": "Lord of Chaos",
-          "isbn": "9780312854287",
-          "cover_url": "covers/lord-of-chaos.webp"
-        },
-        {
-          "title": "A Crown of Swords",
-          "isbn": "9780312857677",
-          "cover_url": "covers/a-crown-of-swords.webp"
-        },
-        {
-          "title": "The Path of Daggers",
-          "isbn": "9780312857691",
-          "cover_url": "covers/the-path-of-daggers.webp"
-        },
-        {
-          "title": "Winter's Heart",
-          "isbn": "9780312864255",
-          "cover_url": "covers/winter-s-heart.webp"
-        },
-        {
-          "title": "Crossroads of Twilight",
-          "isbn": "9780312864590",
-          "cover_url": "covers/crossroads-of-twilight.webp"
-        },
-        {
-          "title": "Knife of Dreams",
-          "isbn": "9780312873073",
-          "cover_url": "covers/knife-of-dreams.webp"
-        },
-        {
-          "title": "The Gathering Storm",
-          "isbn": "9780765302304",
-          "cover_url": "covers/the-gathering-storm.webp"
-        },
-        {
-          "title": "Towers of Midnight",
-          "isbn": "9780765325945",
-          "cover_url": "covers/towers-of-midnight.webp"
-        },
-        {
-          "title": "A Memory of Light",
-          "isbn": "9780765325952",
-          "cover_url": "covers/a-memory-of-light.webp"
-        }
-      ]
-    },
-    {
-      "name": "The Sun Eater",
-      "author": "Christopher Ruocchio",
-      "tags": [
-        "Science Fiction",
-        "Space Opera"
-      ],
-      "books": [
-        {
-          "title": "Empire of Silence",
-          "isbn": "9780756413002",
-          "cover_url": "covers/empire-of-silence.webp"
-        },
-        {
-          "title": "Howling Dark",
-          "isbn": "9780756413033",
-          "cover_url": "covers/howling-dark.webp"
-        },
-        {
-          "title": "Demon in White",
-          "isbn": "9781473218338",
-          "cover_url": "covers/demon-in-white.webp"
-        },
-        {
-          "title": "Kingdoms of Death",
-          "isbn": "9781803287485",
-          "cover_url": "covers/kingdoms-of-death.webp"
-        },
-        {
-          "title": "Ashes of Man",
-          "isbn": "9781803287539",
-          "cover_url": "covers/ashes-of-man.webp"
-        },
-        {
-          "title": "Disquiet Gods",
-          "isbn": "9781803287614",
-          "cover_url": "covers/disquiet-gods.webp"
-        },
-        {
-          "title": "Shadows Upon Time",
-          "isbn": "9781035920662",
-          "cover_url": "covers/shadows-upon-time.webp"
-        }
-      ]
-    },
-    {
-      "name": "Middle-earth",
-      "author": "J.R.R. Tolkien",
-      "tags": [
-        "Epic Fantasy",
-        "Classic"
-      ],
-      "books": [
-        {
-          "title": "The Hobbit",
-          "isbn": "9780547928227",
-          "cover_url": "covers/the-hobbit.webp"
-        },
-        {
-          "title": "The Fellowship of the Ring",
-          "isbn": "9780547928210",
-          "cover_url": "covers/the-fellowship-of-the-ring.webp"
-        },
-        {
-          "title": "The Two Towers",
-          "isbn": "9780547928203",
-          "cover_url": "covers/the-two-towers.webp"
-        },
-        {
-          "title": "The Return of the King",
-          "isbn": "9780547928197",
-          "cover_url": "covers/the-return-of-the-king.webp"
-        }
-      ]
-    },
-    {
-      "name": "The First Law",
-      "author": "Joe Abercrombie",
-      "tags": [
-        "Grimdark",
-        "Fantasy"
-      ],
-      "books": [
-        {
-          "title": "The Blade Itself",
-          "isbn": "9780575091085",
-          "cover_url": "covers/the-blade-itself.webp"
-        },
-        {
-          "title": "Before They Are Hanged",
-          "isbn": "9781591026419",
-          "cover_url": "covers/before-they-are-hanged.webp"
-        },
-        {
-          "title": "Last Argument of Kings",
-          "isbn": "9780575091115",
-          "cover_url": "covers/last-argument-of-kings.webp"
-        }
-      ]
-    },
-    {
-      "name": "Mistborn",
-      "author": "Brandon Sanderson",
-      "tags": [
-        "Fantasy",
-        "Heist"
-      ],
-      "books": [
-        {
-          "title": "The Final Empire",
-          "isbn": "9780765311788",
-          "cover_url": "covers/the-final-empire.webp"
-        },
-        {
-          "title": "The Well of Ascension",
-          "isbn": "9780765316882",
-          "cover_url": "covers/the-well-of-ascension.webp"
-        },
-        {
-          "title": "The Hero of Ages",
-          "isbn": "9780765316899",
-          "cover_url": "covers/the-hero-of-ages.webp"
-        }
-      ]
-    },
-    {
-      "name": "The Stormlight Archive",
-      "author": "Brandon Sanderson",
-      "tags": [
-        "Epic Fantasy"
-      ],
-      "books": [
-        {
-          "title": "The Way of Kings",
-          "isbn": "9780765326355",
-          "cover_url": "covers/the-way-of-kings.webp"
-        },
-        {
-          "title": "Words of Radiance",
-          "isbn": "9780765326362",
-          "cover_url": "covers/words-of-radiance.webp"
-        },
-        {
-          "title": "Oathbringer",
-          "isbn": "9780765326379",
-          "cover_url": "covers/oathbringer.webp"
-        },
-        {
-          "title": "Rhythm of War",
-          "isbn": "9780765326386",
-          "cover_url": "covers/rhythm-of-war.webp"
-        },
-        {
-          "title": "Wind and Truth",
-          "isbn": "9781250319180",
-          "cover_url": "covers/wind-and-truth.webp"
-        }
-      ]
-    }
+    {"id": "the-wheel-of-time", "name": "The Wheel of Time", "author": "Robert Jordan & Brandon Sanderson", "tags": ["Epic Fantasy"]},
+    {"id": "the-sun-eater", "name": "The Sun Eater", "author": "Christopher Ruocchio", "tags": ["Science Fiction", "Space Opera"]},
+    {"id": "middle-earth", "name": "Middle-earth", "author": "J.R.R. Tolkien", "tags": ["Epic Fantasy", "Classic"]},
+    {"id": "the-first-law", "name": "The First Law", "author": "Joe Abercrombie", "tags": ["Grimdark", "Fantasy"]},
+    {"id": "mistborn", "name": "Mistborn", "author": "Brandon Sanderson", "tags": ["Fantasy", "Heist"]},
+    {"id": "the-stormlight-archive", "name": "The Stormlight Archive", "author": "Brandon Sanderson", "tags": ["Epic Fantasy"]}
+  ],
+  "books": [
+    {"id": "the-eye-of-the-world", "title": "The Eye of the World", "isbn": "9780312850098", "series": "the-wheel-of-time"},
+    {"id": "the-great-hunt", "title": "The Great Hunt", "isbn": "9780312851408", "series": "the-wheel-of-time"},
+    {"id": "the-dragon-reborn", "title": "The Dragon Reborn", "isbn": "9780312852481", "series": "the-wheel-of-time"},
+    {"id": "the-shadow-rising", "title": "The Shadow Rising", "isbn": "9780312854317", "series": "the-wheel-of-time"},
+    {"id": "the-fires-of-heaven", "title": "The Fires of Heaven", "isbn": "9780312854270", "series": "the-wheel-of-time"},
+    {"id": "lord-of-chaos", "title": "Lord of Chaos", "isbn": "9780312854287", "series": "the-wheel-of-time"},
+    {"id": "a-crown-of-swords", "title": "A Crown of Swords", "isbn": "9780312857677", "series": "the-wheel-of-time"},
+    {"id": "the-path-of-daggers", "title": "The Path of Daggers", "isbn": "9780312857691", "series": "the-wheel-of-time"},
+    {"id": "winter-s-heart", "title": "Winter's Heart", "isbn": "9780312864255", "series": "the-wheel-of-time"},
+    {"id": "crossroads-of-twilight", "title": "Crossroads of Twilight", "isbn": "9780312864590", "series": "the-wheel-of-time"},
+    {"id": "knife-of-dreams", "title": "Knife of Dreams", "isbn": "9780312873073", "series": "the-wheel-of-time"},
+    {"id": "the-gathering-storm", "title": "The Gathering Storm", "isbn": "9780765302304", "series": "the-wheel-of-time"},
+    {"id": "towers-of-midnight", "title": "Towers of Midnight", "isbn": "9780765325945", "series": "the-wheel-of-time"},
+    {"id": "a-memory-of-light", "title": "A Memory of Light", "isbn": "9780765325952", "series": "the-wheel-of-time"},
+    {"id": "empire-of-silence", "title": "Empire of Silence", "isbn": "9780756413002", "series": "the-sun-eater"},
+    {"id": "howling-dark", "title": "Howling Dark", "isbn": "9780756413033", "series": "the-sun-eater"},
+    {"id": "demon-in-white", "title": "Demon in White", "isbn": "9781473218338", "series": "the-sun-eater"},
+    {"id": "kingdoms-of-death", "title": "Kingdoms of Death", "isbn": "9781803287485", "series": "the-sun-eater"},
+    {"id": "ashes-of-man", "title": "Ashes of Man", "isbn": "9781803287539", "series": "the-sun-eater"},
+    {"id": "disquiet-gods", "title": "Disquiet Gods", "isbn": "9781803287614", "series": "the-sun-eater"},
+    {"id": "shadows-upon-time", "title": "Shadows Upon Time", "isbn": "9781035920662", "series": "the-sun-eater"},
+    {"id": "the-hobbit", "title": "The Hobbit", "isbn": "9780547928227", "series": "middle-earth"},
+    {"id": "the-fellowship-of-the-ring", "title": "The Fellowship of the Ring", "isbn": "9780547928210", "series": "middle-earth"},
+    {"id": "the-two-towers", "title": "The Two Towers", "isbn": "9780547928203", "series": "middle-earth"},
+    {"id": "the-return-of-the-king", "title": "The Return of the King", "isbn": "9780547928197", "series": "middle-earth"},
+    {"id": "the-blade-itself", "title": "The Blade Itself", "isbn": "9780575091085", "series": "the-first-law"},
+    {"id": "before-they-are-hanged", "title": "Before They Are Hanged", "isbn": "9781591026419", "series": "the-first-law"},
+    {"id": "last-argument-of-kings", "title": "Last Argument of Kings", "isbn": "9780575091115", "series": "the-first-law"},
+    {"id": "the-final-empire", "title": "The Final Empire", "isbn": "9780765311788", "series": "mistborn"},
+    {"id": "the-well-of-ascension", "title": "The Well of Ascension", "isbn": "9780765316882", "series": "mistborn"},
+    {"id": "the-hero-of-ages", "title": "The Hero of Ages", "isbn": "9780765316899", "series": "mistborn"},
+    {"id": "the-way-of-kings", "title": "The Way of Kings", "isbn": "9780765326355", "series": "the-stormlight-archive"},
+    {"id": "words-of-radiance", "title": "Words of Radiance", "isbn": "9780765326362", "series": "the-stormlight-archive"},
+    {"id": "oathbringer", "title": "Oathbringer", "isbn": "9780765326379", "series": "the-stormlight-archive"},
+    {"id": "rhythm-of-war", "title": "Rhythm of War", "isbn": "9780765326386", "series": "the-stormlight-archive"},
+    {"id": "wind-and-truth", "title": "Wind and Truth", "isbn": "9781250319180", "series": "the-stormlight-archive"}
   ]
 }

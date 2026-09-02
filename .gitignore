@@ -11,3 +11,10 @@ og-card.html
 
 # Python bytecode from running tools/
 __pycache__/
+
+# wrangler
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example

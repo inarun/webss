@@ -1,0 +1,47 @@
+name: Build bookshelf page
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - data/books.json
+      - tools/build_bookshelf.py
+      - covers/**
+      - .github/workflows/bookshelf.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-bookshelf
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # No dependency step: the script is standard library only. A failure here
+      # commits nothing, so the deployed page keeps its last good version.
+      - name: Regenerate bookshelf.html
+        run: python tools/build_bookshelf.py
+
+      - name: Commit if the output changed
+        run: |
+          if git diff --quiet -- bookshelf.html; then
+            echo "No change to the generated page."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add bookshelf.html
+          git commit -m "Rebuild bookshelf page from data/books.json"
+          # The resume workflow may push in the same window when one commit touches both inputs.
+          git pull --rebase origin main
+          git push
