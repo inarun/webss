@@ -231,21 +231,6 @@
         });
     })();
 
-    document.addEventListener('error', e => {
-        const img = e.target;
-        if (!(img instanceof HTMLImageElement) || !img.closest('.book-cover')) return;
-        const cover = img.closest('.book-cover');
-        img.hidden = true;
-        if (cover.querySelector('.book-fallback')) return;
-        const fallback = document.createElement('span');
-        fallback.className = 'book-fallback';
-        fallback.textContent = cover.dataset.title || cover.getAttribute('aria-label') || img.alt;
-        cover.appendChild(fallback);
-    }, true);
-    document.querySelectorAll('.book-cover img').forEach(img => {
-        if (img.complete && !img.naturalWidth) img.dispatchEvent(new Event('error'));
-    });
-
     // ─── BOOK DETAIL DIALOG ──────────────────
     // Every .book-cover is a <button> carrying the book as data-*; the
     // shelf itself is static HTML. Native <dialog> owns focus, Esc, and
@@ -270,7 +255,6 @@
         const fbEl     = dialog.querySelector('.book-dialog-cover .book-fallback');
 
         let current = null;
-        let imageRequest = 0;
 
         function rowCovers(cover) {
             const row = cover.closest('.shelf-row');
@@ -313,29 +297,26 @@
                 linkEl.hidden = true;
             }
 
-            current = cover;
-            const request = ++imageRequest;
             const thumb = cover.querySelector('img');
-            const sources = [d.large, thumb && (thumb.currentSrc || thumb.src)].filter(Boolean);
-            imgEl.removeAttribute('src');
-            imgEl.hidden = true;
-            fbEl.firstElementChild.textContent = d.title || '';
-            fbEl.hidden = false;
-            imgEl.alt = (d.title || '') + ' — book cover';
-            function loadCover(index) {
-                if (request !== imageRequest || !sources[index]) return;
-                const pre = new Image();
-                pre.onload = () => {
-                    if (request !== imageRequest) return;
-                    imgEl.src = sources[index];
-                    imgEl.hidden = false;
-                    fbEl.hidden = true;
-                };
-                pre.onerror = () => { if (request === imageRequest) loadCover(index + 1); };
-                pre.src = sources[index];
+            if (thumb) {
+                imgEl.src = thumb.currentSrc || thumb.src;
+                imgEl.alt = (d.title || '') + ' — book cover';
+                imgEl.hidden = false;
+                fbEl.hidden = true;
+                // Swap to the large file once it has loaded, unless the user has moved on.
+                if (d.large && d.large !== imgEl.getAttribute('src')) {
+                    const pre = new Image();
+                    pre.onload = () => { if (current === cover) imgEl.src = d.large; };
+                    pre.src = d.large;
+                }
+            } else {
+                imgEl.removeAttribute('src');
+                imgEl.hidden = true;
+                fbEl.firstElementChild.textContent = d.title || '';
+                fbEl.hidden = false;
             }
-            loadCover(0);
 
+            current = cover;
             prevBtn.disabled = !adjacent(-1);
             nextBtn.disabled = !adjacent(1);
             if (!dialog.open) dialog.showModal();
@@ -351,7 +332,6 @@
         function closeDialog() {
             const last = current;
             current = null;
-            imageRequest++;
             dialog.close();
             imgEl.removeAttribute('src');
             if (last) last.focus();
@@ -375,7 +355,6 @@
             if (next) next.focus();
         });
 
-        dialog.querySelector('.book-dialog-close').addEventListener('click', closeDialog);
         prevBtn.addEventListener('click', () => step(-1));
         nextBtn.addEventListener('click', () => step(1));
         dialog.addEventListener('click', e => { if (e.target === dialog) closeDialog(); });
@@ -386,8 +365,6 @@
         });
         // A close the page did not initiate (the browser's own Escape handling)
         dialog.addEventListener('close', () => {
-            if (dialog.open) return;
-            imageRequest++;
             imgEl.removeAttribute('src');
             const last = current;
             current = null;
