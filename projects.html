@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects — Nusayb Nurani</title>
+    <meta name="description" content="Personal projects by Nusayb Nurani, featuring Ledger, a workout tracker built for my own training.">
+    <link rel="canonical" href="https://nusayb.me/projects">
+    <meta property="og:title" content="Projects — Nusayb Nurani">
+    <meta property="og:description" content="Explore Ledger, a workout tracker I built for my own training.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://nusayb.me/projects">
+    <meta property="og:image" content="https://nusayb.me/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Nusayb Nurani — nusayb.me">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Projects — Nusayb Nurani">
+    <meta name="twitter:description" content="Explore Ledger, a workout tracker I built for my own training.">
+    <meta name="twitter:image" content="https://nusayb.me/og-image.png">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <script>(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t)})()</script>
+    <link rel="preload" href="fonts/cormorant-garamond.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="fonts/libre-franklin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <nav class="nav">
+        <div class="nav-links" id="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="resume.html" class="nav-link">Resume</a>
+            <a href="projects.html" class="nav-link active" aria-current="page">Projects</a>
+            <a href="bookshelf.html" class="nav-link">Bookshelf</a>
+        </div>
+        <button class="theme-toggle" aria-label="Toggle theme">
+            <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <main id="main-content" tabindex="-1" class="projects-page">
+        <header class="projects-header">
+            <h1>Projects</h1>
+            <p>Things I build for everyday life.</p>
+        </header>
+
+        <article class="project" aria-labelledby="ledger-title">
+            <p class="project-label">Workout tracker</p>
+            <h2 id="ledger-title">Ledger</h2>
+            <p class="project-description">A workout tracker I built for my own training. Log workouts, review your history, and track your progress.</p>
+            <ul class="project-features">
+                <li><strong>Workout logging</strong><span>Record your workouts and revisit past sessions.</span></li>
+                <li><strong>Exercise library</strong><span>Find and manage the exercises you train with.</span></li>
+                <li><strong>Progress tracking</strong><span>Explore your training history over time.</span></li>
+            </ul>
+            <div class="project-actions">
+                <a href="https://inarun.github.io/workout-tracker/" class="btn btn-primary" target="_blank" rel="noopener" aria-describedby="ledger-link-note">
+                    Try Ledger
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 3h6v6M10 14 21 3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg>
+                </a>
+                <p id="ledger-link-note">Opens in a new tab.</p>
+            </div>
+        </article>
+    </main>
+
+    <footer class="footer"><p><a href="https://github.com/inarun" target="_blank" rel="noopener" class="footer-link">GitHub</a></p></footer>
+    <script src="script.js"></script>
+</body>
+</html>
