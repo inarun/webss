@@ -10,78 +10,37 @@
     const tog = document.querySelector('.nav-toggle');
     const links = document.querySelector('.nav-links');
     if (tog && links) {
-        tog.addEventListener('click', () => { tog.classList.toggle('open'); links.classList.toggle('open'); });
-        links.querySelectorAll('.nav-link').forEach(a =>
-            a.addEventListener('click', () => { tog.classList.remove('open'); links.classList.remove('open'); })
-        );
+        function setMenu(open, restoreFocus = false) {
+            tog.classList.toggle('open', open);
+            links.classList.toggle('open', open);
+            tog.setAttribute('aria-expanded', String(open));
+            if (restoreFocus) tog.focus();
+        }
+        tog.addEventListener('click', () => setMenu(!links.classList.contains('open')));
+        links.addEventListener('click', e => {
+            if (e.target.closest('.nav-link')) setMenu(false);
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && links.classList.contains('open')) {
+                e.preventDefault();
+                setMenu(false, true);
+            }
+        });
+        window.matchMedia('(max-width: 640px)').addEventListener('change', () => setMenu(false));
     }
 
     // ─── THEME TOGGLE ────────────────────────
     const themeToggle = document.querySelector('.theme-toggle');
     if (themeToggle) {
+        const labelTheme = () => themeToggle.setAttribute('aria-label',
+            document.documentElement.dataset.theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+        labelTheme();
         themeToggle.addEventListener('click', () => {
             const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', next);
-            localStorage.setItem('theme', next);
+            try { localStorage.setItem('theme', next); } catch (_) { /* Theme still works without storage. */ }
+            labelTheme();
         });
-    }
-
-    // ─── NAV PROXIMITY FADE (per-link) ─────
-    // Live-queries .nav-link on every tick so any link added dynamically
-    // (see conditional Writing nav below) participates in the fade without
-    // a re-init. Per-link state is stashed on the element itself.
-    const navLinksRoot = document.querySelector('.nav-links');
-    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    if (navLinksRoot && !isTouch) {
-        const threshold = 250;
-        const minOpacity = 0.25;
-        let rafNav = null;
-
-        function getLinks() { return navLinksRoot.querySelectorAll('.nav-link'); }
-
-        function initLink(link) {
-            if (link._proxInit) return;
-            link._proxInit = true;
-            link._proxCurrent = minOpacity;
-            link._proxTarget = minOpacity;
-            link.style.opacity = minOpacity;
-            link.style.transition = 'none';
-        }
-
-        function tickNav() {
-            let done = true;
-            getLinks().forEach(link => {
-                initLink(link);
-                const d = link._proxTarget - link._proxCurrent;
-                if (Math.abs(d) < 0.005) { link._proxCurrent = link._proxTarget; }
-                else { link._proxCurrent += d * 0.14; done = false; }
-                link.style.opacity = link._proxCurrent;
-            });
-            if (!done) rafNav = requestAnimationFrame(tickNav);
-            else rafNav = null;
-        }
-        function goNav() { if (!rafNav) rafNav = requestAnimationFrame(tickNav); }
-
-        document.addEventListener('mousemove', e => {
-            getLinks().forEach(link => {
-                initLink(link);
-                const rect = link.getBoundingClientRect();
-                const cx = rect.left + rect.width / 2;
-                const cy = rect.top + rect.height / 2;
-                const dist = Math.sqrt(Math.pow(e.clientX - cx, 2) + Math.pow(e.clientY - cy, 2));
-                const t = Math.max(0, Math.min(1, 1 - (dist / threshold)));
-                link._proxTarget = minOpacity + t * (1 - minOpacity);
-            });
-            goNav();
-        });
-
-        document.addEventListener('mouseleave', () => {
-            getLinks().forEach(link => { initLink(link); link._proxTarget = minOpacity; });
-            goNav();
-        });
-
-        // Set initial state, override CSS
-        getLinks().forEach(initLink);
     }
 
     // ─── PAGE TRANSITION ──────────────────────
@@ -93,10 +52,20 @@
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         // On arrival: if coming from a transition, animate in
-        const entry = sessionStorage.getItem('pageTransition');
-        if (entry) {
+        let entry;
+        try {
+            entry = sessionStorage.getItem('pageTransition');
             sessionStorage.removeItem('pageTransition');
-        }
+        } catch (_) { /* Navigation does not require storage. */ }
+        let pending = null;
+        window.addEventListener('pageshow', e => {
+            if (!e.persisted) return;
+            clearTimeout(pending);
+            pending = null;
+            main.style.removeProperty('opacity');
+            main.style.removeProperty('transform');
+            main.style.removeProperty('transition');
+        });
         if (entry && !reduceMotion) {
             main.style.opacity = '0';
             main.style.transform = 'scale(1.03)';
@@ -112,19 +81,24 @@
         // internal link outside the nav (the homepage Resume button).
         document.addEventListener('click', function (e) {
             const link = e.target.closest('.nav-links .nav-link, a[data-page-link]');
-            if (!link || link.classList.contains('active')) return;
+            if (!link || link.classList.contains('active') || e.defaultPrevented ||
+                e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey ||
+                link.hasAttribute('download') || (link.target && link.target !== '_self')) return;
+            const url = new URL(link.href, location.href);
+            if (url.origin !== location.origin || (url.pathname === location.pathname && url.hash)) return;
             e.preventDefault();
             const href = link.getAttribute('href');
 
             if (reduceMotion) { window.location.href = href; return; }
 
-            sessionStorage.setItem('pageTransition', '1');
+            if (pending !== null) return;
+            try { sessionStorage.setItem('pageTransition', '1'); } catch (_) { /* Optional animation state. */ }
 
             main.style.transition = 'opacity 0.35s ease, transform 0.35s cubic-bezier(0.4, 0, 1, 1)';
             main.style.opacity = '0';
             main.style.transform = 'scale(0.97)';
 
-            setTimeout(() => { window.location.href = href; }, 360);
+            pending = setTimeout(() => { window.location.href = href; }, 360);
         });
     })();
 
@@ -150,15 +124,16 @@
                 if (!data || !data.items || data.items.length === 0) return;
 
                 const link = document.createElement('a');
-                link.href = 'writing.html';
+                link.href = '/writing.html';
                 link.className = 'nav-link';
                 link.textContent = 'Writing';
-                if (location.pathname.endsWith('writing.html')) {
+                if (/\/writing(?:\.html)?\/?$/.test(location.pathname)) {
                     link.classList.add('active');
+                    link.setAttribute('aria-current', 'page');
                 }
 
                 // Insert before Bookshelf if present, otherwise append at end
-                const bookshelf = navLinks.querySelector('a[href="bookshelf.html"]');
+                const bookshelf = navLinks.querySelector('a[href$="bookshelf.html"]');
                 if (bookshelf) {
                     navLinks.insertBefore(link, bookshelf);
                 } else {
@@ -256,6 +231,21 @@
         });
     })();
 
+    document.addEventListener('error', e => {
+        const img = e.target;
+        if (!(img instanceof HTMLImageElement) || !img.closest('.book-cover')) return;
+        const cover = img.closest('.book-cover');
+        img.hidden = true;
+        if (cover.querySelector('.book-fallback')) return;
+        const fallback = document.createElement('span');
+        fallback.className = 'book-fallback';
+        fallback.textContent = cover.dataset.title || cover.getAttribute('aria-label') || img.alt;
+        cover.appendChild(fallback);
+    }, true);
+    document.querySelectorAll('.book-cover img').forEach(img => {
+        if (img.complete && !img.naturalWidth) img.dispatchEvent(new Event('error'));
+    });
+
     // ─── BOOK DETAIL DIALOG ──────────────────
     // Every .book-cover is a <button> carrying the book as data-*; the
     // shelf itself is static HTML. Native <dialog> owns focus, Esc, and
@@ -280,6 +270,7 @@
         const fbEl     = dialog.querySelector('.book-dialog-cover .book-fallback');
 
         let current = null;
+        let imageRequest = 0;
 
         function rowCovers(cover) {
             const row = cover.closest('.shelf-row');
@@ -322,26 +313,29 @@
                 linkEl.hidden = true;
             }
 
-            const thumb = cover.querySelector('img');
-            if (thumb) {
-                imgEl.src = thumb.currentSrc || thumb.src;
-                imgEl.alt = (d.title || '') + ' — book cover';
-                imgEl.hidden = false;
-                fbEl.hidden = true;
-                // Swap to the large file once it has loaded, unless the user has moved on.
-                if (d.large && d.large !== imgEl.getAttribute('src')) {
-                    const pre = new Image();
-                    pre.onload = () => { if (current === cover) imgEl.src = d.large; };
-                    pre.src = d.large;
-                }
-            } else {
-                imgEl.removeAttribute('src');
-                imgEl.hidden = true;
-                fbEl.firstElementChild.textContent = d.title || '';
-                fbEl.hidden = false;
-            }
-
             current = cover;
+            const request = ++imageRequest;
+            const thumb = cover.querySelector('img');
+            const sources = [d.large, thumb && (thumb.currentSrc || thumb.src)].filter(Boolean);
+            imgEl.removeAttribute('src');
+            imgEl.hidden = true;
+            fbEl.firstElementChild.textContent = d.title || '';
+            fbEl.hidden = false;
+            imgEl.alt = (d.title || '') + ' — book cover';
+            function loadCover(index) {
+                if (request !== imageRequest || !sources[index]) return;
+                const pre = new Image();
+                pre.onload = () => {
+                    if (request !== imageRequest) return;
+                    imgEl.src = sources[index];
+                    imgEl.hidden = false;
+                    fbEl.hidden = true;
+                };
+                pre.onerror = () => { if (request === imageRequest) loadCover(index + 1); };
+                pre.src = sources[index];
+            }
+            loadCover(0);
+
             prevBtn.disabled = !adjacent(-1);
             nextBtn.disabled = !adjacent(1);
             if (!dialog.open) dialog.showModal();
@@ -357,6 +351,7 @@
         function closeDialog() {
             const last = current;
             current = null;
+            imageRequest++;
             dialog.close();
             imgEl.removeAttribute('src');
             if (last) last.focus();
@@ -380,6 +375,7 @@
             if (next) next.focus();
         });
 
+        dialog.querySelector('.book-dialog-close').addEventListener('click', closeDialog);
         prevBtn.addEventListener('click', () => step(-1));
         nextBtn.addEventListener('click', () => step(1));
         dialog.addEventListener('click', e => { if (e.target === dialog) closeDialog(); });
@@ -390,6 +386,8 @@
         });
         // A close the page did not initiate (the browser's own Escape handling)
         dialog.addEventListener('close', () => {
+            if (dialog.open) return;
+            imageRequest++;
             imgEl.removeAttribute('src');
             const last = current;
             current = null;

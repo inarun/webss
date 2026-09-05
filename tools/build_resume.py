@@ -288,11 +288,16 @@ def render_main(data, links):
     a('        </p>')
     a('')
     a('        <div class="rp-actions">')
-    a(f'            <a href="{PDF.name}" class="rp-download" target="_blank" rel="noopener">'
+    a(f'            <a href="{PDF.name}" class="rp-download btn btn-primary" download>'
       f'Download PDF</a>')
     a(f'            <span class="rp-updated">Updated <time datetime="{updated:%Y-%m}">'
       f'{updated:%B %Y}</time></span>')
     a('        </div>')
+
+    a('        <nav class="rp-section-nav" aria-label="Resume sections">')
+    for section in data["sections"]:
+        a(f'            <a href="#{esc(section["id"])}">{esc(section["title"])}</a>')
+    a('        </nav>')
 
     for sec in data["sections"]:
         a('')
