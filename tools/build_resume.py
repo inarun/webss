@@ -69,10 +69,11 @@ def _blocks(body, rels):
                 if st is not None:
                     style = st.get(W + "val")
                 numbered = pPr.find(W + "numPr") is not None
-            links = [rels.get(h.get(R + "id"))
-                     for h in el.iter(W + "hyperlink") if h.get(R + "id") in rels]
-            yield "p", {"style": style, "list": numbered,
-                        "runs": _runs(el), "links": links}
+            anchors = [("".join(t.text or "" for t in h.iter(W + "t")).strip(),
+                        rels[h.get(R + "id")])
+                       for h in el.iter(W + "hyperlink") if h.get(R + "id") in rels]
+            yield "p", {"style": style, "list": numbered, "runs": _runs(el),
+                        "links": [url for _, url in anchors], "anchors": anchors}
         elif tag == "tbl":
             cells = ["".join("".join(t.text or "" for t in p.iter(W + "t"))
                              for p in tc.findall(W + "p"))
@@ -139,12 +140,13 @@ def parse_docx(path):
                 entry["coursework"] = text[len(COURSEWORK_PREFIX):].strip()
             else:
                 entry["bullets"].append(text)
+                entry["links"].update((t, url) for t, url in payload["anchors"] if t)
             continue
 
         if "\t" in text:                                    # role + dates row
             parts = [p.strip() for p in text.split("\t") if p.strip()]
             entry = {"role": parts[0], "dates": parts[1] if len(parts) > 1 else "",
-                     "org": "", "note": "", "bullets": [], "coursework": ""}
+                     "org": "", "note": "", "bullets": [], "links": {}, "coursework": ""}
             section["entries"].append(entry)
             continue
 
@@ -256,14 +258,23 @@ def render_role(role):
     return esc(role).replace(" – ", ' <span class="rp-sep">–</span> ')
 
 
-def render_bullet(text):
+def link_text(html, links):
+    """Wrap the first occurrence of each Word hyperlink's text in an anchor."""
+    for text, url in links.items():
+        html = html.replace(esc(text), f'<a href="{esc(url)}" target="_blank" '
+                                       f'rel="noopener">{esc(text)}</a>', 1)
+    return html
+
+
+def render_bullet(text, links):
     """A short Title Case phrase before a colon reads as a lead-in."""
     head, sep, tail = text.partition(": ")
     if sep and len(head) <= 60 and "." not in head:
         words = [w for w in head.split() if w[:1].isalpha()]
         if words and sum(w[0].isupper() for w in words) / len(words) >= 0.5:
-            return f'<span class="rp-lead">{esc(head)}:</span> {esc(tail)}'
-    return esc(text)
+            return (f'<span class="rp-lead">{esc(head)}:</span> '
+                    f'{link_text(esc(tail), links)}')
+    return link_text(esc(text), links)
 
 
 def render_main(data, links):
@@ -323,7 +334,7 @@ def render_main(data, links):
                 # role="list" survives list-style:none, which strips list semantics in VoiceOver
                 a('                <ul class="rp-bullets" role="list">')
                 for b in entry["bullets"]:
-                    a(f'                    <li>{render_bullet(b)}</li>')
+                    a(f'                    <li>{render_bullet(b, entry["links"])}</li>')
                 a('                </ul>')
             if entry["coursework"]:
                 a('                <p class="rp-course">'
