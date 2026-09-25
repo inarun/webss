@@ -57,3 +57,52 @@ jobs:
           git add resume.html data/resume.json
           git commit -m "Rebuild resume page from resume.docx"
           git push
+
+      # Preview only: the LibreOffice PDF is attached to the run for comparison
+      # with Word's export and is never committed.
+      # Georgia and Arial are Microsoft fonts absent on Linux. Gelasio and
+      # Liberation Sans share their metrics, so line breaks and page count match Word.
+      - name: Install LibreOffice and metric-compatible fonts
+        env:
+          GELASIO: https://raw.githubusercontent.com/SorkinType/Gelasio/7ab20e7e5c42791e603b9ee3201a0b49849cfdb2/fonts/ttf
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q --no-install-recommends \
+            libreoffice-writer fonts-liberation2 poppler-utils
+          mkdir -p ~/.local/share/fonts ~/.config/fontconfig
+          for style in Regular Bold Italic BoldItalic; do
+            curl -fsSL -o ~/.local/share/fonts/Gelasio-$style.ttf "$GELASIO/Gelasio-$style.ttf"
+          done
+          cat > ~/.config/fontconfig/fonts.conf <<'EOF'
+          <?xml version="1.0"?>
+          <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+          <fontconfig>
+            <alias binding="same">
+              <family>Georgia</family>
+              <accept><family>Gelasio</family></accept>
+            </alias>
+          </fontconfig>
+          EOF
+          fc-cache -f
+          fc-match Georgia
+          fc-match Arial
+
+      - name: Convert resume.docx to PDF with LibreOffice
+        run: |
+          out="$RUNNER_TEMP/pdf"
+          mkdir -p "$out"
+          soffice --headless --convert-to pdf --outdir "$out" resume.docx
+          mv "$out/resume.pdf" "$out/Nusayb-Nurani-Resume.pdf"
+          pdfinfo "$out/Nusayb-Nurani-Resume.pdf" | grep -E '^Pages'
+          pdffonts "$out/Nusayb-Nurani-Resume.pdf"
+          other=$(pdffonts "$out/Nusayb-Nurani-Resume.pdf" | tail -n +3 | awk '{print $1}' \
+                  | grep -viE 'gelasio|liberation|opensymbol' || true)
+          if [ -n "$other" ]; then
+            echo "::warning::Unexpected fallback font(s) in the preview PDF: $(echo $other)"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: resume-pdf-preview
+          path: ${{ runner.temp }}/pdf/Nusayb-Nurani-Resume.pdf
+          retention-days: 14
