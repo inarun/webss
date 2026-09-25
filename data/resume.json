@@ -43,10 +43,14 @@
           "org": "United Nations Association, Orange County",
           "note": "Elected Board Member, Jan 2026 – Present",
           "bullets": [
-            "Manage the organization’s digital presence and run audio/visual operations for high-profile events, including the UN Day Gala and UN Human Rights Day (2023–25), gatherings of 40–150 participants",
-            "Currently leading a website overhaul project, collaborating with the UNA Board President and other Board Directors, and managing student interns",
-            "Troubleshoot and update event management software and any other issues related to technology, community relations, and beyond",
-            "Coordinate community engagement events to raise awareness of global affairs, sustainability, and international policy frameworks, including facilitating programming for the 2024 UNA-OC Women’s Day event and supporting participation in the Annual Great American Write-In events, advancing advocacy for marginalized communities"
+            "Redesigned the chapter’s Squarespace site (una-oc.org) with the Board President and fellow Directors, refreshing the layout and UI with custom CSS, reorganizing site content, and featuring upcoming events on the homepage",
+            "Set up an automated email sign-up form and integrated it across the website to grow the mailing list",
+            "Administer the chapter’s Google Workspace, managing organizational email accounts and shared drive infrastructure",
+            "Run the chapter’s email marketing and event promotion, including member communications and flyer distribution",
+            "Lead AV and technical operations for in-person and hybrid events, including Zoom setup and speaker presentations, for high-profile events such as the UN Day Gala and UN Human Rights Day (2023–25) with 40–150 participants",
+            "Manage event registration and member data, including Eventbrite ticketing, RSVP tracking, and transfer of event revenue to the organization",
+            "Coordinate community engagement events on global affairs, sustainability, and international policy, including the 2024 UNA-OC Women’s Day event and the Annual Great American Write-In",
+            "Supervise and mentor an intern"
           ],
           "coursework": ""
         },
@@ -56,8 +60,8 @@
           "org": "In-N-Out",
           "note": "",
           "bullets": [
-            "Delivered high-quality customer service in a fast-paced environment while maintaining strict adherence to food safety standards",
-            "Collaborated with team members to ensure smooth operations during peak hours, consistently meeting performance expectations"
+            "Deliver high-quality customer service in a fast-paced environment while maintaining strict adherence to food safety standards",
+            "Collaborate with team members to ensure smooth operations during peak hours, consistently meeting performance expectations"
           ],
           "coursework": ""
         },
@@ -102,7 +106,7 @@
       "id": "research-analysis",
       "entries": [
         {
-          "role": "Research Contributor",
+          "role": "Undergraduate Researcher",
           "dates": "Jun 2020 – Jul 2024",
           "org": "University of California, Irvine & UNDP",
           "note": "",
