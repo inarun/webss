@@ -1,0 +1,1047 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Study — Nusayb Nurani</title>
+<meta name="description" content="Nusayb Nurani's bookshelf as a 3D study: browse the series, take a book down and open it on the reading stand.">
+<link rel="canonical" href="https://nusayb.me/study">
+<meta property="og:title" content="The Study — Nusayb Nurani">
+<meta property="og:description" content="Nusayb Nurani's bookshelf as a 3D study.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://nusayb.me/study">
+<meta property="og:image" content="https://nusayb.me/study/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A lamplit study with bookshelves, a fireplace and a reading stand">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The Study — Nusayb Nurani">
+<meta name="twitter:description" content="Nusayb Nurani's bookshelf as a 3D study.">
+<meta name="twitter:image" content="https://nusayb.me/study/og.jpg">
+<meta name="theme-color" content="#0b0907">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preload" href="/fonts/cormorant-garamond.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/libre-franklin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="modulepreload" href="/study/lib/three.js">
+<style>
+@font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/cormorant-garamond.woff2) format("woff2")}
+@font-face{font-family:"Cormorant Garamond";font-style:italic;font-weight:400;font-display:swap;src:url(/fonts/cormorant-garamond-italic.woff2) format("woff2")}
+@font-face{font-family:"Libre Franklin";font-style:normal;font-weight:400 500;font-display:swap;src:url(/fonts/libre-franklin.woff2) format("woff2")}
+:root{--serif:"Cormorant Garamond",Georgia,serif;--sans:"Libre Franklin",system-ui,sans-serif;--ink:#efe6d6;--mute:#b9ab95;--accent:#7aaac8}
+html,body{margin:0;background:#0b0907;color:var(--ink);font-family:var(--sans)}
+#app{position:relative;height:100vh;height:100dvh;overflow:hidden;user-select:none;-webkit-user-select:none}
+#app canvas{display:block;width:100%;height:100%;touch-action:none}
+.ui{position:absolute;inset:0;pointer-events:none}
+.ui .p{pointer-events:auto}
+.brand{position:absolute;left:22px;top:18px;font:600 24px/1 var(--serif);letter-spacing:.01em;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+.brand a{color:inherit;text-decoration:none;border-radius:4px}.brand a:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.brand a span{display:inline-block;margin-right:6px;color:var(--mute);transition:transform .3s cubic-bezier(.16,1,.3,1)}.brand a:hover span{transform:translateX(-3px)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+.brand small{display:block;font:500 9.5px/1.6 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--mute);margin-top:5px}
+.hint{display:block;margin-top:10px;font:400 11px/1.6 var(--sans);letter-spacing:0;color:var(--mute);opacity:.8;text-shadow:0 1px 6px rgba(0,0,0,.8),0 0 2px rgba(0,0,0,.6);transition:opacity .4s}
+#app.reading .hint{opacity:0}
+.hint kbd{font:inherit;border:1px solid rgba(239,230,214,.22);border-radius:4px;padding:0 4px}
+.top{position:absolute;right:18px;top:16px;display:flex;gap:8px}
+.btn{appearance:none;border:1px solid rgba(239,230,214,.16);background:rgba(18,13,10,.42);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:var(--ink);font:500 12px/1 var(--sans);padding:9px 14px;border-radius:100px;cursor:pointer;touch-action:manipulation;transition:background .25s,border-color .25s,color .25s,transform .3s cubic-bezier(.16,1,.3,1)}
+.btn:hover{background:rgba(40,30,22,.62);border-color:rgba(239,230,214,.34);transform:translateY(-1px)}
+.btn.on{border-color:rgba(122,170,200,.8);color:#fff;background:rgba(30,58,95,.45)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.series{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);display:flex;gap:6px;flex-wrap:wrap;justify-content:center;width:max-content;max-width:calc(100% - 32px)}
+.series .btn{padding:8px 12px;font-size:11.5px}
+.series .btn b{font-weight:400;color:var(--mute);margin-left:6px}
+.tip{position:absolute;left:0;top:0;pointer-events:none;font:600 16px/1.1 var(--serif);padding:6px 10px 7px;border-radius:7px;background:rgba(12,9,7,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;transition:opacity .18s;white-space:nowrap}
+.tip small{display:block;font:500 9.5px/1.5 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.tip.on{opacity:1}
+.panel{position:absolute;right:28px;top:50%;width:min(290px,34%);transform:translate(24px,-50%);opacity:0;pointer-events:none;transition:opacity .45s,transform .7s cubic-bezier(.16,1,.3,1)}
+.panel.on{opacity:1;transform:translate(0,-50%);pointer-events:auto}
+.panel::before{content:"";position:absolute;inset:-70px -60px;z-index:-1;pointer-events:none;background:radial-gradient(closest-side,rgba(11,9,7,.6),rgba(11,9,7,.35) 55%,rgba(11,9,7,0))}
+.panel .k{font:500 10px/1.5 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+.panel h2{font:600 38px/1 var(--serif);margin:10px 0 8px;text-shadow:0 2px 14px rgba(0,0,0,.6)}
+.panel .a{font:italic 400 18px/1.25 var(--serif);color:var(--mute)}
+.panel .meta{margin:16px 0 20px;font:11.5px/1.7 var(--sans);color:var(--mute)}
+.panel .meta span{display:inline-block;border:1px solid rgba(239,230,214,.14);border-radius:100px;padding:2px 9px;margin:0 4px 4px 0}
+.panel .row{display:flex;gap:6px;flex-wrap:wrap}
+.panel .isbn{font-style:normal}
+.load{position:absolute;inset:0;display:grid;place-items:center;background:#0b0907;transition:opacity .9s;z-index:5}
+.load div{text-align:center;font:italic 400 21px var(--serif);color:var(--mute)}
+.load i{display:block;width:170px;height:1px;background:rgba(239,230,214,.14);margin:16px auto 0;overflow:hidden}
+.load i b{display:block;height:100%;background:var(--accent);transform-origin:left;transform:scaleX(0);transition:transform .25s}
+.load p{margin:0 0 18px;max-width:30ch;line-height:1.35}.load a{font:500 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink);text-decoration:none;
+  display:inline-block;margin:0 5px;padding:11px 16px;border:1px solid rgba(239,230,214,.22);border-radius:100px}.load a:hover,.load a:focus-visible{border-color:var(--accent);outline:none}
+@media (pointer:coarse){.btn{padding:11px 16px}.series .btn{padding:10px 14px}}
+/* phones and portrait screens: one scrolling row of series, the book panel docked at the bottom over a scrim */
+@media (max-width:700px),(max-aspect-ratio:4/5){
+  .brand{left:16px;top:calc(14px + env(safe-area-inset-top))}.top{right:12px;top:calc(12px + env(safe-area-inset-top))}.hint{display:none}
+  .series{left:0;right:0;transform:none;width:auto;max-width:none;bottom:calc(12px + env(safe-area-inset-bottom));flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;overscroll-behavior-x:contain;
+    padding:4px 16px;scrollbar-width:none;transition:opacity .35s,transform .5s cubic-bezier(.16,1,.3,1);
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent);mask-image:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent)}
+  .series::-webkit-scrollbar{display:none}
+  .series .btn{flex:none}.series .btn:first-child{margin-left:auto}.series .btn:last-child{margin-right:auto}
+  #app.reading .series{opacity:0;transform:translateY(14px);pointer-events:none}
+  .panel{left:0;right:0;width:auto;top:auto;bottom:0;padding:52px 16px calc(14px + env(safe-area-inset-bottom));transform:translateY(24px);
+    background:linear-gradient(0deg,rgba(11,9,7,.94),rgba(11,9,7,.84) 58%,rgba(11,9,7,0))}
+  .panel.on{transform:none}.panel::before{display:none}.panel h2{font-size:28px;margin:6px 0 4px}.panel .a{font-size:16px}.panel .meta{margin:8px 0 12px}.panel .isbn{display:none}}
+</style></head>
+<body>
+<div id="app">
+  <h1 class="sr">The study: Nusayb Nurani's bookshelf in 3D</h1>
+  <div class="load" id="load"><div role="status">Lighting the room…<i><b id="bar"></b></i></div></div>
+  <noscript><style>#load{display:none}</style><div class="load"><div><p>The study needs JavaScript.</p><a href="/bookshelf">Browse the bookshelf</a></div></div></noscript>
+  <div class="ui">
+    <div class="brand p"><a href="/bookshelf" aria-label="Back to the bookshelf"><span aria-hidden="true">‹</span>Bookshelf</a><small>Nusayb Nurani</small><span class="hint" id="hint"></span></div>
+    <div class="top p"><button class="btn" id="bView">Overview</button><button class="btn" id="bTheme" aria-label="Toggle day and night">Night</button></div>
+    <nav class="series p" id="series" aria-label="Series"></nav>
+    <div class="tip" id="tip"></div>
+    <aside class="panel p" id="panel" aria-live="polite">
+      <div class="k" id="pk"></div><h2 id="pt"></h2><div class="a" id="pa"></div>
+      <div class="meta" id="pm"></div>
+      <div class="row"><button class="btn" id="bOpen">Open</button><button class="btn" id="bPrev" aria-label="Previous book">‹</button><button class="btn" id="bNext" aria-label="Next book">›</button><button class="btn" id="bBack">Back to shelf</button></div>
+    </aside>
+  </div>
+</div>
+<script>
+// Until the room is on screen, a missing WebGL 2 context or any load error swaps the loading line for a way out.
+(function(){var shown=false;
+  window.__studyFail=function(gl){var l=document.getElementById('load');if(shown||!l||window.__studyReady)return;shown=true;l.style.opacity=1;
+    l.firstElementChild.innerHTML=(gl?'<p>The study needs WebGL 2, which this browser does not offer.</p>':'<p>The study did not load.</p><a href="">Try again</a>')+'<a href="/bookshelf">Browse the bookshelf</a>'};
+  var c=document.createElement('canvas'),ok=false;try{ok=!!(window.WebGL2RenderingContext&&c.getContext('webgl2'))}catch(e){}
+  window.__studyGL=ok;if(!ok)__studyFail(true);
+  addEventListener('error',function(){__studyFail(false)});addEventListener('unhandledrejection',function(){__studyFail(false)})})();
+</script>
+<script type="importmap">{"imports":{"three":"/study/lib/three.js"}}</script>
+<script type="module" onerror="__studyFail(false)">
+import * as THREE from 'three';
+import {GLTFLoader,DRACOLoader,HDRLoader,EffectComposer,RenderPass,UnrealBloomPass,ShaderPass,OutputPass,Pass,FullScreenQuad} from 'three';
+
+if(!window.__studyGL)throw new Error('no WebGL 2');
+const $=id=>document.getElementById(id);
+const app=$('app');
+const TEST=window.__AUTOTEST__||null;
+const REDUCE=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const SCENE=window.__SCENE__||'study';
+const ASSET=window.__ASSETS__?(n=>window.__ASSETS__[n]):(n=>`/${SCENE}/${n}`);
+// canvas lettering (spines, title pages, bookplate) is drawn once, so the faces must be ready first
+const FONTS=Promise.all(['600 40px "Cormorant Garamond"','italic 400 30px "Cormorant Garamond"','500 20px "Libre Franklin"'].map(f=>document.fonts.load(f))).catch(()=>{});
+let INSTANT=false;
+
+const CFG={
+  study:{overview:{pos:[-1.75,1.55,-.95],look:[.75,1.15,-4.4],fov:58},focusFov:40,focusDist:1.0,
+    orbit:{c:[0,-2.2],r:3,x:[-1.75,1.75],z:[-3.3,-.95]},focusBox:{x:[-2.06,2.06],z:[-3.76,-.64]},
+    hint:'Drag to look around · click a book · <kbd>←</kbd> <kbd>→</kbd> browse · <kbd>↓</kbd> take down · <kbd>Esc</kbd> back',grade:{contrast:.04,vig:.38},
+    // three coords: opening [half width,y0,y1,z]; haze box; amb = room light reaching the hearth, per variant
+    hearth:{open:[.385,.05,.815,-4.06],haze:[-.3,.3,.3,.95,-4.28,-3.98],amb:{night:[.035,.026,.018],day:[.22,.2,.17]}},
+    sunWin:{min:[2.68,.6,-3.97],max:[2.92,2.44,-2.38]},vol:{day:{sun:.32,lan:0,fire:.03},night:{sun:.22,lan:.045,fire:.045}},dust:[[-2.6,.1,-4.35],[2.6,2.8,-.05]]},
+  hall:{overview:{pos:[.35,1.75,-.6],look:[0,1.9,-14],fov:60},focusFov:42,focusDist:1.25,window:{z:-14,x0:-1.7,x1:1.7,y0:.95,spring:6},
+    hint:'Scroll or drag to walk · click a book · <kbd>←</kbd> <kbd>→</kbd> browse · <kbd>Esc</kbd> back',grade:{contrast:.1,vig:.42}},
+}[SCENE];
+$('hint').innerHTML=CFG.hint;
+
+let loadN=0,loadT=1;const tick=()=>{loadN++;const b=$('bar');if(b)b.style.transform=`scaleX(${Math.min(1,loadN/loadT)})`};
+const DATA=window.__BOOKS__||await (await fetch('/data/books.json')).json();
+const META=window.__META__||await (await fetch(ASSET('meta.json'))).json();
+const COV=window.__COVERS__,COVL=window.__COVERS_L__||COV;
+// the shelf shows the small covers; the large one loads only for the book in hand
+const coverURL=(id,large=false)=>(large?COVL:COV)?.[id]||`/covers/${large?'large/':''}${id}.webp`;
+const SERIES=Object.fromEntries(DATA.series.map(s=>[s.id,s]));
+const BY_SERIES={};for(const b of DATA.books){if(b.series)(BY_SERIES[b.series]??=[]).push(b)}
+const BOOK=Object.fromEntries(DATA.books.map(b=>[b.id,b]));
+const NUM=['One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen'];
+
+const V=(x=0,y=0,z=0)=>new THREE.Vector3(x,y,z);
+const VA=a=>new THREE.Vector3(a[0],a[1],a[2]);
+const clamp01=x=>Math.min(1,Math.max(0,x));
+const ease=k=>k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
+const easeCam=k=>(1-Math.cos(Math.PI*k))/2;
+const CAM_SLOW=1.45;
+const smooth=(a,b,x)=>{const t=clamp01((x-a)/(b-a));return t*t*(3-2*t)};
+function canvas(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return [c,c.getContext('2d')]}
+function ctex(c){const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;return t}
+let seed=20261018;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;const rr=(a,b)=>a+(b-a)*rnd();
+function noise(g,w,h,amt){const id=g.getImageData(0,0,w,h),d=id.data;for(let i=0;i<d.length;i+=4){const n=(rnd()-.5)*amt;d[i]+=n;d[i+1]+=n;d[i+2]+=n}g.putImageData(id,0,0)}
+
+const tweens=new Set();
+function tween(dur,fn,ez=ease){return new Promise(res=>{if(INSTANT||REDUCE&&dur>0.05){fn(1);res();return}tweens.add({t:0,dur,fn,ez,res})})}
+function runTweens(dt){for(const tw of tweens){tw.t+=dt;const k=Math.min(1,tw.t/tw.dur);tw.fn(tw.ez(k));if(k>=1){tweens.delete(tw);tw.res()}}}
+
+// ------------------------------------------------------------------ renderer
+const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance'});
+const SMALL=window.__SMALL__??(Math.min(screen.width,screen.height)<700||(navigator.deviceMemory&&navigator.deviceMemory<=4));
+let DPR=Math.min(devicePixelRatio,SMALL?1.5:1.75);
+renderer.setPixelRatio(DPR);renderer.setSize(app.clientWidth,app.clientHeight);
+renderer.toneMapping=THREE.AgXToneMapping;renderer.outputColorSpace=THREE.SRGBColorSpace;
+app.prepend(renderer.domElement);
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(CFG.overview.fov,app.clientWidth/app.clientHeight,.02,120);
+const pmrem=new THREE.PMREMGenerator(renderer);
+const maxAniso=renderer.capabilities.getMaxAnisotropy();
+
+// ------------------------------------------------------------------ baked atlases
+const VARS=Object.keys(META.variants);
+// storage throws in sandboxed frames and under strict privacy settings; the theme then follows the system
+const THEME=(()=>{try{return localStorage.theme}catch{return null}})();
+let variant=TEST?.variant||TEST?.shots?.[0]?.variant||(THEME==='light'?'day':THEME==='dark'?'night':matchMedia('(prefers-color-scheme: light)').matches?'day':'night');
+if(!VARS.includes(variant))variant=VARS[0];
+const texLoader=new THREE.TextureLoader();
+const hdrLoader=new HDRLoader();
+function loadTex(name){return new Promise((res,rej)=>texLoader.load(ASSET(name),t=>{t.flipY=false;t.colorSpace=THREE.NoColorSpace;t.anisotropy=maxAniso;t.generateMipmaps=true;t.minFilter=THREE.LinearMipmapLinearFilter;tick();res(t)},undefined,rej))}
+const varCache={};
+const BLACK=(()=>{const t=new THREE.DataTexture(new Uint8Array(4),1,1);t.needsUpdate=true;return t})();
+// live flicker: per group (fire, lantern, candle) multiplier minus one; the baked share maps say how much of each
+// texel's light that group supplies
+const FK=new THREE.Vector3(),FKU={value:FK};
+async function loadVariant(v){
+  if(varCache[v])return varCache[v];
+  const sfx=SMALL?'_h':'';
+  const pages=Promise.all([...Array(META.pages).keys()].map(p=>loadTex(`${v}_p${p}${sfx}.webp`)));
+  const bg=loadTex(`${v}_bg.webp`).then(t=>{t.flipY=true;t.needsUpdate=true;t.wrapS=THREE.RepeatWrapping;return t});
+  const probes=Promise.all(Object.keys(META.probes).map(k=>hdrLoader.loadAsync(ASSET(`probes/${v}_${k}.hdr`)).then(t=>{t.mapping=THREE.EquirectangularReflectionMapping;const e=pmrem.fromEquirectangular(t).texture;t.dispose();tick();return [k,e]})));
+  const room=META.room?loadRoom(v):null;
+  const flick=Promise.all([...Array(META.pages).keys()].map(p=>META.flicker?(SMALL?loadTex(`${v}_f${p}_h.webp`).catch(()=>loadTex(`${v}_f${p}.webp`)):loadTex(`${v}_f${p}.webp`)).catch(()=>BLACK):BLACK));
+  varCache[v]={pages:await pages,bg:await bg,probes:Object.fromEntries(await probes),room:await room,flick:await flick};
+  return varCache[v];
+}
+const DECODE=`vec3 dec(vec3 c){vec3 t=pow(max(c,vec3(0.)),vec3(2.2));return t/max(1.-t,vec3(.004));}`;
+// room reflection probe: 8-bit encoded equirect -> half-float -> PMREM (rows flipped like the HDR probes)
+const HALF=(()=>{const h=new Uint16Array(256);for(let i=0;i<256;i++){const t=Math.pow(i/255,2.2);h[i]=THREE.DataUtils.toHalfFloat(t/Math.max(1-t,.004))}return h})();
+async function loadRoom(v){const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=ASSET(`${v}_room.webp`)});
+  const W=img.width,H=img.height,[c,g]=canvas(W,H);g.drawImage(img,0,0);const px=g.getImageData(0,0,W,H).data,out=new Uint16Array(W*H*4),one=THREE.DataUtils.toHalfFloat(1);
+  for(let y=0;y<H;y++){const r=(H-1-y)*W*4,o=y*W*4;for(let x=0;x<W*4;x+=4){out[o+x]=HALF[px[r+x]];out[o+x+1]=HALF[px[r+x+1]];out[o+x+2]=HALF[px[r+x+2]];out[o+x+3]=one}}
+  const t=new THREE.DataTexture(out,W,H,THREE.RGBAFormat,THREE.HalfFloatType);t.mapping=THREE.EquirectangularReflectionMapping;t.magFilter=t.minFilter=THREE.LinearFilter;t.needsUpdate=true;
+  const e=pmrem.fromEquirectangular(t).texture;t.dispose();tick();return e}
+const bakedMats=[];
+function bakedMaterial(tex){
+  const m=new THREE.ShaderMaterial({uniforms:{a:{value:tex},b:{value:tex},k:{value:0},gain:{value:1}},
+    vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+    fragmentShader:`uniform sampler2D a,b;uniform float k,gain;varying vec2 vUv;${DECODE}
+      void main(){vec3 x=dec(texture2D(a,vUv).rgb);if(k>0.)x=mix(x,dec(texture2D(b,vUv).rgb),k);gl_FragColor=vec4(x*gain,1.);
+      #include <tonemapping_fragment>
+      #include <colorspace_fragment>
+      }`});
+  bakedMats.push(m);return m;
+}
+// Scene materials by class (see bake.py): albedo texture x atlas irradiance, or the atlas alone, plus box-projected
+// room reflections scaled by how much light the atlas says reaches the point.
+const ROOM=META.room?{p:VA(META.room.p),min:VA(META.room.min),max:VA(META.room.max)}:null;
+const ALB={},RGH={};
+function loadRep(n,cs){return new Promise((res,rej)=>texLoader.load(ASSET(n),t=>{t.flipY=false;t.colorSpace=cs;t.wrapS=t.wrapT=THREE.RepeatWrapping;
+  t.anisotropy=maxAniso;t.generateMipmaps=true;t.minFilter=THREE.LinearMipmapLinearFilter;res(t)},undefined,rej))}
+async function loadAlb(k){[ALB[k],RGH[k]]=await Promise.all([loadRep(`tex/${k}${SMALL?'_h':''}.webp`,THREE.SRGBColorSpace),loadRep(`tex/${k}_r.webp`,THREE.NoColorSpace)]);tick()}
+function cubeDefs(t){const H=t.image.height,mm=Math.log2(H)-2;return {ENVMAP_TYPE_CUBE_UV:'',CUBEUV_TEXEL_WIDTH:1/(3*Math.max(Math.pow(2,mm),112)),CUBEUV_TEXEL_HEIGHT:1/H,CUBEUV_MAX_MIP:mm.toFixed(1)}}
+const SCENE_VS=`
+#ifndef USE_UV1
+attribute vec2 uv1;
+#endif
+varying vec2 vUv,vUv1;varying vec3 vPos,vNrm;
+void main(){vUv=uv;vUv1=uv1;vec4 w=modelMatrix*vec4(position,1.);vPos=w.xyz;vNrm=normalize(mat3(modelMatrix)*normal);gl_Position=projectionMatrix*viewMatrix*w;}`;
+const SCENE_FS=`uniform sampler2D a,b,alb,rgh,envA,envB,fa,fb;uniform float k,gain,rough0,spec,coat,coatRough,albL;uniform vec2 psz;uniform vec3 fk;
+uniform vec3 tint,f0c,roomP,roomMin,roomMax;varying vec2 vUv,vUv1;varying vec3 vPos,vNrm;
+#include <common>
+#include <cube_uv_reflection_fragment>
+${DECODE}
+vec4 cubicW(float v){vec4 n=vec4(1.,2.,3.,4.)-v;vec4 s=n*n*n;float x=s.x,y=s.y-4.*s.x,z=s.z-4.*s.y+6.*s.x;return vec4(x,y,z,6.-x-y-z)*(1./6.);}
+// magnified atlas: B-spline bicubic hides the texel grid; minified: mip level capped so islands do not bleed
+vec3 lmap(sampler2D t,vec2 uv,float lod){vec3 lin=textureLod(t,uv,lod).rgb;
+#ifdef BICUBIC
+  if(lod<1.){vec2 inv=1./psz;vec2 p=uv*psz-.5,f=fract(p);p-=f;vec4 xc=cubicW(f.x),yc=cubicW(f.y);
+    vec4 c=p.xxyy+vec2(-.5,1.5).xyxy;vec4 s=vec4(xc.xz+xc.yw,yc.xz+yc.yw);vec4 o=(c+vec4(xc.yw,yc.yw)/s)*inv.xxyy;
+    vec3 s0=textureLod(t,o.xz,0.).rgb,s1=textureLod(t,o.yz,0.).rgb,s2=textureLod(t,o.xw,0.).rgb,s3=textureLod(t,o.yw,0.).rgb;
+    float sx=s.x/(s.x+s.y),sy=s.z/(s.z+s.w);vec3 bc=mix(mix(s3,s2,sx),mix(s1,s0,sx),sy);return mix(bc,lin,clamp(lod*2.-1.,0.,1.));}
+#endif
+  return lin;}
+vec2 dfgA(float NoV,float r){const vec4 c0=vec4(-1.,-.0275,-.572,.022),c1=vec4(1.,.0425,1.04,-.04);vec4 q=r*c0+c1;float x=min(q.x*q.x,exp2(-9.28*NoV))*q.x+q.y;return vec2(-1.04,1.04)*x+q.zw;}
+vec3 boxDir(vec3 R){vec3 m=max((roomMax-vPos)/R,(roomMin-vPos)/R);float t=min(min(m.x,m.y),m.z);return normalize(vPos+R*max(t,0.)-roomP);}
+vec3 env(vec3 d,float r){vec3 e=textureCubeUV(envA,d,r).rgb;if(k>0.)e=mix(e,textureCubeUV(envB,d,r).rgb,k);return e;}
+float lum(vec3 c){return dot(c,vec3(.2126,.7152,.0722));}
+void main(){
+  vec3 N=normalize(vNrm),V=normalize(cameraPosition-vPos);float NoV=clamp(dot(N,V),1e-3,1.);
+  vec2 g=vUv1*psz,dx=dFdx(g),dy=dFdy(g);float lod=clamp(.5*log2(max(max(dot(dx,dx),dot(dy,dy)),1e-8)),0.,3.);
+  vec3 L=dec(lmap(a,vUv1,lod));if(k>0.)L=mix(L,dec(lmap(b,vUv1,lod)),k);
+  vec3 dn=max(abs(dFdx(N)),abs(dFdy(N)));float r=rough0;vec3 base=vec3(1.);
+#if defined(CLS_TEX)||defined(CLS_MTEX)
+  base=texture2D(alb,vUv).rgb*tint;r=texture2D(rgh,vUv).g;
+#endif
+  r=min(max(r,.0525)+max(max(dn.x,dn.y),dn.z),1.);
+  vec3 R=reflect(-V,N);vec3 E=env(normalize(mix(boxDir(R),R,r*r)),r);vec2 ab=dfgA(NoV,r);
+#if defined(CLS_MTEX)
+  vec3 F0=base;
+#elif defined(CLS_METAL)
+  vec3 F0=f0c;
+#else
+  vec3 F0=vec3(.08*spec);
+#endif
+  vec3 Fs=F0*ab.x+ab.y;
+#ifdef CLS_BAKED
+  float irr=lum(L)/max(albL,.05);
+#else
+  float irr=lum(L);
+#endif
+  float so=clamp(irr/max(lum(env(N,1.)),1e-4),0.,1.3);
+#if defined(CLS_MTEX)||defined(CLS_METAL)
+  vec3 col=E*Fs*so;
+#else
+  vec3 col=base*L*(1.-Fs)+E*Fs*so;
+#endif
+  if(coat>0.){float cr=max(coatRough,.03);vec2 cab=dfgA(NoV,cr);float cF=(.04*cab.x+cab.y)*coat;col=col*(1.-cF)+env(normalize(mix(boxDir(R),R,cr*cr)),cr)*cF*so;}
+  vec3 sh=texture2D(fa,vUv1).rgb;if(k>0.)sh=mix(sh,texture2D(fb,vUv1).rgb,k);col*=1.+dot(fk,sh);
+  gl_FragColor=vec4(col*gain,1.);
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
+}`;
+const sceneMats={};
+function sceneMaterial(k,V0){if(sceneMats[k])return sceneMats[k];const d=META.mats[k],page=V0.pages[d.page],env=V0.room;
+  const defines={...cubeDefs(env),['CLS_'+d.cls.toUpperCase()]:''};if(!SMALL)defines.BICUBIC='';
+  const m=new THREE.ShaderMaterial({defines,vertexShader:SCENE_VS,fragmentShader:SCENE_FS,uniforms:{a:{value:page},b:{value:page},k:{value:0},gain:{value:1},
+    psz:{value:new THREE.Vector2(page.image.width,page.image.height)},alb:{value:d.tex?ALB[d.tex]:null},rgh:{value:d.tex?RGH[d.tex]:null},envA:{value:env},envB:{value:env},
+    tint:{value:new THREE.Color(...(d.tint||[1,1,1]))},f0c:{value:new THREE.Color(...(d.f0||[1,1,1]))},rough0:{value:d.rough??.6},spec:{value:d.spec??.5},
+    coat:{value:d.coat||0},coatRough:{value:d.coatRough??.1},albL:{value:d.albL??.5},roomP:{value:ROOM.p},roomMin:{value:ROOM.min},roomMax:{value:ROOM.max},
+    fa:{value:V0.flick[d.page]},fb:{value:V0.flick[d.page]},fk:FKU}});
+  m.userData.page=d.page;bakedMats.push(m);return sceneMats[k]=m}
+const skyMat=new THREE.ShaderMaterial({uniforms:{a:{value:null},b:{value:null},k:{value:0},gain:{value:1}},side:THREE.BackSide,depthWrite:false,
+  vertexShader:`varying vec3 vDir;void main(){vDir=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+  fragmentShader:`uniform sampler2D a,b;uniform float k,gain;varying vec3 vDir;${DECODE}
+    void main(){vec3 d=normalize(vDir);vec2 uv=vec2(atan(d.z,d.x)*0.15915494+.5,asin(clamp(d.y,-1.,1.))*0.31830989+.5);
+    vec3 x=dec(texture2D(a,uv).rgb);if(k>0.)x=mix(x,dec(texture2D(b,uv).rgb),k);gl_FragColor=vec4(x*gain,1.);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+    }`});
+const sky=new THREE.Mesh(new THREE.SphereGeometry(60,48,24),skyMat);sky.renderOrder=-1;scene.add(sky);
+
+loadT=META.pages+1+Object.keys(META.probes).length+DATA.books.length+2+(META.room?1:0)+Object.keys(META.texs||{}).length+(META.hands?.length?1:0)+(META.hearth?4:0);
+const draco=new DRACOLoader().setDecoderPath(window.__DRACO__||'/study/lib/draco/');
+const gltfLoader=new GLTFLoader().setDRACOLoader(draco);
+const loadGLB=n=>new Promise((res,rej)=>gltfLoader.load(ASSET(n),g=>{tick();res(g)},undefined,rej));
+const HEARTH=META.hearth&&CFG.hearth?Promise.all([loadGLB('hearth.glb'),...['f','m','e'].map(k=>loadTex(`hearth_${k}${SMALL?'_h':''}.webp`))]).catch(()=>null):null;
+let HEARTH_U=null;
+const [VAR0,glb,cut,live]=await Promise.all([loadVariant(variant),loadGLB('scene.glb'),META.cutouts?.length?loadGLB('cutouts.glb').catch(()=>null):null,
+  META.hands?.length?loadGLB('live.glb').catch(()=>null):null,...Object.keys(META.texs||{}).map(loadAlb)]);
+const V2=!!(META.mats&&ROOM&&VAR0.room);
+const pageMats=V2?[]:VAR0.pages.map((t,i)=>{const m=bakedMaterial(t);m.userData.page=i;return m});
+const bakedMeshes=[];
+glb.scene.traverse(o=>{if(o.isMesh){const n=o.material.name;o.material.dispose();
+  o.material=V2?sceneMaterial(+(/M(\d+)/.exec(n)?.[1]??0),VAR0):pageMats[+(/P(\d+)/.exec(n)?.[1]??0)];
+  o.matrixAutoUpdate=false;o.updateMatrix();o.castShadow=true;bakedMeshes.push(o)}});
+scene.add(glb.scene);
+// the hearth's own logs and coals replace whatever the bake left inside the firebox: drop triangles lying wholly inside it
+if(HEARTH&&await HEARTH){const [hw,,y1,z]=CFG.hearth.open,fb=new THREE.Box3(V(-hw+.005,.03,z-.235),V(hw-.005,y1-.005,z-.005)),bx=new THREE.Box3(),v=V();
+  glb.scene.updateMatrixWorld(true);
+  for(const o of bakedMeshes){bx.setFromObject(o);const g=o.geometry,I=g.index;if(!I||!bx.intersectsBox(fb))continue;
+    const P=g.attributes.position,inn=new Uint8Array(P.count);for(let i=0;i<P.count;i++)inn[i]=fb.containsPoint(v.fromBufferAttribute(P,i).applyMatrix4(o.matrixWorld));
+    const keep=[];for(let t=0;t<I.count;t+=3){const a=I.getX(t),b=I.getX(t+1),c=I.getX(t+2);if(!(inn[a]&&inn[b]&&inn[c]))keep.push(a,b,c)}
+    if(keep.length<I.count){if(keep.length)g.setIndex(keep);else o.visible=false}}}
+skyMat.uniforms.a.value=skyMat.uniforms.b.value=VAR0.bg;
+
+// probes (scene-linear, same units as the atlases) light every live object
+const PROBES=Object.fromEntries(Object.entries(META.probes).map(([k,v])=>[k,VA(v)]));
+const nearestProbe=(p,keys=Object.keys(PROBES))=>keys.reduce((a,k)=>PROBES[k].distanceToSquared(p)<PROBES[a].distanceToSquared(p)?k:a,keys[0]);
+const VIEW_PROBES=Object.keys(PROBES).filter(k=>!/^c\d+$/.test(k));
+const probeUsers=[];
+function useProbe(mat,key){mat.envMap=varCache[variant].probes[key];mat.envMapIntensity=1;mat.userData.probe=key;probeUsers.push(mat);mat.needsUpdate=true}
+// stained glass: multiplies whatever is behind it (sky) by its tint
+const glassKey=o=>{for(let p=o;p;p=p.parent){const k=Object.keys(META.glass||{}).find(k=>k===p.name||k.replace(/[^\w-]/g,'')===p.name);if(k)return k}return null};
+const GLASS=[];
+if(cut){const clear=[];cut.scene.traverse(o=>{if(!o.isMesh)return;const gk=glassKey(o);
+  if(gk){if(!/W3/.test(gk)){o.layers.enable(5);GLASS.push(o)}o.material=new THREE.MeshBasicMaterial({color:new THREE.Color(...META.glass[gk]),transparent:true,blending:THREE.MultiplyBlending,premultipliedAlpha:true,depthWrite:false,side:THREE.DoubleSide,toneMapped:false});o.renderOrder=2;if(Math.min(...META.glass[gk])>.85)clear.push(o);return}
+  const p=new THREE.Box3().setFromObject(o).getCenter(V());const ms=Array.isArray(o.material)?o.material:[o.material];
+  for(const m of ms){if(m.transparent&&m.opacity<.9){m.depthWrite=false}else if(m.alphaMap||m.map){m.alphaTest=.5;m.alphaToCoverage=true;m.transparent=false}useProbe(m,nearestProbe(p))}});
+  // clear panes add the room's reflection on top of their tint, so a glazed door reads as glass rather than a gap
+  for(const o of clear){const m=new THREE.MeshStandardMaterial({color:0,roughness:.05,metalness:0,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false});
+    useProbe(m,nearestProbe(new THREE.Box3().setFromObject(o).getCenter(V())));const r=new THREE.Mesh(o.geometry,m);r.renderOrder=3;o.add(r)}
+  scene.add(cut.scene)}
+
+// ------------------------------------------------------------------ live books
+const loadImg=src=>new Promise(res=>{const i=new Image();i.decoding='async';i.onload=()=>{tick();res(i)};i.onerror=()=>{tick();res(null)};i.src=src});
+const imgs=await Promise.all(DATA.books.map(b=>loadImg(coverURL(b.id))));await FONTS;
+const IMG=Object.fromEntries(DATA.books.map((b,i)=>[b.id,imgs[i]]));
+function avgColor(img,x0=0,w=1){const [c,g]=canvas(1,1);g.drawImage(img,img.width*x0,0,img.width*w,img.height,0,0,1,1);return g.getImageData(0,0,1,1).data}
+function shrink(img,w){const h=Math.round(w*img.height/img.width);const [c,g]=canvas(w,h);g.drawImage(img,0,0,w,h);return c}
+function spineTex(b,img,t,h,n){const W=128,H=Math.min(1024,Math.round(W*h/(t*1.15)));const [c,g]=canvas(W,H);
+  // wraparound art: the cover's leading edge at the spine's own proportions, softened so no cover lettering shows
+  const sw=img?Math.min(img.width*.5,img.height*W/H):0;
+  if(img){const [s,sg]=canvas(16,Math.max(8,Math.round(16*H/W)));sg.drawImage(img,0,0,sw,img.height,0,0,s.width,s.height);g.imageSmoothingQuality='high';g.drawImage(s,0,0,W,H);noise(g,W,H,9)}
+  else{g.fillStyle='#3a2a20';g.fillRect(0,0,W,H)}
+  const a=img?avgColor(img,0,sw/img.width):[60,40,30];const lum=(.299*a[0]+.587*a[1]+.114*a[2])/255;
+  const gr=g.createLinearGradient(0,0,W,0);gr.addColorStop(0,'rgba(0,0,0,.45)');gr.addColorStop(.18,'rgba(0,0,0,.08)');gr.addColorStop(.5,'rgba(255,245,230,.07)');gr.addColorStop(.82,'rgba(0,0,0,.08)');gr.addColorStop(1,'rgba(0,0,0,.5)');g.fillStyle=gr;g.fillRect(0,0,W,H);
+  const ink=lum>.55?'#1b1612':'#f4ead6';g.fillStyle=ink;g.shadowColor=lum>.55?'rgba(255,255,255,.3)':'rgba(0,0,0,.7)';g.shadowBlur=4;
+  // lettering in bands between the gilt rules: title .13-.75 of the height, surname .8-.97, each shrunk to fit its band
+  const fit=(txt,font,size,max,min)=>{while(size>min){g.font=font(size);if(g.measureText(txt).width<=max)break;size-=1}g.font=font(size)};
+  g.save();g.translate(W/2,H*.44);g.rotate(Math.PI/2);fit(b.title,s=>`600 ${s}px "Cormorant Garamond", Georgia, serif`,W*.4,H*.6,9);g.textAlign='center';g.textBaseline='middle';g.fillText(b.title,0,0);g.restore();
+  const s=SERIES[b.series];const sur=(s?.author||'').split('&')[0].trim().split(' ').pop().toUpperCase(),spaced=sur.split('').join(String.fromCharCode(8202));
+  g.save();g.translate(W/2,H*.885);g.rotate(Math.PI/2);const ff=s=>`500 ${s}px "Libre Franklin", sans-serif`;fit(spaced,ff,W*.2,H*.17,7);const sl=g.measureText(spaced).width<=H*.17?spaced:sur;fit(sl,ff,W*.2,H*.17,7);
+  g.textAlign='center';g.textBaseline='middle';g.fillText(sl,0,0);g.restore();
+  g.font=`600 ${W*.3}px "Cormorant Garamond", Georgia, serif`;g.textAlign='center';g.textBaseline='middle';g.fillText(String(n),W/2,H*.07);
+  g.shadowBlur=0;g.fillStyle=lum>.55?'rgba(40,30,20,.45)':'rgba(214,180,110,.75)';g.fillRect(W*.15,H*.115,W*.7,2);g.fillRect(W*.15,H*.78,W*.7,2);
+  return ctex(c)}
+function titlePage(b,n,N,h,d){const W=600,H=Math.round(W*h/d);const [c,g]=canvas(W,H);g.fillStyle='#efe5cf';g.fillRect(0,0,W,H);
+  const vg=g.createRadialGradient(W/2,H/2,H*.2,W/2,H/2,H*.75);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(120,90,40,.18)');g.fillStyle=vg;g.fillRect(0,0,W,H);
+  const s=SERIES[b.series];g.textAlign='center';g.textBaseline='alphabetic';
+  g.font='500 20px "Libre Franklin", sans-serif';g.fillStyle='#1e3a5f';g.fillText(s.name.toUpperCase().split('').join(' '),W/2,H*.16);
+  g.font='italic 400 26px "Cormorant Garamond", Georgia, serif';g.fillStyle='#6b5a44';g.fillText(`Book ${NUM[n-1]||n}`,W/2,H*.22);
+  g.fillStyle='#1d1813';const fs=86;const words=b.title.split(' ');const lines=[];let cur='';g.font=`600 ${fs}px "Cormorant Garamond", Georgia, serif`;for(const w of words){const t=cur?cur+' '+w:w;if(g.measureText(t).width>W*.78&&cur){lines.push(cur);cur=w}else cur=t}lines.push(cur);
+  lines.forEach((l,i)=>g.fillText(l,W/2,H*.4+i*fs*.98-(lines.length-1)*fs*.45));
+  g.strokeStyle='#8a6d3b';g.lineWidth=1.5;const oy=H*.58;g.beginPath();g.moveTo(W/2-90,oy);g.lineTo(W/2-12,oy);g.moveTo(W/2+12,oy);g.lineTo(W/2+90,oy);g.stroke();g.beginPath();g.moveTo(W/2,oy-8);g.lineTo(W/2+8,oy);g.lineTo(W/2,oy+8);g.lineTo(W/2-8,oy);g.closePath();g.fillStyle='#8a6d3b';g.fill();
+  g.fillStyle='#3b3128';g.font='italic 400 34px "Cormorant Garamond", Georgia, serif';g.fillText(s.author,W/2,H*.67);
+  g.font='500 15px "Libre Franklin", sans-serif';g.fillStyle='#7d6b55';g.fillText(`ISBN ${b.isbn}`,W/2,H*.9);g.fillText(`${n} of ${N} on the shelf`,W/2,H*.93);
+  noise(g,W,H,8);return ctex(c)}
+function exLibrisTex(){const W=420,H=640,[c,g]=canvas(W,H);g.fillStyle='#1f3247';g.fillRect(0,0,W,H);
+  g.strokeStyle='rgba(214,180,110,.55)';g.lineWidth=2;g.strokeRect(24,24,W-48,H-48);g.strokeRect(34,34,W-68,H-68);
+  g.fillStyle='rgba(214,180,110,.8)';g.textAlign='center';g.font='italic 400 30px "Cormorant Garamond", Georgia, serif';g.fillText('Ex Libris',W/2,H*.45);
+  g.font='600 40px "Cormorant Garamond", Georgia, serif';g.fillText('N · N',W/2,H*.56);noise(g,W,H,10);return ctex(c)}
+function pagesTex(){const [c,g]=canvas(256,64);g.fillStyle='#e8dcc0';g.fillRect(0,0,256,64);for(let x=0;x<256;x++){g.fillStyle=`rgba(110,85,50,${rr(.02,.16)})`;g.fillRect(x,0,1,64)}return ctex(c)}
+const M_end=new THREE.MeshStandardMaterial({map:exLibrisTex(),roughness:.85});
+const M_paper=new THREE.MeshStandardMaterial({color:0xefe5cf,roughness:.9});
+const M_edge=new THREE.MeshStandardMaterial({map:pagesTex(),roughness:.92});
+const sharedProbeMats=[M_end,M_paper,M_edge];
+
+const books=[];const pickables=[];
+const ORDER=DATA.series.map(s=>s.id);
+for(const mb of META.books){
+  const b=BOOK[mb.id];if(!b)continue;const list=BY_SERIES[b.series];const n=list.indexOf(b)+1,N=list.length;
+  const t=mb.t,h=mb.h,d=mb.d,bt=.0028,ov=.003,bulge=Math.min(.008,t*.18);const img=IMG[b.id];
+  const a=img?avgColor(img):[80,60,40];const base=new THREE.Color(`rgb(${a[0]},${a[1]},${a[2]})`);
+  const lo=img?ctex(shrink(img,Math.min(img.width,SMALL?200:360))):null;
+  const cover=SMALL?new THREE.MeshStandardMaterial({map:lo,roughness:.34}):new THREE.MeshPhysicalMaterial({map:lo,roughness:.38,clearcoat:.25,clearcoatRoughness:.3});
+  const edge=new THREE.MeshStandardMaterial({color:base.clone().multiplyScalar(.5),roughness:.55});
+  const back=new THREE.MeshStandardMaterial({color:base.clone().multiplyScalar(.42),roughness:.5});
+  const spine=SMALL?new THREE.MeshStandardMaterial({map:spineTex(b,img,t,h,n),roughness:.37,side:THREE.DoubleSide}):new THREE.MeshPhysicalMaterial({map:spineTex(b,img,t,h,n),roughness:.4,clearcoat:.2,side:THREE.DoubleSide});
+  const page=new THREE.MeshStandardMaterial({color:0xefe5cf,roughness:.9});
+  const g=new THREE.Group();
+  const boardGeo=new THREE.BoxGeometry(bt,h,d);
+  const backB=new THREE.Mesh(boardGeo,[M_end,back,edge,edge,edge,edge]);backB.position.x=-t/2+bt/2;
+  const pivot=new THREE.Group();pivot.position.set(t/2-bt/2,0,d/2);
+  const front=new THREE.Mesh(boardGeo,[cover,M_end,edge,edge,edge,edge]);front.position.z=-d/2;pivot.add(front);
+  const pages=new THREE.Mesh(new THREE.BoxGeometry(t-2*bt,h-2*ov,d-ov),[page,M_paper,M_edge,M_edge,M_paper,M_edge]);pages.position.z=ov/2;
+  const sg=new THREE.CylinderGeometry(1,1,h,18,1,true,-Math.PI/2,Math.PI);sg.scale(t/2,1,bulge);
+  const sp=new THREE.Mesh(sg,spine);sp.position.z=d/2;
+  g.add(backB,pivot,pages,sp);
+  g.position.fromArray(mb.p);g.quaternion.set(...mb.q);scene.add(g);g.traverse(m=>{if(m.isMesh)m.receiveShadow=true});
+  const mats=[cover,edge,back,spine,page];
+  for(const m of mats)useProbe(m,mb.probe);
+  const outL=mb.out==='z'?V(0,0,1):V(1,0,0);
+  const e={b,n,N,sid:b.series,g,pivot,front,cover,page,mats,lo,t,h,d,probe:mb.probe,out:mb.out,outW:outL.clone().applyQuaternion(g.quaternion),
+    home:{p:g.position.clone(),q:g.quaternion.clone()},hover:0,state:'shelf',hi:null};
+  for(const m of [backB,front,pages,sp]){m.userData.entry=e;pickables.push(m)}
+  books.push(e);
+}
+for(const m of sharedProbeMats)useProbe(m,nearestProbe(books[0]?.home.p||V()));
+books.sort((x,y)=>ORDER.indexOf(x.sid)-ORDER.indexOf(y.sid)||x.n-y.n);
+const SERIES_ORDER=ORDER.filter(s=>books.some(e=>e.sid===s));
+
+// ------------------------------------------------------------------ fire, candles, flicker
+const fx=new THREE.Group();scene.add(fx);const FXN={};
+const flameU={time:{value:0},inten:{value:1}};
+// smooth 1D value noise in [-1, 1]
+const FLN=(()=>{const H=i=>{const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x)};return x=>{const i=Math.floor(x),f=x-i,u=f*f*(3-2*f);return (H(i)*(1-u)+H(i+1)*u)*2-1}})();
+const FAMP=REDUCE?.3:1;
+const flick={fire:1,lantern:1,candle:1};
+function flicker(t){const flare=Math.max(0,FLN(t*.29+50)-.5)*.7,fe=fire?.cards.length?fire.energy(t):null;
+  flick.fire=1+FAMP*(fe!=null?.55*Math.max(-.4,Math.min(.4,fe-1))+.03*FLN(t*9.3+3):.12*FLN(t*1.1)+.07*FLN(t*3.7+7)+.035*FLN(t*9.3+3)+flare);
+  flick.lantern=1+FAMP*(.045*FLN(t*1.9+20)+.025*FLN(t*6.1+40));
+  const gust=Math.max(0,FLN(t*.17+90)-.55)*2.2;
+  flick.candle=1+FAMP*(.05*FLN(t*2.7+60)+.035*FLN(t*8.9+80)-.25*gust*(.6+.4*FLN(t*13+5)));
+  FK.set(flick.fire-1,flick.lantern-1,flick.candle-1)}
+const NZ=(()=>{const N=64,d=new Uint8Array(N*N*N);for(let i=0;i<d.length;i++)d[i]=rnd()*256|0;const t=new THREE.Data3DTexture(d,N,N,N);
+  t.format=THREE.RedFormat;t.minFilter=t.magFilter=THREE.LinearFilter;t.wrapS=t.wrapT=t.wrapR=THREE.RepeatWrapping;t.unpackAlignment=1;t.needsUpdate=true;return t})();
+const BB_GLSL=`vec3 bb(float t){t=clamp(t,0.,1.);vec3 c=mix(vec3(.5,.04,.005),vec3(1.,.3,.04),smoothstep(0.,.35,t));c=mix(c,vec3(1.,.6,.16),smoothstep(.3,.62,t));
+  c=mix(c,vec3(1.,.85,.52),smoothstep(.6,.88,t));return mix(c,vec3(1.,.96,.88),smoothstep(.88,1.,t));}
+float ign(vec2 p){return fract(52.9829189*fract(dot(p,vec2(.06711056,.00583715))));}`;
+// value noise from a random 3D texture: smoothstepped coordinates make hardware trilinear filtering C1
+const NOISE_GLSL=`uniform highp sampler3D nz;
+float vn(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return textureLod(nz,(i+f+.5)/64.,0.).r;}
+vec2 h22(vec2 p){p=vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3)));return fract(sin(p)*43758.5453);}
+vec3 vor(vec2 x){vec2 n=floor(x),f=fract(x);float d1=8.,d2=8.;vec2 c=vec2(0.);
+  for(int j=-1;j<=1;j++)for(int i=-1;i<=1;i++){vec2 g=vec2(i,j),r=g+h22(n+g)-f;float d=dot(r,r);if(d<d1){d2=d1;d1=d;c=n+g;}else if(d<d2)d2=d;}
+  return vec3(sqrt(d2)-sqrt(d1),h22(c+.37));}
+${BB_GLSL}`;
+const HC=CFG.hearth;
+let fire=null;const fireUs=[];
+if(HC){
+  // flames: a looping Mantaflow fire flipbook (blender/scripts/firesim.py), greyscale intensity coloured by the flame ramp.
+  // A full card in the middle and two smaller ones to either side, offset in time and mirrored, so tongues rise across
+  // the pile; each turns part way toward the camera. The flame base fades in above the top log, where the sim's
+  // densest flame would otherwise sit as a bright seam along the wood.
+  const FF=META.fireflip,U={time:flameU.time,inten:{value:1},gain:{value:2.6},fb:{value:BLACK},fr:{value:new THREE.Vector4()}};
+  const img=FF?await new Promise(res=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=ASSET(SMALL&&FF.half?'fire_flip_h.webp':'fire_flip.webp')}):null;
+  if(img){const [,g]=canvas(img.width,img.height);g.drawImage(img,0,0);const px=g.getImageData(0,0,img.width,img.height).data,r8=new Uint8Array(img.width*img.height);
+    for(let i=0;i<r8.length;i++)r8[i]=px[i*4];
+    const t=new THREE.DataTexture(r8,img.width,img.height,THREE.RedFormat,THREE.UnsignedByteType);t.unpackAlignment=1;t.generateMipmaps=true;
+    t.minFilter=THREE.LinearMipmapLinearFilter;t.magFilter=THREE.LinearFilter;t.needsUpdate=true;U.fb.value=t;U.fr.value.set(FF.cols,FF.rows,FF.n,FF.fps);
+    // per-frame emitted energy drives the room's firelight, so the light swells with the flames on screen
+    const tw=img.width/FF.cols,th=img.height/FF.rows,E=new Float32Array(FF.n);
+    for(let k=0;k<FF.n;k++){const c0=(k%FF.cols)*tw,r0=Math.floor(k/FF.cols)*th;let a=0;
+      for(let y=r0;y<r0+th;y+=2)for(let x=c0;x<c0+tw;x+=2){const v=r8[y*img.width+x]/255;a+=v*v}E[k]=a}
+    const mE=E.reduce((a,b)=>a+b,0)/FF.n;for(let k=0;k<FF.n;k++)E[k]/=mE;
+    const [x0,x1,y0,y1]=FF.rect,cards=[[0,0,1,0,0,1],[-.085,-.04,.74,31.,1,.6],[.09,-.02,.64,59.,0,.55]];
+    const geo=new THREE.PlaneGeometry(x1-x0,y1-y0);geo.translate(0,(y1-y0)/2,0);
+    const FR=REDUCE?.5:1,frame=(t,o)=>{const f=t*FF.fps*FR+o,k=Math.floor(f);return {k0:((k%FF.n)+FF.n)%FF.n,a:f-k}};
+    fire={U,cards:[],energy:t=>{let a=0,w=0;for(const c of fire.cards){const {k0,a:fa}=frame(t,c.off);a+=c.w*(E[k0]*(1-fa)+E[(k0+1)%FF.n]*fa);w+=c.w}return a/w}};
+    FXN.flames=new THREE.Group();fx.add(FXN.flames);
+    for(const [dx,dz,sc,off,mir,w] of cards){
+      const m=new THREE.Mesh(geo,new THREE.ShaderMaterial({uniforms:{...U,off:{value:off},mir:{value:mir},w:{value:w}},transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+        vertexShader:`varying vec2 vUv;varying float vY;void main(){vUv=uv;vec4 p=modelMatrix*vec4(position,1.);vY=p.y;gl_Position=projectionMatrix*viewMatrix*p;}`,
+        fragmentShader:`uniform sampler2D fb;uniform vec4 fr;uniform float time,inten,gain,off,mir,w;varying vec2 vUv;varying float vY;
+        vec3 fc(float t){vec3 c=mix(vec3(.3,.025,0.),vec3(1.,.2,.015),smoothstep(0.,.3,t));c=mix(c,vec3(1.,.45,.06),smoothstep(.25,.55,t));
+          c=mix(c,vec3(1.,.7,.2),smoothstep(.5,.8,t));return mix(c,vec3(1.,.87,.55),smoothstep(.82,1.,t));}
+        float tap(float k,vec2 uv){float c=mod(k,fr.x),r=floor(k/fr.x);return texture2D(fb,vec2((c+uv.x)/fr.x,(r+1.-uv.y)/fr.y)).r;}
+        void main(){vec2 uv=clamp(vec2(mir>.5?1.-vUv.x:vUv.x,vUv.y),.003,.997);float f=time*fr.w*${FR.toFixed(2)}+off,k=mod(floor(f),fr.z),a=fract(f);
+          float v=mix(tap(k,uv),tap(mod(k+1.,fr.z),uv),a);v*=v*(.3+.7*smoothstep(.27,.4,vY));
+          float t=clamp(v*(.9+.2*inten),0.,1.);
+          gl_FragColor=vec4(fc(t)*(.05*t+2.2*t*t*sqrt(t))*w*gain*inten,1.);}`}));
+      m.position.set((x0+x1)/2+dx,y0,FF.z+dz);m.scale.setScalar(sc);m.renderOrder=4;FXN.flames.add(m);fire.cards.push({m,off,w})}}
+  else fire={U,cards:[]};
+  fireUs.push(U);
+  // hearth (blender/scripts/hearth.py): logs on andirons over a coal pile and ash bed. The logs' atlas holds baked
+  // firelight and ambient light (room encoding) plus a glow mask for the char cracks; coals, ash and iron carry the same
+  // per vertex (r heat, g ash, b firelight, a ambient). Glow breathes on slow world-space noise.
+  const HT=HEARTH?await HEARTH:null;
+  if(HT){const [hg,tf,tm,te]=HT,H=META.hearth;
+    const HU={time:flameU.time,inten:{value:1},nz:{value:NZ},tf:{value:tf},tm:{value:tm},te:{value:te},enc:{value:new THREE.Vector4(...H.enc)},
+      amb:{value:new THREE.Color()},fc:{value:new THREE.Color(1.67,.87,.33)},flp:{value:V(0,.33,-4.19)},fg:{value:.04},gg:{value:1}};
+    fireUs.push(HU);HEARTH_U=HU;
+    const HVS=`attribute vec4 color;varying vec4 vC;varying vec2 vUv;varying vec3 vP,vN;
+      void main(){vC=color;vUv=uv;vec4 w=modelMatrix*vec4(position,1.);vP=w.xyz;vN=normalize(mat3(modelMatrix)*normal);gl_Position=projectionMatrix*viewMatrix*w;}`;
+    const HFS=`uniform sampler2D tf,tm,te;uniform vec4 enc;uniform vec3 amb,fc,flp;uniform float time,inten,fg,gg;varying vec4 vC;varying vec2 vUv;varying vec3 vP,vN;
+      ${NOISE_GLSL}${DECODE}
+      void main(){float slow=vn(vP*14.+vec3(0.,-time*.22,time*.05));
+      #if KIND==0
+        vec3 F=dec(texture2D(tf,vUv).rgb)/enc.x,A=dec(texture2D(tm,vUv).rgb)/enc.y;float g=texture2D(te,vUv).r;g*=g;
+        float e=g*(.3+.7*smoothstep(.2,.8,slow))*(.75+.25*vn(vP*55.+vec3(time*.4,0.,0.)));
+      #else
+        vec3 F=dec(vec3(vC.b))/enc.z*fc,A=dec(vec3(vC.a))/enc.w;float heat=vC.r,ash=vC.g;
+        #if KIND==1
+          vec3 an=abs(normalize(vN));vec2 q=an.y>max(an.x,an.z)?vP.xz:an.x>an.z?vP.zy:vP.xy;
+          vec3 v=vor(q*165.+vec2(vn(vP*60.),vn(vP*60.+3.))*1.2);
+          float br=.35+.65*smoothstep(.2,.75,vn(vec3(v.yz*37.,time*.3))*.6+slow*.4);
+          float e=min(heat*(smoothstep(.07,.0,v.x)*(.55+.45*v.y)+.4*smoothstep(.55,.9,v.z)*heat)*br*(1.-.85*ash),.7);
+        #elif KIND==2
+          float e=heat*(.12+smoothstep(.74,.92,vn(vP*420.))*(.4+.6*slow)*1.6)*(1.-.5*ash);
+        #else
+          float e=0.;
+        #endif
+      #endif
+        e*=.85+.15*inten;
+        vec3 col=F*fg*inten+A*amb+bb(.12+.6*e)*e*gg;
+      #if KIND==3
+        vec3 V=normalize(cameraPosition-vP),N=normalize(vN),L=flp-vP;float d2=dot(L,L);L*=inversesqrt(d2);
+        col+=fc*pow(max(dot(N,normalize(L+V)),0.),48.)*.004/d2*fg*inten*smoothstep(0.,.2,dot(N,L));
+      #endif
+        gl_FragColor=vec4(col,1.);}`;
+    const hmat=k=>new THREE.ShaderMaterial({uniforms:HU,defines:{KIND:k},vertexShader:HVS,fragmentShader:HFS});
+    // GLTFLoader suffixes repeated names (log_back -> log_back_1), so match on the prefix
+    const kind=n=>/^log/.test(n)?0:/^coal/.test(n)?1:/^ash/.test(n)?2:3;
+    hg.scene.traverse(o=>{if(o.isMesh){o.material=hmat(kind(o.name));o.matrixAutoUpdate=false;o.updateMatrix()}});
+    hg.scene.updateMatrixWorld(true);fx.add(hg.scene);FXN.hearth=hg.scene}
+  // sparks: velocity-stretched quads. Most rise toward the flue, some embers drift up slowly, a few pop out onto the hearth.
+  const NS=SMALL?28:60,sg=new THREE.InstancedBufferGeometry();
+  sg.setAttribute('position',new THREE.Float32BufferAttribute([-1,0,0,1,0,0,-1,1,0,1,1,0],3));sg.setIndex([0,1,2,2,1,3]);
+  const sd=new Float32Array(NS*4);for(let i=0;i<sd.length;i++)sd[i]=rnd();sg.setAttribute('seed',new THREE.InstancedBufferAttribute(sd,4));sg.instanceCount=NS;
+  const SU={time:flameU.time,inten:{value:1},pxs:{value:.001}};fireUs.push(SU);
+  const sm=new THREE.ShaderMaterial({uniforms:SU,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,
+    vertexShader:`attribute vec4 seed;uniform float time,inten,pxs;varying float vX,vA;varying vec3 vC;${BB_GLSL}
+    vec4 hh(vec4 s,float c){return fract(sin(s*vec4(12.9898,78.233,37.719,91.17)+c*vec4(1.37,2.41,3.17,4.73))*43758.5453);}
+    // typ 0 spark, 1 drifting ember, 2 pop
+    vec3 at(vec4 s,float typ,float a){
+      vec3 p0=vec3((s.x-.5)*.4,.2+s.y*.1,-4.2+(s.z-.5)*.1);
+      vec3 v=typ>1.5?vec3((s.x-.5)*.5,.55+s.y*.5,.45+s.z*.45):typ>.5?vec3((s.x-.5)*.06,.14+s.y*.14,-.02):vec3((s.x-.5)*.16,.5+s.w*.55,-.06);
+      vec3 g=vec3(0.,typ>1.5?-2.6:typ>.5?.04:.3,0.);
+      float wob=typ>1.5?0.:typ>.5?.05:.035,fq=typ>.5?.35:1.;
+      return p0+v*a+.5*g*a*a+vec3(sin(a*6.3*fq+s.w*40.),0.,cos(a*4.7*fq+s.y*30.))*wob*a;}
+    void main(){
+      float em=step(seed.y,.3),per=em>.5?2.8+seed.w*2.:1.6+seed.w*2.6,tt=time+seed.x*29.,cyc=floor(tt/per),age=tt-cyc*per;
+      vec4 s=hh(seed,cyc);float typ=em>.5?1.:step(.9,s.w)*2.,life=typ>1.5?.45+s.z*.35:typ>.5?1.4+s.z*1.2:.45+s.z*.8;
+      vec3 P1=at(s,typ,age),P0=at(s,typ,max(age-.018,0.));
+      if(age>life||s.x<.1||P1.y<.04||P1.z<-4.29){gl_Position=vec4(0.,0.,-2.,1.);return;}
+      vec4 v1=viewMatrix*vec4(P1,1.),v0=viewMatrix*vec4(P0,1.);
+      vec2 d=v1.xy-v0.xy;float L=length(d);vec2 ax=L>1e-6?d/L:vec2(0.,1.),nx=vec2(-ax.y,ax.x);
+      float w=max(.0007,1.1*pxs*-v1.z);
+      vec3 p=mix(v0.xyz,v1.xyz,position.y);p.xy+=nx*position.x*w+ax*(position.y*2.-1.)*w;
+      float k=age/life,hot=(1.-k*.85)*(typ>.5&&typ<1.5?.7:1.);vX=position.x;vA=smoothstep(0.,.06,age)*(1.-k*k)*min(1.,.0011/w);
+      vC=bb(.3+.45*hot)*(2.+5.*hot*hot)*inten*(.75+.25*sin(age*(typ>.5&&typ<1.5?9.:37.)+s.y*20.));
+      gl_Position=projectionMatrix*vec4(p,1.);}`,
+    fragmentShader:`varying float vX,vA;varying vec3 vC;void main(){gl_FragColor=vec4(vC*vA*(1.-vX*vX),1.);}`});
+  const sparks=new THREE.Mesh(sg,sm);sparks.frustumCulled=false;sparks.renderOrder=5;fx.add(sparks);FXN.sparks=sparks;fire.SU=SU;sparks.visible=!REDUCE;
+}
+// legacy card flames for scenes without a hearth description
+const fireMat=new THREE.ShaderMaterial({uniforms:{...flameU,seed:{value:0}},transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,
+  vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+  fragmentShader:`uniform float time,inten,seed;varying vec2 vUv;
+    float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+    float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
+    float fb(vec2 p){float s=0.,a=.5;for(int i=0;i<4;i++){s+=a*n(p);p*=2.03;a*=.5;}return s;}
+    void main(){vec2 uv=vUv;float t=time*1.6+seed*7.;
+      float w=fb(vec2(uv.x*3.+seed,uv.y*3.-t*1.8))-.5;
+      float x=abs(uv.x-.5+w*.35*uv.y);
+      float prof=pow(1.-uv.y,.9)*sin(min(uv.y,.5)*3.14159)*.5+(1.-uv.y)*.05;
+      float m=clamp((prof-x)*9.,0.,1.)*clamp((1.-uv.y)*1.6,0.,1.);
+      m*=.75+.5*fb(vec2(uv.x*6.,uv.y*4.-t*2.5));
+      vec3 c=mix(vec3(1.,.82,.35),mix(vec3(1.,.33,.04),vec3(.9,.05,0.),smoothstep(.45,1.,uv.y)),smoothstep(0.,.45,uv.y));
+      gl_FragColor=vec4(c*m*inten*4.,1.);}`});
+const glowTex=(()=>{const [c,g]=canvas(64,64);const gr=g.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.25,'rgba(255,220,170,.55)');gr.addColorStop(1,'rgba(255,170,90,0)');g.fillStyle=gr;g.fillRect(0,0,64,64);const t=new THREE.CanvasTexture(c);return t})();
+// candle flames: camera-facing teardrop (yaw only) with a dark zone over the wick and a blue root, plus a soft halo
+const CANDLE_VS=`uniform vec3 base;uniform vec2 size;uniform float sway,stretch;varying vec2 vQ;
+  void main(){vec3 tc=cameraPosition-base;vec3 r=normalize(vec3(tc.z,0.,-tc.x));float h=size.y*stretch;vQ=vec2((uv.x-.5)*4.4,uv.y*1.7-.25);
+    vec3 p=base+r*((uv.x-.5)*size.x*2.2+sway*size.x*max(vQ.y,0.)*max(vQ.y,0.)*.9)+vec3(0.,vQ.y*h,0.);gl_Position=projectionMatrix*viewMatrix*vec4(p,1.);}`;
+const CANDLE_FS=`uniform float inten;varying vec2 vQ;
+  void main(){float X=vQ.x,Y=vQ.y;
+    float body=smoothstep(1.,.55,length(vec2(X,(Y-.3)/(Y>.3?.72:.3))));
+    float core=smoothstep(1.,.25,length(vec2(X*1.45,(Y-.4)/(Y>.4?.5:.28))));
+    float dark=smoothstep(.55,0.,length(vec2(X*1.5,(Y-.1)/.2)));
+    float blue=smoothstep(1.,.6,length(vec2(X,(Y-.3)/.3)))*smoothstep(.38,.02,Y)*smoothstep(-.05,.1,Y);
+    gl_FragColor=vec4((vec3(1.,.5,.14)*body*2.2+vec3(1.,.86,.6)*core*(1.-.7*dark)*7.+vec3(.15,.32,1.)*blue*2.)*inten,1.);}`;
+const flames=[];
+for(const f of META.flames||[]){
+  if(f.kind==='fire'){if(HC)continue;const m=fireMat.clone();m.uniforms.time=flameU.time;m.uniforms.inten=flameU.inten;m.uniforms.seed={value:rnd()*10};
+    const pl=new THREE.Mesh(new THREE.PlaneGeometry(f.w,f.h),m);pl.position.fromArray(f.p);pl.position.y+=f.h/2;pl.rotation.y=f.ry;scene.add(pl);flames.push({o:pl,kind:'fire'});continue}
+  const g=new THREE.Group();
+  const U={base:{value:VA(f.p)},size:{value:new THREE.Vector2(f.w,f.h)},sway:{value:0},stretch:{value:1},inten:{value:1}};
+  const fl=new THREE.Mesh(new THREE.PlaneGeometry(1,1,1,6),new THREE.ShaderMaterial({uniforms:U,vertexShader:CANDLE_VS,fragmentShader:CANDLE_FS,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending}));
+  fl.frustumCulled=false;fl.renderOrder=5;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:new THREE.Color(1.1,.62,.28),blending:THREE.AdditiveBlending,depthWrite:false,transparent:true}));
+  sp.position.fromArray(f.p);sp.position.y+=f.h*.45;const s0=Math.max(.05,f.w*5);sp.scale.set(s0,s0*1.25,1);
+  g.add(fl,sp);fx.add(g);flames.push({o:g,kind:'candle',U,sp,s0,ph:rnd()*100,night:!!f.night})
+}
+function fireFrame(t){
+  for(const U of fireUs)U.inten.value=flick.fire;
+  if(fire)for(const c of fire.cards){const p=c.m.position;c.m.rotation.y=Math.max(-.45,Math.min(.45,Math.atan2(camera.position.x-p.x,camera.position.z-p.z)))}
+  for(const f of flames){if(f.kind!=='candle')continue;const g=f.night?flick.lantern:flick.candle,ph=f.ph,a=REDUCE?.3:1;
+    f.U.stretch.value=1+a*(.1*FLN(t*7.3+ph)+.05*FLN(t*15+ph*2))+(g-1)*.8;
+    f.U.sway.value=a*(.25*FLN(t*1.7+ph*3)+.12*FLN(t*5.1+ph))+(f.night?0:(1-flick.candle)*2*FLN(t*9+ph));
+    f.U.inten.value=g;f.sp.scale.set(f.s0*g,f.s0*1.25*g,1)}}
+
+// ------------------------------------------------------------------ clock hands on the visitor's local time
+const hands=[];
+if(live)for(const h of META.hands){const o=live.scene.getObjectByName(h.name);if(!o?.isMesh)continue;
+  const piv=VA(h.p),g=new THREE.Group();g.position.copy(piv);o.removeFromParent();o.position.copy(piv).negate();g.add(o);scene.add(g);
+  o.material=new THREE.MeshStandardMaterial({color:new THREE.Color(...h.col),roughness:h.rough,metalness:h.metal});useProbe(o.material,nearestProbe(piv));
+  hands.push({g,kind:h.kind,a:VA(h.a).normalize(),rest:h.rest})}
+let HAND_T=null;
+function setHands(){const d=HAND_T||new Date(),s=d.getSeconds()+d.getMilliseconds()/1000,m=d.getMinutes()+s/60,hr=d.getHours()%12+m/60;
+  for(const H of hands){const f=H.kind==='hour'?hr/12:H.kind==='minute'?m/60:s/60;H.g.quaternion.setFromAxisAngle(H.a,H.rest-f*2*Math.PI)}}
+setHands();
+
+// ------------------------------------------------------------------ live lights (baked lamps re-created for the live books)
+// Cycles spot power P (W, emitted as if in all directions) -> radiant intensity P / 4pi; shadow maps are rendered once
+// because only the static baked geometry casts.
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;renderer.shadowMap.autoUpdate=false;
+const liveLights=[];const LL={};
+for(const L of META.lights||[]){const key=L.p.map(x=>x.toFixed(3)).join(',');(LL[key]??=[]).push(L)}
+// No distance falloff: every spine on a row sits about LIVE_D0 from its lamp, and inverse-square would blow out the tall ones.
+// The lamp sits flush with the shelf front, so the live light is pulled forward to reach the spines.
+const LIVE_D0=.32,LIVE_OUT=.12;
+for(const group of Object.values(LL)){const L=group[0];
+  const s=new THREE.SpotLight(new THREE.Color(...L.col),0,L.range+LIVE_OUT,L.angle/2,Math.min(1,L.blend),0);
+  const fw=V(-L.dir[0],0,-L.dir[2]).normalize();s.position.fromArray(L.p).addScaledVector(fw,LIVE_OUT);s.target.position.copy(s.position).add(VA(L.dir));scene.add(s,s.target);
+  s.castShadow=true;s.shadow.mapSize.set(SMALL?256:512,SMALL?256:512);s.shadow.camera.near=.01;s.shadow.camera.far=L.range+LIVE_OUT;s.shadow.bias=-.0004;s.shadow.normalBias=.002;
+  const iv={};for(const x of group)iv[x.variant]=(iv[x.variant]||0)+x.e/(4*Math.PI*LIVE_D0*LIVE_D0);s.userData.iv=iv;liveLights.push(s)}
+const lightI=(s,v)=>(s.userData.iv[v]||0)+(s.userData.iv.common||0);
+function mixLights(a,b,k){for(const s of liveLights)s.intensity=lightI(s,a)*(1-k)+lightI(s,b)*k;
+  if(HEARTH_U){const A=CFG.hearth.amb;HEARTH_U.amb.value.setRGB(...A[a].map((x,i)=>x*(1-k)+A[b][i]*k))}}
+const setLights=v=>mixLights(v,v,1);
+setLights(variant);renderer.shadowMap.needsUpdate=true;
+
+// ------------------------------------------------------------------ hall: light shafts through the arched window
+let shafts=null;
+if(CFG.window){
+  const W=CFG.window,pts=[];const r=(W.x1-W.x0)/2,cx=(W.x0+W.x1)/2;
+  pts.push([W.x0,W.y0],[W.x1,W.y0]);for(let i=0;i<=24;i++){const a=Math.PI*i/24;pts.push([cx+r*Math.cos(a),W.spring+r*Math.sin(a)])}
+  const L=16,n=pts.length;const pos=[],uvA=[],idx=[];
+  for(let i=0;i<n;i++){const [x,y]=pts[i];pos.push(x,y,W.z,x,y,W.z);uvA.push(i/n,0,i/n,1)}
+  for(let i=0;i<n;i++){const j=(i+1)%n;idx.push(2*i,2*j,2*i+1,2*j,2*j+1,2*i+1)}
+  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.setAttribute('uv',new THREE.Float32BufferAttribute(uvA,2));geo.setIndex(idx);
+  const U={dir:{value:V(0,-1,1)},len:{value:L},col:{value:new THREE.Color(1,.9,.75)},inten:{value:0},time:flameU.time};
+  const mat=new THREE.ShaderMaterial({uniforms:U,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,
+    vertexShader:`uniform vec3 dir;uniform float len;varying float vT;varying vec3 vW;void main(){vec3 p=position+dir*len*uv.y;vT=uv.y;vW=p;gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.);}`,
+    fragmentShader:`uniform vec3 col;uniform float inten,time;varying float vT;varying vec3 vW;
+      float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+      float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
+      void main(){float a=smoothstep(0.,.08,vT)*pow(1.-vT,1.6);float s=.7+.3*n(vW.xz*1.3+vec2(time*.05,0.));
+        if(vW.y<0.)discard;gl_FragColor=vec4(col*inten*a*s,1.);}`});
+  shafts={mesh:new THREE.Mesh(geo,mat),U};scene.add(shafts.mesh);
+}
+function applyVariantLook(v,k=1){for(const f of flames)if(f.night)f.o.visible=v==='night';const s=META.variants[v].suns?.[0];if(shafts&&s){shafts.U.dir.value.fromArray(s.dir).normalize();shafts.U.col.value.setRGB(...s.col);shafts.U.inten.value=.045*Math.sqrt(s.e/SUN_MAX)*k}}
+const SUN_MAX=Math.max(1e-6,...Object.values(META.variants).map(x=>x.suns?.[0]?.e||0));
+
+// ------------------------------------------------------------------ volumetric light: sun or moon through the orosi, the lantern's pierced stars, the fire
+// Single-scattering haze. The sun is shadowed by an orthographic depth map fitted to the window, tinted by the stained
+// glass drawn over it; the lantern by a distance panorama baked from the full scene; the fire by its opening.
+const VOL=!!(CFG.sunWin&&V2);
+const VU={sunD0:{value:BLACK},sunC0:{value:BLACK},sunD1:{value:BLACK},sunC1:{value:BLACK},sunM0:{value:new THREE.Matrix4()},sunM1:{value:new THREE.Matrix4()},
+  sunL0:{value:V()},sunL1:{value:V()},sunE0:{value:V()},sunE1:{value:V()},sunK:{value:0},sunZ0:{value:new THREE.Vector2()},sunZ1:{value:new THREE.Vector2()},
+  pano:{value:BLACK},lanP:{value:V()},lanE:{value:V()},lanD0:{value:.02},lanD1:{value:1},fireP:{value:V()},fireE:{value:V()},fo:{value:V()},foz:{value:0}};
+const VOL_GLSL=`uniform sampler2D sunD0,sunC0,sunD1,sunC1,pano;uniform mat4 sunM0,sunM1;uniform vec3 sunL0,sunL1,sunE0,sunE1,lanP,lanE,fireP,fireE,fo;
+uniform float sunK,lanD0,lanD1,foz;
+float hg(float c,float g){float g2=g*g;return (1.-g2)/(12.566*pow(max(1.+g2-2.*g*c,1e-4),1.5));}
+vec3 sunAt(vec3 p,mat4 M,sampler2D D,sampler2D C){vec3 s=(M*vec4(p,1.)).xyz*.5+.5;
+  if(s.x<0.||s.y<0.||s.x>1.||s.y>1.||s.z>1.)return vec3(0.);return textureLod(D,s.xy,0.).r>s.z+.001?textureLod(C,s.xy,0.).rgb:vec3(0.);}
+vec3 lanAt(vec3 p,vec3 rd){vec3 d=p-lanP;float r=length(d);d/=r;vec2 uv=vec2(atan(d.z,d.x)*.15915494+.5,asin(clamp(d.y,-1.,1.))*.31830989+.5);
+  return r<lanD0*exp(textureLod(pano,uv,0.).r*lanD1)*.985-.01?lanE*mix(.0796,hg(-dot(d,rd),.4),.5)/(r*r+.0225):vec3(0.);}
+vec3 lightAt(vec3 p,vec3 rd,float lr){vec3 acc=vec3(0.);
+  if(sunK<1.)acc+=sunAt(p,sunM0,sunD0,sunC0)*sunE0*mix(.0796,hg(-dot(sunL0,rd),.3),.5)*(1.-sunK);
+  if(sunK>0.)acc+=sunAt(p,sunM1,sunD1,sunC1)*sunE1*mix(.0796,hg(-dot(sunL1,rd),.3),.5)*sunK;
+  if(lanE.r>0.&&distance(p,lanP)>lr)acc+=lanAt(p,rd);
+  if(fireE.r>0.&&p.z>foz){vec3 d=p-fireP;vec2 q=fireP.xy+d.xy*(foz-fireP.z)/d.z;
+    if(abs(q.x)<fo.x&&q.y>fo.y&&q.y<fo.z){float r2=dot(d,d);acc+=fireE*.4*mix(.0796,hg(-dot(d,rd)*inversesqrt(r2),.3),.5)/(r2+.2);}}
+  return acc;}`;
+// the sun's camera sits SUN_BACK behind the window centre, so the glass lies at light-space depth SUN_BACK
+const SUN_BACK=6,SUN_NEAR=.1,SUN_FAR=14,sunMaps={};
+function buildSun(v){const s=META.variants[v].suns?.[0];if(!s)return null;
+  const L=VA(s.dir).normalize(),lo=VA(CFG.sunWin.min),hi=VA(CFG.sunWin.max),C=lo.clone().add(hi).multiplyScalar(.5),res=SMALL?512:1024;
+  const cam=new THREE.OrthographicCamera(-1,1,1,-1,SUN_NEAR,SUN_FAR);cam.position.copy(C).addScaledVector(L,-SUN_BACK);cam.lookAt(C);cam.updateMatrixWorld();
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  for(let i=0;i<8;i++){const p=V(i&1?hi.x:lo.x,i&2?hi.y:lo.y,i&4?hi.z:lo.z).applyMatrix4(cam.matrixWorldInverse);x0=Math.min(x0,p.x);x1=Math.max(x1,p.x);y0=Math.min(y0,p.y);y1=Math.max(y1,p.y)}
+  Object.assign(cam,{left:x0-.04,right:x1+.04,bottom:y0-.04,top:y1+.04});cam.updateProjectionMatrix();
+  const rt=new THREE.WebGLRenderTarget(res,res,{type:THREE.HalfFloatType});rt.depthTexture=new THREE.DepthTexture(res,res,THREE.FloatType);
+  const cc=renderer.getClearColor(new THREE.Color()),ca=renderer.getClearAlpha(),vis=[sky.visible,fx.visible];
+  sky.visible=fx.visible=false;for(const g of GLASS)g.visible=false;
+  renderer.setRenderTarget(rt);renderer.setClearColor(0xffffff,1);scene.overrideMaterial=new THREE.MeshBasicMaterial({side:THREE.DoubleSide});renderer.render(scene,cam);
+  scene.overrideMaterial.dispose();scene.overrideMaterial=null;for(const g of GLASS)g.visible=true;
+  cam.layers.set(5);renderer.autoClear=false;renderer.render(scene,cam);renderer.autoClear=true;
+  renderer.setRenderTarget(null);renderer.setClearColor(cc,ca);[sky.visible,fx.visible]=vis;
+  const nd=d=>2*(d-SUN_NEAR)/(SUN_FAR-SUN_NEAR)-1,end=Math.min(SUN_FAR-.1,SUN_BACK+hi.y/Math.max(.15,-L.y));
+  return {rt,M:new THREE.Matrix4().multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse),L,E:V(...s.col).multiplyScalar(s.e),Z:new THREE.Vector2(nd(SUN_BACK-.2),nd(end))}}
+const LANP=META.shadows?.lantern,FIREP=META.flicker?.lights?.fire?.find(l=>l.type==='POINT');
+const PANO=VOL&&LANP?await new Promise(res=>texLoader.load(ASSET('shadow_lantern.webp'),t=>{t.flipY=true;t.colorSpace=THREE.NoColorSpace;t.generateMipmaps=false;
+  t.minFilter=t.magFilter=THREE.LinearFilter;t.wrapS=THREE.RepeatWrapping;res(t)},undefined,()=>res(null))):null;
+if(VOL){for(const v of VARS)sunMaps[v]=buildSun(v);
+  if(PANO){VU.pano.value=PANO;VU.lanP.value.fromArray(LANP.p);VU.lanD0.value=LANP.dmin;VU.lanD1.value=Math.log(LANP.dmax/LANP.dmin)}
+  if(FIREP)VU.fireP.value.fromArray(FIREP.p);if(HC){VU.fo.value.set(HC.open[0],HC.open[1],HC.open[2]);VU.foz.value=HC.open[3]}}
+const ACT=(g,v)=>META.flicker?.active?.[v]?.includes(g)?1:0;
+let volA=variant,volB=variant,volK=0;
+const volFrom=(a,b)=>{volA=a;volB=b;volK=0},volMix=k=>{volK=k},volTo=v=>{volA=volB=v;volK=0};
+function sunU(i,S,w){if(!S){VU['sunE'+i].value.set(0,0,0);return}VU['sunD'+i].value=S.rt.depthTexture;VU['sunC'+i].value=S.rt.texture;
+  VU['sunM'+i].value.copy(S.M);VU['sunL'+i].value.copy(S.L);VU['sunZ'+i].value.copy(S.Z);VU['sunE'+i].value.copy(S.E).multiplyScalar(w)}
+const VD=(v,g)=>CFG.vol[v]?.[g]??0;
+function volUpdate(){if(!VOL)return;const k=volK;
+  sunU(0,sunMaps[volA],VD(volA,'sun'));sunU(1,sunMaps[volB],VD(volB,'sun'));VU.sunK.value=k;
+  const wl=(ACT('lantern',volA)*VD(volA,'lan')*(1-k)+ACT('lantern',volB)*VD(volB,'lan')*k)*flick.lantern,wf=(ACT('fire',volA)*VD(volA,'fire')*(1-k)+ACT('fire',volB)*VD(volB,'fire')*k)*flick.fire;
+  if(PANO)VU.lanE.value.set(...LANP.col).multiplyScalar(LANP.e/(4*Math.PI)*wl);
+  if(FIREP&&HC)VU.fireE.value.set(...FIREP.col).multiplyScalar(FIREP.e/(4*Math.PI)*wf)}
+const FSQ_VS=`varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}`;
+class VolPass extends Pass{
+  constructor(){super();this.needsSwap=true;this.div=2;this.q=new FullScreenQuad(null);
+    this.rt=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,depthBuffer:false});this.rt2=this.rt.clone();
+    const hz=HC?.haze||[0,0,0,0,0,0];
+    // separable Gaussian at half resolution, weighted by depth so shafts do not bleed across silhouettes
+    this.blur=new THREE.ShaderMaterial({uniforms:{tVol:{value:null},tDepth:{value:null},step:{value:new THREE.Vector2()},nf:{value:new THREE.Vector2(.02,120)}},vertexShader:FSQ_VS,depthTest:false,depthWrite:false,
+      fragmentShader:`uniform sampler2D tVol,tDepth;uniform vec2 step,nf;varying vec2 vUv;
+      float lin(vec2 uv){float d=textureLod(tDepth,uv,0.).r;return nf.x*nf.y/(nf.y-d*(nf.y-nf.x));}
+      void main(){float z0=lin(vUv);vec4 a=vec4(0.);float ws=0.;
+        for(int i=-4;i<=4;i++){vec2 uv=vUv+step*float(i);float w=exp(-float(i*i)/8.)*exp(-abs(lin(uv)-z0)/(.06*z0+.02));a+=textureLod(tVol,uv,0.)*w;ws+=w;}
+        gl_FragColor=a/ws;}`});
+    // each light is marched only where it can be: the sun inside its window prism, the lantern inside a sphere, the fire in front of its opening
+    this.vol=new THREE.ShaderMaterial({defines:{SSTEPS:SMALL?14:26,LSTEPS:SMALL?12:28,FSTEPS:SMALL?6:12,LR:'1.6',
+        WZ:((SUN_BACK-SUN_NEAR)/(SUN_FAR-SUN_NEAR)).toFixed(5),WF:(.55/(SUN_FAR-SUN_NEAR)).toFixed(5)},uniforms:{...VU,nz:{value:NZ},time:flameU.time,tDepth:{value:null},projInv:{value:new THREE.Matrix4()},camWorld:{value:new THREE.Matrix4()},
+      camPos:{value:V()},hzMin:{value:V(hz[0],hz[2],hz[4])},hzMax:{value:V(hz[1],hz[3],hz[5])},fbMin:{value:V(-1.1,0,HC?HC.open[3]:0)},fbMax:{value:V(1.1,1.5,HC?HC.open[3]+1.3:0)}},
+      vertexShader:FSQ_VS,depthTest:false,depthWrite:false,
+      fragmentShader:`uniform sampler2D tDepth;uniform mat4 projInv,camWorld;uniform vec3 camPos,hzMin,hzMax,fbMin,fbMax;uniform float time;varying vec2 vUv;${VOL_GLSL}${NOISE_GLSL}
+      float air(vec3 p){vec3 q=p*vec3(1.8,1.1,1.8)+vec3(time*.045,-time*.03,time*.03);return .3+1.4*smoothstep(.22,.78,vn(q)*.6+vn(q*2.6+vec3(5.2,1.3,7.7)-vec3(0.,time*.05,0.))*.4);}
+      vec2 slab(vec3 o,vec3 d,vec3 lo,vec3 hi){vec3 iv=1./d,a=(lo-o)*iv,b=(hi-o)*iv,mn=min(a,b),mx=max(a,b);return vec2(max(max(mn.x,mn.y),mn.z),min(min(mx.x,mx.y),mx.z));}
+      vec3 sunSeg(mat4 M,sampler2D D,sampler2D C,vec3 Ls,vec3 E,vec3 rd,float L,float j){vec3 o=(M*vec4(camPos,1.)).xyz,d=mat3(M)*rd;
+        // M is affine, so the light-space parameter t is also the world distance along rd
+        vec2 t=slab(o,d,vec3(-1.),vec3(1.));t.x=max(t.x,0.);t.y=min(t.y,L);if(t.y<=t.x)return vec3(0.);
+        float dl=(t.y-t.x)/float(SSTEPS);vec3 a=vec3(0.);
+        for(int i=0;i<SSTEPS;i++){float ti=t.x+(float(i)+j)*dl;vec3 s=(o+d*ti)*.5+.5;if(textureLod(D,s.xy,0.).r>s.z+.001)a+=textureLod(C,s.xy,0.).rgb*air(camPos+rd*ti)*(.2+.8*smoothstep(WZ,WZ+WF,s.z));}
+        return a*dl*E*mix(.0796,hg(-dot(Ls,rd),.3),.5);}
+      void main(){float z=textureLod(tDepth,vUv,0.).r;vec4 v=projInv*vec4(vUv*2.-1.,z*2.-1.,1.);v/=v.w;vec3 wp=(camWorld*v).xyz;
+        vec3 rd=wp-camPos;float L=length(rd);rd/=L;float j=ign(gl_FragCoord.xy);vec3 acc=vec3(0.);
+        if(sunK<1.&&sunE0.r>0.)acc+=sunSeg(sunM0,sunD0,sunC0,sunL0,sunE0,rd,L,j)*(1.-sunK);
+        if(sunK>0.&&sunE1.r>0.)acc+=sunSeg(sunM1,sunD1,sunC1,sunL1,sunE1,rd,L,j)*sunK;
+        vec3 oc=camPos-lanP;float lb=dot(oc,rd),lh=lb*lb-dot(oc,oc)+LR*LR;
+        if(lanE.r>0.&&lh>0.){float ta=max(-lb-sqrt(lh),0.),tb=min(-lb+sqrt(lh),L);if(tb>ta){float dl=(tb-ta)/float(LSTEPS);vec3 la=vec3(0.);
+          for(int i=0;i<LSTEPS;i++){vec3 p=camPos+rd*(ta+(float(i)+fract(j+.5))*dl),c=lanAt(p,rd);if(c.r>0.)la+=c*air(p);}acc+=la*dl;}}
+        if(fireE.r>0.){vec2 t=slab(camPos,rd,fbMin,fbMax);t.x=max(t.x,0.);t.y=min(t.y,L);if(t.y>t.x){float dl=(t.y-t.x)/float(FSTEPS);vec3 fa=vec3(0.);
+          for(int i=0;i<FSTEPS;i++){vec3 p=camPos+rd*(t.x+(float(i)+fract(j+.25))*dl),d=p-fireP;vec2 q=fireP.xy+d.xy*(foz-fireP.z)/d.z;
+            if(abs(q.x)<fo.x&&q.y>fo.y&&q.y<fo.z){float r2=dot(d,d);fa+=mix(.0796,hg(-dot(d,rd)*inversesqrt(r2),.3),.5)/(r2+.2);}}acc+=fa*fireE*.4*dl;}}
+        vec2 hz=slab(camPos,rd,hzMin,hzMax);hz.x=max(hz.x,0.);
+        gl_FragColor=vec4(acc,clamp((min(hz.y,L)-hz.x)/.25,0.,1.));}`});
+    this.comp=new THREE.ShaderMaterial({uniforms:{tScene:{value:null},tVol:{value:null},vpx:{value:new THREE.Vector2()},time:flameU.time,haze:{value:REDUCE?0:.0035},nz:{value:NZ}},
+      vertexShader:FSQ_VS,depthTest:false,depthWrite:false,
+      fragmentShader:`uniform sampler2D tScene,tVol;uniform vec2 vpx;uniform float time,haze;varying vec2 vUv;${NOISE_GLSL}
+      void main(){vec4 v=textureLod(tVol,vUv,0.);
+        vec2 off=vec2(0.);if(v.a>.002){vec3 q=vec3(vUv*vec2(64.,36.),0.)-vec3(0.,time*3.,time*.6);off=(vec2(vn(q),vn(q+vec3(19.,7.,3.)))-.5)*v.a*haze;}
+        gl_FragColor=vec4(textureLod(tScene,vUv+off,0.).rgb+v.rgb,1.);}`})}
+  setSize(w,h){const a=Math.max(1,Math.round(w/this.div)),b=Math.max(1,Math.round(h/this.div));this.rt.setSize(a,b);this.rt2.setSize(a,b);this.comp.uniforms.vpx.value.set(1/a,1/b)}
+  render(r,wb,rb){const u=this.vol.uniforms;u.tDepth.value=rb.depthTexture;u.projInv.value.copy(camera.projectionMatrixInverse);u.camWorld.value.copy(camera.matrixWorld);u.camPos.value.copy(camera.position);
+    r.setRenderTarget(this.rt);this.q.material=this.vol;this.q.render(r);
+    const B=this.blur.uniforms,px=this.comp.uniforms.vpx.value;B.tDepth.value=rb.depthTexture;B.nf.value.set(camera.near,camera.far);this.q.material=this.blur;
+    B.tVol.value=this.rt.texture;B.step.value.set(px.x,0);r.setRenderTarget(this.rt2);this.q.render(r);
+    B.tVol.value=this.rt2.texture;B.step.value.set(0,px.y);r.setRenderTarget(this.rt);this.q.render(r);
+    const c=this.comp.uniforms;c.tScene.value=rb.texture;c.tVol.value=this.rt.texture;
+    r.setRenderTarget(this.renderToScreen?null:wb);this.q.material=this.comp;this.q.render(r)}}
+// dust motes, lit by the same lights as the haze. Most drift inside the sun's (or moon's) window prism, wrapped in its
+// light space so they never leave the beam; each hops to the incoming light's prism as the theme crossfade passes its seed.
+// The rest fill the room for the lantern and the fire.
+let dust=null;
+if(VOL&&CFG.dust){const NB=SMALL?1000:3200,N=NB+(SMALL?200:600),[lo,hi]=CFG.dust.map(VA),pos=new Float32Array(N*3),sd=new Float32Array(N*4),bm=new Float32Array(N);
+  for(let i=0;i<N;i++){const b=i<NB;bm[i]=b?1:0;pos[i*3]=b?rnd():rr(lo.x,hi.x);pos[i*3+1]=b?rnd():rr(lo.y,hi.y);pos[i*3+2]=b?rnd():rr(lo.z,hi.z);for(let k=0;k<4;k++)sd[i*4+k]=rnd()}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('sd',new THREE.BufferAttribute(sd,4));g.setAttribute('bm',new THREE.BufferAttribute(bm,1));
+  const U={...VU,time:flameU.time,dpr:{value:DPR},pxs:fire?fire.SU.pxs:{value:.001},lo:{value:lo},hi:{value:hi},gain:{value:200},
+    mi0:{value:new THREE.Matrix4()},mi1:{value:new THREE.Matrix4()}};
+  dust=new THREE.Points(g,new THREE.ShaderMaterial({uniforms:U,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+    vertexShader:`attribute vec4 sd;attribute float bm;uniform float time,dpr,pxs,gain;uniform vec3 lo,hi;uniform vec2 sunZ0,sunZ1;uniform mat4 mi0,mi1;varying vec3 vC;${VOL_GLSL}
+    void main(){vec3 dr=vec3(sin(time*(.04+.05*sd.x)+sd.y*6.28)*.22,-time*(.004+.006*sd.w)+sin(time*.03+sd.z*6.28)*.1,cos(time*(.035+.04*sd.z)+sd.w*6.28)*.22),p;
+      if(bm>.5){bool b=sd.x<sunK;vec2 bz=b?sunZ1:sunZ0;vec3 o=vec3(-1.,-1.,bz.x),ext=vec3(2.,2.,bz.y-bz.x);
+        p=((b?mi1:mi0)*vec4(o+mod(position*ext+mat3(b?sunM1:sunM0)*dr,ext),1.)).xyz;}
+      else p=lo+mod(position+dr-lo,hi-lo);
+      vec4 mv=viewMatrix*vec4(p,1.);float z=-mv.z;
+      float tw=.4+.6*pow(abs(sin(time*(.5+sd.x*1.5)+sd.y*20.)),4.);
+      float s=(.0016+.0024*sd.w)/(pxs*max(z,.05)),sz=clamp(s,1.5*dpr,24.*dpr);
+      vC=lightAt(p,normalize(p-cameraPosition),0.)*tw*(.5+sd.z)*smoothstep(.15,.5,z)*gain*min(1.,s*s/(sz*sz));
+      gl_PointSize=sz;gl_Position=projectionMatrix*mv;}`,
+    fragmentShader:`varying vec3 vC;void main(){gl_FragColor=vec4(vC*smoothstep(.5,.15,length(gl_PointCoord-.5)),1.);}`}));
+  dust.onBeforeRender=()=>{U.mi0.value.copy(VU.sunM0.value).invert();U.mi1.value.copy(VU.sunM1.value).invert()};
+  dust.frustumCulled=false;dust.renderOrder=6;fx.add(dust)}
+
+// ------------------------------------------------------------------ post
+const W0=app.clientWidth,H0=app.clientHeight;
+const rt=new THREE.WebGLRenderTarget(W0*DPR,H0*DPR,{type:THREE.HalfFloatType,samples:4});
+if(VOL)rt.depthTexture=new THREE.DepthTexture(W0*DPR,H0*DPR);
+const composer=new EffectComposer(renderer,rt);
+if(VOL)composer.renderTarget2.depthTexture=new THREE.DepthTexture(W0*DPR,H0*DPR);
+composer.setPixelRatio(DPR);composer.setSize(W0,H0);
+composer.addPass(new RenderPass(scene,camera));
+const volPass=VOL?new VolPass():null;if(volPass)composer.addPass(volPass);
+const bloom=new UnrealBloomPass(new THREE.Vector2(W0,H0),.32,.55,2.4);composer.addPass(bloom);
+composer.addPass(new OutputPass());
+const grade=new ShaderPass({uniforms:{tDiffuse:{value:null},time:{value:0},vig:{value:CFG.grade.vig},grain:{value:.035},contrast:{value:CFG.grade.contrast}},
+  vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+  fragmentShader:`uniform sampler2D tDiffuse;uniform float time,vig,grain,contrast;varying vec2 vUv;
+    float h(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}
+    void main(){vec3 c=texture2D(tDiffuse,vUv).rgb;c=mix(c,c*c*(3.-2.*c),contrast);vec2 q=vUv-.5;c*=1.-vig*dot(q,q)*1.6;c+=(h(floor(gl_FragCoord.xy))-.5)*grain*.5;gl_FragColor=vec4(c,1.);}`});
+composer.addPass(grade);
+
+// ------------------------------------------------------------------ variant switching (crossfade between bakes)
+let exposure=Math.pow(2,META.variants[variant].exposure);
+renderer.toneMappingExposure=exposure;applyVariantLook(variant);
+$('bTheme').textContent=variant==='day'?'Day':'Night';
+let switching=false;
+async function setVariant(v,store=true){if(v===variant||switching||!META.variants[v])return;switching=true;$('bTheme').textContent=v==='day'?'Day':'Night';
+  const T=await loadVariant(v);const from=variant;
+  for(const m of bakedMats){m.uniforms.b.value=T.pages[m.userData.page];if(m.uniforms.envB)m.uniforms.envB.value=T.room;if(m.uniforms.fb)m.uniforms.fb.value=T.flick[m.userData.page]}skyMat.uniforms.b.value=T.bg;
+  volFrom(from,v);
+  const e0=exposure,e1=Math.pow(2,META.variants[v].exposure);let swapped=false;
+  await tween(1.8,k=>{for(const m of bakedMats)m.uniforms.k.value=k;skyMat.uniforms.k.value=k;exposure=e0*Math.pow(e1/e0,k);renderer.toneMappingExposure=exposure;mixLights(from,v,k);
+    applyVariantLook(k<.5?from:v,Math.abs(1-2*k));volMix(k);
+    if(!swapped&&k>=.5){swapped=true;variant=v;for(const m of probeUsers){m.envMap=T.probes[m.userData.probe];m.needsUpdate=true}}});
+  for(const m of bakedMats){m.uniforms.a.value=m.uniforms.b.value;if(m.uniforms.envA)m.uniforms.envA.value=m.uniforms.envB.value;if(m.uniforms.fa)m.uniforms.fa.value=m.uniforms.fb.value;m.uniforms.k.value=0}volTo(v);skyMat.uniforms.a.value=T.bg;skyMat.uniforms.k.value=0;
+  variant=v;applyVariantLook(v);if(store)try{localStorage.theme=v==='day'?'light':'dark'}catch{}switching=false}
+$('bTheme').onclick=()=>setVariant(variant==='day'?'night':'day');
+
+// ------------------------------------------------------------------ camera rig + poses
+const rig={pos:V(),look:V(),fov:CFG.overview.fov,film:0};
+const look={yaw:0,pitch:0,ty:0,tp:0};
+// Overview orbit: the view turns a full circle and the camera backs away from where it looks, held inside the room.
+const ORB=CFG.orbit?(()=>{const d=V().subVectors(VA(CFG.overview.look),VA(CFG.overview.pos));const yaw=Math.atan2(d.x,-d.z),pitch=Math.atan2(d.y,Math.hypot(d.x,d.z));
+  return {...CFG.orbit,dist:d.length(),yaw0:yaw,pitch0:pitch,yaw,pitch,ty:yaw,tp:pitch}})():null;
+function orbitPose(yaw,pitch){const o=ORB,hx=Math.sin(yaw),hz=-Math.cos(yaw),cp=Math.cos(pitch);
+  const pos=V(Math.max(o.x[0],Math.min(o.x[1],o.c[0]-hx*o.r)),CFG.overview.pos[1],Math.max(o.z[0],Math.min(o.z[1],o.c[1]-hz*o.r)));
+  return {pos,look:pos.clone().add(V(hx*cp,Math.sin(pitch),hz*cp).multiplyScalar(o.dist)),fov:CFG.overview.fov}}
+let camMoving=0,orbitHold=false;
+const OVERVIEW=ORB?orbitPose(ORB.yaw,ORB.pitch):{pos:VA(CFG.overview.pos),look:VA(CFG.overview.look),fov:CFG.overview.fov};
+// Series framing. Where a series is wider than the frame (portrait screens) it opens at its first book, or at the book
+// being put back, and pans under a horizontal drag: the camera slides along the shelf while it stays inside the focus box,
+// and turns for the rest, because stepping back or sideways brings the corner cabinets between the camera and the books.
+const NARROW=()=>matchMedia('(max-width:700px),(max-aspect-ratio:4/5)').matches;
+const SER={};
+for(const sid of SERIES_ORDER){const es=books.filter(e=>e.sid===sid);const c=V(),n=V();const box=new THREE.Box3();
+  for(const e of es){c.add(e.home.p);n.add(e.outW);box.expandByPoint(e.home.p)}c.multiplyScalar(1/es.length);n.y=0;n.normalize();
+  const ax=V().crossVectors(V(0,1,0),n).normalize();let a0=1e9,a1=-1e9;for(const e of es){const u=e.home.p.clone().sub(c).dot(ax);a0=Math.min(a0,u-e.t/2);a1=Math.max(a1,u+e.t/2)}
+  SER[sid]={c,n,ax,a0,a1,span:Math.max(box.max.x-box.min.x,box.max.z-box.min.z,box.max.y-box.min.y)}}
+const inBox=p=>{const fb=CFG.focusBox;if(fb){p.x=Math.max(fb.x[0],Math.min(fb.x[1],p.x));p.z=Math.max(fb.z[0],Math.min(fb.z[1],p.z))}return p};
+const panPos=(p,ax,v,out)=>inBox(out.copy(p).addScaledVector(ax,v));
+function spose(sid,at){const S=SER[sid],th=Math.tan(CFG.focusFov*Math.PI/360)*app.clientWidth/app.clientHeight;
+  const need=S.a1-S.a0+.12,dist=Math.max(CFG.focusDist,S.span*.85+.45),pos=inBox(S.c.clone().addScaledVector(S.n,dist).add(V(0,.1,0)));
+  const r=Math.max(0,(need-2*dist*th)/2),o=r?Math.max(-r,Math.min(r,at?at.home.p.clone().sub(S.c).dot(S.ax):-r)):0;
+  return {pos:panPos(pos,S.ax,o,V()),look:S.c.clone().add(V(0,-.02,0)).addScaledVector(S.ax,o),fov:CFG.focusFov,n:S.n,
+    pan:r?{ax:S.ax,lo:-r-o,hi:r-o,mpp:2*dist*th/app.clientWidth}:null}}
+const pan={ax:null,lo:0,hi:0,mpp:0,v:0,t:0};
+function setPan(p){Object.assign(pan,{ax:p.pan?.ax||null,lo:p.pan?.lo||0,hi:p.pan?.hi||0,mpp:p.pan?.mpp||0,v:0,t:0})}
+function foldPan(){if(pan.ax){panPos(rig.pos,pan.ax,pan.v,rig.pos);rig.look.addScaledVector(pan.ax,pan.v)}setPan({})}
+function setRigInstant(p){rig.pos.copy(p.pos);rig.look.copy(p.look);rig.fov=p.fov;rig.film=p.film||0;setPan(p)}
+// rehal (X-shaped reading stand): the book's spine sits in the crease, pages on the reader's right leaf,
+// the cover opens onto the left leaf. Blender (x,y,z) -> three (x,z,-y).
+const B2T=a=>V(a[0],a[2],-a[1]);
+const RH=META.extra?.rehal?(()=>{const r=META.extra.rehal;const A=B2T(r.axis).normalize(),line=B2T(r.line),th=r.leaf*Math.PI/180;
+  const Rg=V().crossVectors(A,V(0,1,0)).normalize(),U=V(0,1,0);
+  const dirR=Rg.clone().multiplyScalar(Math.cos(th)).addScaledVector(U,Math.sin(th));
+  const nR=Rg.clone().multiplyScalar(-Math.sin(th)).addScaledVector(U,Math.cos(th));
+  const zw=dirR.clone().negate(),yw=V().crossVectors(zw,nR);
+  const q=new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(nR,yw,zw));
+  return {A,line,th,Rg,U,dirR,nR,q,openA:Math.PI-2*th}})():null;
+function rehalPose(){const r=RH,look=r.line.clone().addScaledVector(r.U,.04).addScaledVector(r.A,.05);
+  if(!NARROW())return {pos:r.line.clone().addScaledVector(r.A,-.24).addScaledVector(r.U,.6),look,fov:40,film:7};
+  // portrait: back off until the open spread fits the width, and aim low so the book sits above the docked panel
+  const fov=46,th=Math.tan(fov*Math.PI/360),dir=V().addScaledVector(r.A,-.35).addScaledVector(r.U,.68).normalize();
+  const D=Math.max(.78,.185/(th*Math.min(1,app.clientWidth/app.clientHeight))),f=dir.clone().negate(),up=V(0,1,0).addScaledVector(f,-f.y).normalize();
+  look.addScaledVector(r.Rg,.015);return {pos:look.clone().addScaledVector(dir,D),look:look.addScaledVector(up,-.2*D*th),fov,film:0}}
+const NAVE=SCENE==='hall';
+let camTok=0;
+async function moveCam(p,dur=1.5){foldPan();const tok=++camTok,p0=rig.pos.clone(),l0=rig.look.clone(),f0=rig.fov,m0=rig.film,m1=p.film||0;
+  const mid=p0.clone().lerp(p.pos,.5);mid.y+=.12;if(NAVE){mid.x*=.15}
+  const d=p0.distanceTo(p.pos);dur=(NAVE?Math.max(dur,1.1+d*.22):dur)*CAM_SLOW;
+  look.ty=look.tp=0;camMoving++;
+  await tween(dur,k=>{const a=p0.clone().lerp(mid,k),b=mid.clone().lerp(p.pos,k);rig.pos.copy(a.lerp(b,k));rig.look.lerpVectors(l0,p.look,k);rig.fov=f0+(p.fov-f0)*k;rig.film=m0+(m1-m0)*k},easeCam);camMoving--;if(tok===camTok)setPan(p)}
+setRigInstant(OVERVIEW);
+
+// ------------------------------------------------------------------ interaction
+const state={mode:'overview',series:null,cur:null,open:false,busy:false};
+const chips={};
+for(const sid of SERIES_ORDER){const s=SERIES[sid];const b=document.createElement('button');b.className='btn';b.innerHTML=`${s.name}<b>${BY_SERIES[sid].length}</b>`;b.onclick=()=>focusSeries(sid);$('series').appendChild(b);chips[sid]=b}
+function markChips(){for(const k in chips)chips[k].classList.toggle('on',k===state.series);$('bView').classList.toggle('on',state.mode==='overview');
+  const nav=$('series'),b=chips[state.series];if(b&&nav.scrollWidth>nav.clientWidth)nav.scrollTo({left:b.offsetLeft-(nav.clientWidth-b.offsetWidth)/2,behavior:REDUCE?'auto':'smooth'})}
+async function focusSeries(sid){if(state.busy)return;if(state.cur)await returnBook(state.cur);state.mode='focus';state.series=sid;markChips();await moveCam(spose(sid),1.4)}
+async function overview(){if(state.busy)return;if(state.cur)await returnBook(state.cur);state.mode='overview';state.series=null;markChips();await moveCam(ORB?orbitPose(ORB.yaw,ORB.pitch):OVERVIEW,1.6)}
+$('bView').onclick=overview;
+function presentTarget(e){const p=spose(e.sid,e);const cq=new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(p.pos,p.look,V(0,1,0)));
+  const fwd=V(0,0,-1).applyQuaternion(cq),right=V(1,0,0).applyQuaternion(cq),up=V(0,1,0).applyQuaternion(cq);
+  const narrow=NARROW();const pos=p.pos.clone().addScaledVector(fwd,narrow?.74:.56).addScaledVector(right,narrow?0:-.07).addScaledVector(up,narrow?.05:0);
+  const q=cq.clone().multiply(new THREE.Quaternion().setFromAxisAngle(V(0,1,0),-Math.PI/2));return {pos,q,right,pose:p}}
+function rehalTarget(e){const r=RH;const pos=r.line.clone().addScaledVector(r.dirR,e.d/2+.004).addScaledVector(r.nR,e.t/2+.001);
+  return {pos,q:r.q.clone(),right:r.Rg.clone(),pose:rehalPose()}}
+function hiRes(e){if(e.hi)return;e.hi=true;
+  const set=img=>{if(!img||!e.hi)return;const t=new THREE.Texture(img);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=maxAniso;t.needsUpdate=true;e.hiT=t;e.cover.map=t;e.cover.needsUpdate=true};
+  loadImg(coverURL(e.b.id,true)).then(set)}
+// a phone keeps only the large cover in hand
+function loRes(e){if(!SMALL||!e.hi)return;e.hi=false;if(e.hiT){e.cover.map=e.lo;e.cover.needsUpdate=true;e.hiT.dispose();e.hiT=null}}
+function bez(a,b,c,d,k,out){const u=1-k;return out.set(0,0,0).addScaledVector(a,u*u*u).addScaledVector(b,3*u*u*k).addScaledVector(c,3*u*k*k).addScaledVector(d,k*k*k)}
+function setProbe(e,key){for(const m of e.mats){if(m.userData.probe!==key){m.userData.probe=key;m.envMap=varCache[variant].probes[key];m.needsUpdate=true}}}
+const viewProbe=e=>RH&&PROBES.probe_rehal?'probe_rehal':nearestProbe(spose(e.sid,e).pos,VIEW_PROBES.length?VIEW_PROBES:Object.keys(PROBES));
+async function present(e){if(state.busy)return;
+  if(state.cur&&state.cur!==e){await returnBook(state.cur,true)}
+  state.busy=true;
+  if(RH){state.series=e.sid;markChips();moveCam(rehalPose(),1.5)}
+  else if(state.series!==e.sid||state.mode!=='focus'&&state.mode!=='present'){state.series=e.sid;markChips();moveCam(spose(e.sid,e),1.3)}
+  state.mode='present';state.cur=e;markChips();e.state='flying';hiRes(e);if(!e.tp){e.tp=titlePage(e.b,e.n,e.N,e.h,e.d);e.page.map=e.tp;e.page.needsUpdate=true}
+  showPanel(e);const T=RH?rehalTarget(e):presentTarget(e);e.T=T;
+  if(RH){const out=e.outW;const p0=e.g.position.clone(),q0=e.g.quaternion.clone(),p1=p0.clone().addScaledVector(out,.28).add(V(0,.06,0)),
+      p2=T.pos.clone().addScaledVector(RH.U,.32).addScaledVector(RH.A,-.12),tmp=V();let sw=false;
+    await tween(2.0,k=>{e.g.position.copy(bez(p0,p1,p2,T.pos,k,tmp));e.g.quaternion.slerpQuaternions(q0,T.q,smooth(.1,.9,k));if(!sw&&k>.5){sw=true;setProbe(e,viewProbe(e))}});
+    e.state='presented';state.busy=false;return}
+  const out=e.outW;const p0=e.g.position.clone(),q0=e.g.quaternion.clone(),p1=p0.clone().addScaledVector(out,.3).add(V(0,.02,0)),p2=T.pos.clone().addScaledVector(T.pose.n,.1).add(V(0,-.05,0)),tmp=V();
+  let sw=false;
+  await tween(1.3,k=>{e.g.position.copy(bez(p0,p1,p2,T.pos,k,tmp));e.g.quaternion.slerpQuaternions(q0,T.q,smooth(.12,.92,k));if(!sw&&k>.35){sw=true;setProbe(e,viewProbe(e))}});
+  e.state='presented';state.busy=false}
+async function setOpen(open){const e=state.cur;if(!e||e.state!=='presented'||state.open===open)return;state.busy=true;state.open=open;$('bOpen').textContent=open?'Close':'Open';
+  const r0=e.pivot.rotation.y,r1=open?(RH?-(RH.openA+Math.asin(Math.min(.3,e.t*Math.cos(2*RH.th)/e.d))):-Math.PI*.94):0;const g0=e.g.position.clone(),g1=RH?e.T.pos.clone():e.T.pos.clone().addScaledVector(e.T.right,open?e.d*.5:0);
+  await tween(1.15,k=>{e.pivot.rotation.y=r0+(r1-r0)*k;e.g.position.lerpVectors(g0,g1,k)});state.busy=false}
+async function returnBook(e,quick){if(!e)return;state.busy=true;hidePanel();
+  if(state.open){state.open=false;$('bOpen').textContent='Open';const r0=e.pivot.rotation.y;const g0=e.g.position.clone();await tween(.5,k=>{e.pivot.rotation.y=r0*(1-k);e.g.position.lerpVectors(g0,e.T.pos,k)})}
+  e.state='flying';const p0=e.g.position.clone(),q0=e.g.quaternion.clone(),p3=e.home.p.clone(),p2=p3.clone().addScaledVector(e.outW,.3),p1=p0.clone().add(V(0,RH?.25:-.05,0)),tmp=V();let sw=false;
+  if(RH&&!quick)moveCam(spose(e.sid,e),1.6);
+  await tween(RH?(quick?1.1:1.7):(quick?.8:1.1),k=>{e.g.position.copy(bez(p0,p1,p2,p3,k,tmp));e.g.quaternion.slerpQuaternions(q0,e.home.q,smooth(.05,.85,k));if(!sw&&k>.6){sw=true;setProbe(e,e.probe)}});
+  e.state='shelf';e.hover=0;loRes(e);if(state.cur===e){state.cur=null;state.mode=state.series?'focus':'overview'}state.busy=false}
+function step(dir){const e=state.cur;if(!e||state.busy)return;const i=books.indexOf(e);present(books[(i+dir+books.length)%books.length])}
+function showPanel(e){const s=SERIES[e.sid];$('pk').textContent=`${s.name} · Book ${e.n} of ${e.N}`;$('pt').textContent=e.b.title;$('pa').textContent=s.author;
+  $('pm').innerHTML=(s.tags||[]).map(t=>`<span>${t}</span>`).join('')+`<i class="isbn"><br>ISBN ${e.b.isbn}</i>`;$('panel').classList.add('on');app.classList.add('reading');$('bOpen').textContent='Open'}
+function hidePanel(){$('panel').classList.remove('on');app.classList.remove('reading')}
+$('bOpen').onclick=()=>setOpen(!state.open);$('bBack').onclick=()=>returnBook(state.cur);$('bPrev').onclick=()=>step(-1);$('bNext').onclick=()=>step(1);
+function stepSeries(dir){if(state.cur){step(dir);return}const i=state.series?SERIES_ORDER.indexOf(state.series):(dir>0?-1:SERIES_ORDER.length);const j=i+dir;
+  if(j<0||j>=SERIES_ORDER.length){overview();return}focusSeries(SERIES_ORDER[j])}
+addEventListener('keydown',ev=>{if(ev.altKey||ev.ctrlKey||ev.metaKey)return;const onBody=document.activeElement===document.body;
+  if(ev.key==='Escape'||ev.key==='ArrowUp'){if(state.open)setOpen(false);else if(state.cur)returnBook(state.cur);else if(state.mode==='focus')overview()}
+  else if(ev.key==='ArrowRight')stepSeries(1);else if(ev.key==='ArrowLeft')stepSeries(-1);
+  else if(ev.key==='ArrowDown'||(ev.key===' '||ev.key==='Enter')&&onBody){ev.preventDefault();
+    if(state.cur){if(ev.key!=='ArrowDown'||!state.open)setOpen(!state.open)}
+    else if(state.mode==='focus'&&state.series){document.activeElement?.blur?.();present(books.find(e=>e.sid===state.series))}}});
+
+const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(9,9);let hovered=null,drag=null;const tip=$('tip');
+const cvs=renderer.domElement;const par=new THREE.Vector2(),parT=new THREE.Vector2();
+cvs.addEventListener('pointermove',ev=>{const r=cvs.getBoundingClientRect();ndc.set((ev.clientX-r.left)/r.width*2-1,-(ev.clientY-r.top)/r.height*2+1);parT.set(ndc.x,ndc.y);tip.style.transform=`translate(${ev.clientX-r.left+14}px,${ev.clientY-r.top+16}px)`;
+  if(!drag)return;const dx=ev.clientX-drag.x,dy=ev.clientY-drag.y;if(!drag.moved&&Math.hypot(dx,dy)>(ev.pointerType==='mouse'?6:10))drag.moved=true;
+  if(drag.moved&&!state.cur){if(ORB&&state.mode==='overview'){ORB.ty=drag.oy+dx*.0034;ORB.tp=Math.max(ORB.pitch0-.42,Math.min(ORB.pitch0+.42,drag.op-dy*.0022))}
+    else if(pan.hi>pan.lo){pan.t=Math.max(pan.lo,Math.min(pan.hi,drag.pn-dx*pan.mpp));look.tp=Math.max(-.35,Math.min(.35,drag.p0+dy*.002))}
+    else{look.ty=Math.max(-.7,Math.min(.7,drag.y0-dx*.0026));look.tp=Math.max(-.35,Math.min(.35,drag.p0+dy*.002))}}});
+cvs.addEventListener('pointerleave',()=>{ndc.set(9,9);parT.set(0,0)});
+cvs.addEventListener('pointerdown',ev=>{drag={x:ev.clientX,y:ev.clientY,y0:look.ty,p0:look.tp,oy:ORB?.ty,op:ORB?.tp,pn:pan.t,moved:false};cvs.setPointerCapture?.(ev.pointerId)});
+cvs.addEventListener('pointercancel',()=>{drag=null});
+cvs.addEventListener('pointerup',ev=>{const d=drag;drag=null;if(!d)return;
+  // a sideways swipe over the book in hand moves to the next or previous one
+  if(d.moved){const dx=ev.clientX-d.x,dy=ev.clientY-d.y;if(state.cur&&Math.abs(dx)>40&&Math.abs(dx)>1.4*Math.abs(dy))step(dx<0?1:-1);return}
+  const r=cvs.getBoundingClientRect();ndc.set((ev.clientX-r.left)/r.width*2-1,-(ev.clientY-r.top)/r.height*2+1);ray.setFromCamera(ndc,camera);
+  const hit=ray.intersectObjects(pickables,false)[0];
+  if(hit){const e=hit.object.userData.entry;if(e===state.cur){setOpen(!state.open);return}present(e);return}
+  if(state.cur){returnBook(state.cur);return}
+  if(state.mode==='focus')overview()});
+let wheelAcc=0,wheelT=0;
+cvs.addEventListener('wheel',ev=>{ev.preventDefault();if(state.busy||tweens.size)return;wheelAcc+=ev.deltaY;const now=performance.now();if(now-wheelT<700){return}if(Math.abs(wheelAcc)>40){wheelT=now;stepSeries(Math.sign(wheelAcc));wheelAcc=0}},{passive:false});
+
+let poseA=app.clientWidth/app.clientHeight;
+function resize(){const w=app.clientWidth,h=app.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h);composer.setSize(w,h);bloom.setSize(w,h);if(dust)dust.material.uniforms.dpr.value=DPR;
+  // a turned phone reframes the series or the reading stand for the new shape
+  if(Math.abs(w/h-poseA)>.08*poseA){poseA=w/h;if(INSTANT||state.busy)return;
+    if(RH&&state.cur?.state==='presented'&&!state.open)moveCam(rehalPose(),.8);else if(state.mode==='focus'&&state.series)moveCam(spose(state.series),.8)}}
+new ResizeObserver(resize).observe(app);
+
+// ------------------------------------------------------------------ frame
+let last=performance.now(),lastDraw=0,elapsed=0,visible=true,motion=0;
+new IntersectionObserver(([en])=>visible=en.isIntersecting).observe(app);
+const tmpV=V(),tmpP=V(),tmpL=V(),UP=V(0,1,0);
+function update(dt){
+  elapsed+=dt;const t=elapsed;
+  runTweens(dt);
+  const amp=REDUCE?0:(state.mode==='overview'?1:state.cur?.25:.45),pt=parT.clone().multiplyScalar(amp);par.lerp(pt,1-Math.pow(.04,dt));
+  const kk=1-Math.pow(.02,dt);look.yaw+=(look.ty-look.yaw)*kk;look.pitch+=(look.tp-look.pitch)*kk;pan.v+=(pan.t-pan.v)*kk;
+  motion=par.distanceTo(pt)+Math.abs(look.ty-look.yaw)+Math.abs(look.tp-look.pitch)+Math.abs(pan.t-pan.v);
+  if(!drag&&!state.cur){look.ty*=1-dt*.15;look.tp*=1-dt*.15}
+  if(ORB&&state.mode==='overview'&&!camMoving&&!orbitHold){ORB.yaw+=(ORB.ty-ORB.yaw)*kk;ORB.pitch+=(ORB.tp-ORB.pitch)*kk;const p=orbitPose(ORB.yaw,ORB.pitch);
+    rig.pos.lerp(p.pos,INSTANT?1:1-Math.pow(.05,dt));rig.look.copy(rig.pos).add(p.look.sub(p.pos));motion+=Math.abs(ORB.ty-ORB.yaw)+Math.abs(ORB.tp-ORB.pitch)+rig.pos.distanceTo(p.pos)}
+  const rp=pan.ax?panPos(rig.pos,pan.ax,pan.v,tmpP):rig.pos,rl=pan.ax?tmpL.copy(rig.look).addScaledVector(pan.ax,pan.v):rig.look;
+  const fwd=tmpV.copy(rl).sub(rp);const dist=fwd.length();fwd.normalize();const right=V().crossVectors(fwd,UP).normalize();
+  fwd.applyAxisAngle(UP,look.yaw).applyAxisAngle(right,-look.pitch);
+  camera.position.copy(rp).addScaledVector(right,par.x*.12).add(V(0,par.y*.055,0));
+  camera.lookAt(V().copy(camera.position).addScaledVector(fwd,dist).addScaledVector(right,par.x*.05));
+  if(Math.abs(camera.fov-rig.fov)>.01||Math.abs(camera.filmOffset-rig.film)>.01){camera.fov=rig.fov;camera.filmOffset=rig.film;camera.updateProjectionMatrix()}
+  sky.position.copy(camera.position);
+  hovered=null;
+  if(ndc.x<5&&!state.busy&&!tweens.size&&!drag){ray.setFromCamera(ndc,camera);const h=ray.intersectObjects(pickables,false)[0];if(h&&h.object.userData.entry.state==='shelf')hovered=h.object.userData.entry}
+  for(const e of books){if(e.state!=='shelf')continue;const tg=e===hovered?1:0;if(Math.abs(e.hover-tg)>.001){motion+=.01;e.hover+=(tg-e.hover)*(1-Math.pow(.0005,dt));e.g.position.copy(e.home.p).addScaledVector(e.outW,(e.out==='z'?.06:.025)*e.hover).add(V(0,.006*e.hover,0))}}
+  if(hovered){tip.innerHTML=`${hovered.b.title}<small>${SERIES[hovered.sid].name} · ${hovered.n}</small>`;tip.classList.add('on');cvs.style.cursor='pointer'}else{tip.classList.remove('on');cvs.style.cursor=state.cur?'pointer':(drag?.moved?'grabbing':'grab')}
+  if(!RH&&state.cur&&state.cur.state==='presented'&&!state.busy&&!REDUCE){const e=state.cur;const sway=new THREE.Quaternion().setFromEuler(new THREE.Euler(-par.y*.12+Math.sin(t*.7)*.01,par.x*.25,0));e.g.quaternion.copy(e.T.q).multiply(sway)}
+  {const bs=RH&&state.cur?.12:.2;bloom.strength=INSTANT?bs:bloom.strength+(bs-bloom.strength)*(1-Math.pow(.2,dt))}
+  flameU.time.value=t;grade.uniforms.time.value=t;
+  flicker(t);fireFrame(t);volUpdate();if(fire)fire.SU.pxs.value=2*Math.tan(camera.fov*Math.PI/360)/(app.clientHeight*DPR);
+  setHands();
+}
+// Phones draw at 30 fps while nothing moves (the flipbook runs at 24) and at the display rate during interaction.
+// The governor steps quality down, cheapest loss first, while the median frame interval stays above 38 ms; a 30 Hz
+// cap such as iOS Low Power Mode stays under that line.
+const IDLE_MS=SMALL?1000/30-3:0;
+const setDPR=d=>{DPR=d;renderer.setPixelRatio(d);composer.setPixelRatio(d);resize()};
+const GOV={lvl:0,win:[],skip:45,bad:0,steps:[]};
+for(let d=DPR;d>1.01;){d=Math.max(1,d-.25);const v=d;GOV.steps.push(()=>setDPR(v))}
+GOV.steps.push(()=>{if(volPass){volPass.div=4;resize()}},()=>{if(volPass)volPass.enabled=false;if(dust)dust.visible=false},()=>{bloom.enabled=false},()=>setDPR(.75));
+function govern(dt){if(GOV.skip>0){GOV.skip--;return}GOV.win.push(dt);if(GOV.win.length<40)return;
+  const m=GOV.win.sort((a,b)=>a-b)[20];GOV.win.length=0;
+  if(m>.038&&GOV.lvl<GOV.steps.length){if(++GOV.bad>=2){GOV.bad=0;GOV.steps[GOV.lvl++]();GOV.skip=20}}else GOV.bad=0}
+function loop(now){if(!visible||document.hidden){last=now;return}
+  if(IDLE_MS&&!(drag||tweens.size||camMoving||motion>1e-4)&&now-lastDraw<IDLE_MS)return;
+  const dt=(now-last)/1000;last=lastDraw=now;update(Math.min(dt,.05));composer.render();govern(dt)}
+markChips();
+
+window.__baked={present:i=>present(books[i]),open:()=>setOpen(true),focus:focusSeries,overview,variant:setVariant,books,camera,rig,quality:()=>GOV.lvl};
+async function applyTest(s){
+  if(s.variant&&s.variant!==variant)await setVariant(s.variant,false);
+  if(state.cur){const e=state.cur;e.pivot.rotation.y=0;e.g.position.copy(e.home.p);e.g.quaternion.copy(e.home.q);setProbe(e,e.probe);e.state='shelf';state.cur=null;state.open=false;hidePanel()}
+  state.series=s.series||null;state.mode=s.series?'focus':'overview';markChips();
+  HAND_T=s.time?new Date(`2026-01-01T${s.time}`):null;setHands();
+  orbitHold=!!(s.pose||s.post);if(ORB){ORB.yaw=ORB.ty=ORB.yaw0+(s.yaw||0);ORB.pitch=ORB.tp=ORB.pitch0+(s.pitch||0)}
+  setRigInstant(s.series?spose(s.series):ORB?orbitPose(ORB.yaw,ORB.pitch):OVERVIEW);
+  if(s.pose)setRigInstant({pos:VA(s.pose.pos),look:VA(s.pose.look),fov:s.pose.fov||50});
+  if(s.present!=null){const e=books[s.present];await present(e);setRigInstant(RH?rehalPose():spose(e.sid,e));if(s.open)await setOpen(true)}
+  if(s.post)setRigInstant({pos:VA(s.post.pos),look:VA(s.post.look),fov:s.post.fov||50});
+  if(s.vol)for(const v in s.vol)Object.assign(CFG.vol[v],s.vol[v]);if(dust&&s.dust)dust.material.uniforms.gain.value=s.dust;if(fire&&s.fire)for(const k in s.fire)fire.U[k].value=s.fire[k];if(HEARTH_U&&s.hearth)for(const k in s.hearth)HEARTH_U[k].value=s.hearth[k];if(s.t!=null)elapsed=s.t;
+  for(const k in FXN)FXN[k].visible=!(s.hide||[]).includes(k);if(dust)dust.visible=!(s.hide||[]).includes('dust');if(volPass)volPass.enabled=!(s.hide||[]).includes('vol');
+  if(s.q)while(GOV.lvl<s.q)GOV.steps[GOV.lvl++]();
+  if(s.pan!=null)pan.v=pan.t=pan.lo+(pan.hi-pan.lo)*s.pan;
+  if(s.hover!=null){const e=books[s.hover];e.hover=1;e.g.position.copy(e.home.p).addScaledVector(e.outW,(e.out==='z'?.06:.025))}
+}
+// shaders compile behind the loading screen rather than on the first frames
+await renderer.compileAsync(scene,camera).catch(()=>{});
+window.__studyReady=true;$('load').style.opacity=0;setTimeout(()=>$('load')?.remove(),900);
+if(TEST){INSTANT=true;const shots=TEST.shots||[TEST];const W=app.clientWidth,H=app.clientHeight;const cols=shots.length>1?2:1,rows=Math.ceil(shots.length/cols);
+  const [cc,cg]=canvas(W*DPR,H*DPR);
+  for(const [i,s] of shots.entries()){await applyTest(s);update(.016);composer.render(.016);cg.drawImage(renderer.domElement,(i%cols)*W*DPR/cols,Math.floor(i/cols)*H*DPR/rows,W*DPR/cols,H*DPR/rows)}
+  INSTANT=false;$('load')?.remove();
+  if(shots.length>1){cc.style.cssText='position:absolute;inset:0;z-index:9;width:100%;height:100%';app.appendChild(cc)}window.__DONE__=true}
+else renderer.setAnimationLoop(loop);
+</script>
+</body></html>
