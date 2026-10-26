@@ -263,7 +263,8 @@ body:has(.home) { overflow: hidden; }
 .sp-title { font-family: var(--serif); font-size: clamp(2.2rem,5vw,3.2rem); font-weight: 500; color: var(--text); letter-spacing: -0.01em; }
 .sp-rule { width: 48px; height: 2px; background: var(--accent-bright); margin: 1rem 0 0.75rem; }
 .sp-sub { font-size: 0.88rem; color: var(--text-muted); max-width: 420px; margin-bottom: 1.5rem; }
-.shelf-page > .sp-sub { margin-bottom: 3.5rem; }
+.shelf-page > .sp-sub { margin-bottom: 3.5rem; max-width: none; }
+.shelf-page > .sp-sub a { white-space: nowrap; }
 
 .genre-tag {
     font-size: 0.68rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;

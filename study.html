@@ -434,6 +434,8 @@ const SERIES_ORDER=ORDER.filter(s=>books.some(e=>e.sid===s));
 
 // ------------------------------------------------------------------ fire, candles, flicker
 const fx=new THREE.Group();scene.add(fx);const FXN={};
+// the hearth flames, drawn after tone mapping by FirePass
+const fireScene=new THREE.Scene();
 const flameU={time:{value:0},inten:{value:1}};
 // smooth 1D value noise in [-1, 1]
 const FLN=(()=>{const H=i=>{const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x)};return x=>{const i=Math.floor(x),f=x-i,u=f*f*(3-2*f);return (H(i)*(1-u)+H(i+1)*u)*2-1}})();
@@ -461,11 +463,12 @@ ${BB_GLSL}`;
 const HC=CFG.hearth;
 let fire=null;const fireUs=[];
 if(HC){
-  // flames: a looping Mantaflow fire flipbook (blender/scripts/firesim.py), greyscale intensity coloured by the flame ramp.
-  // A full card in the middle and two smaller ones to either side, offset in time and mirrored, so tongues rise across
-  // the pile; each turns part way toward the camera. The flame base fades in above the top log, where the sim's
-  // densest flame would otherwise sit as a bright seam along the wood.
-  const FF=META.fireflip,U={time:flameU.time,inten:{value:1},gain:{value:2.6},fb:{value:BLACK},fr:{value:new THREE.Vector4()}};
+  // flames: a looping Mantaflow fire flipbook (blender/scripts/firesim.py), greyscale intensity coloured by a flame ramp.
+  // They are drawn after tone mapping (FirePass, screened over the frame by the grade pass): AgX cannot show a saturated
+  // flame, bright oranges roll off to peach, so the ramp holds display colours from ember red at the tips to pale yellow
+  // in the hottest cores. One card spans the pile; it fades out softly where the logs stand in front of it, and the
+  // flame base fades in above the top log, where the root of each tongue would otherwise sit as a bright seam.
+  const FF=META.fireflip,U={time:flameU.time,inten:{value:1},fb:{value:BLACK},fr:{value:new THREE.Vector4()},tDepth:{value:BLACK},nf:{value:new THREE.Vector2(.05,50)},res:{value:new THREE.Vector2(1,1)}};
   const img=FF?await new Promise(res=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=ASSET(SMALL&&FF.half?'fire_flip_h.webp':'fire_flip.webp')}):null;
   if(img){const [,g]=canvas(img.width,img.height);g.drawImage(img,0,0);const px=g.getImageData(0,0,img.width,img.height).data,r8=new Uint8Array(img.width*img.height);
     for(let i=0;i<r8.length;i++)r8[i]=px[i*4];
@@ -476,23 +479,24 @@ if(HC){
     for(let k=0;k<FF.n;k++){const c0=(k%FF.cols)*tw,r0=Math.floor(k/FF.cols)*th;let a=0;
       for(let y=r0;y<r0+th;y+=2)for(let x=c0;x<c0+tw;x+=2){const v=r8[y*img.width+x]/255;a+=v*v}E[k]=a}
     const mE=E.reduce((a,b)=>a+b,0)/FF.n;for(let k=0;k<FF.n;k++)E[k]/=mE;
-    const [x0,x1,y0,y1]=FF.rect,cards=[[0,0,1,0,0,1],[-.085,-.04,.74,31.,1,.6],[.09,-.02,.64,59.,0,.55]];
+    const [x0,x1,y0,y1]=FF.rect,cards=[[0,0,1,0,0,1]];
     const geo=new THREE.PlaneGeometry(x1-x0,y1-y0);geo.translate(0,(y1-y0)/2,0);
     const FR=REDUCE?.5:1,frame=(t,o)=>{const f=t*FF.fps*FR+o,k=Math.floor(f);return {k0:((k%FF.n)+FF.n)%FF.n,a:f-k}};
     fire={U,cards:[],energy:t=>{let a=0,w=0;for(const c of fire.cards){const {k0,a:fa}=frame(t,c.off);a+=c.w*(E[k0]*(1-fa)+E[(k0+1)%FF.n]*fa);w+=c.w}return a/w}};
-    FXN.flames=new THREE.Group();fx.add(FXN.flames);
+    FXN.flames=new THREE.Group();fireScene.add(FXN.flames);
     for(const [dx,dz,sc,off,mir,w] of cards){
-      const m=new THREE.Mesh(geo,new THREE.ShaderMaterial({uniforms:{...U,off:{value:off},mir:{value:mir},w:{value:w}},transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+      const m=new THREE.Mesh(geo,new THREE.ShaderMaterial({uniforms:{...U,off:{value:off},mir:{value:mir},w:{value:w}},transparent:true,depthTest:false,depthWrite:false,blending:THREE.AdditiveBlending,
         vertexShader:`varying vec2 vUv;varying float vY;void main(){vUv=uv;vec4 p=modelMatrix*vec4(position,1.);vY=p.y;gl_Position=projectionMatrix*viewMatrix*p;}`,
-        fragmentShader:`uniform sampler2D fb;uniform vec4 fr;uniform float time,inten,gain,off,mir,w;varying vec2 vUv;varying float vY;
-        vec3 fc(float t){vec3 c=mix(vec3(.3,.025,0.),vec3(1.,.2,.015),smoothstep(0.,.3,t));c=mix(c,vec3(1.,.45,.06),smoothstep(.25,.55,t));
-          c=mix(c,vec3(1.,.7,.2),smoothstep(.5,.8,t));return mix(c,vec3(1.,.87,.55),smoothstep(.82,1.,t));}
+        fragmentShader:`uniform sampler2D fb,tDepth;uniform vec4 fr;uniform vec2 nf,res;uniform float time,inten,off,mir,w;varying vec2 vUv;varying float vY;
+        vec3 fc(float t){vec3 c=mix(vec3(.431,.086,.008),vec3(.725,.196,.024),smoothstep(0.,.14,t));c=mix(c,vec3(.941,.412,.071),smoothstep(.14,.32,t));
+          c=mix(c,vec3(1.,.627,.176),smoothstep(.32,.52,t));c=mix(c,vec3(1.,.804,.392),smoothstep(.52,.75,t));return mix(c,vec3(1.,.922,.686),smoothstep(.75,1.,t));}
         float tap(float k,vec2 uv){float c=mod(k,fr.x),r=floor(k/fr.x);return texture2D(fb,vec2((c+uv.x)/fr.x,(r+1.-uv.y)/fr.y)).r;}
+        float ld(float d){return nf.x*nf.y/(nf.y-d*(nf.y-nf.x));}
         void main(){vec2 uv=clamp(vec2(mir>.5?1.-vUv.x:vUv.x,vUv.y),.003,.997);float f=time*fr.w*${FR.toFixed(2)}+off,k=mod(floor(f),fr.z),a=fract(f);
-          float v=mix(tap(k,uv),tap(mod(k+1.,fr.z),uv),a);v*=v*(.3+.7*smoothstep(.27,.4,vY));
-          float t=clamp(v*(.9+.2*inten),0.,1.);
-          gl_FragColor=vec4(fc(t)*(.05*t+2.2*t*t*sqrt(t))*w*gain*inten,1.);}`}));
-      m.position.set((x0+x1)/2+dx,y0,FF.z+dz);m.scale.setScalar(sc);m.renderOrder=4;FXN.flames.add(m);fire.cards.push({m,off,w})}}
+          float v=mix(tap(k,uv),tap(mod(k+1.,fr.z),uv),a);v*=v*(.55+.45*smoothstep(.29,.36,vY))*(.5+.5*inten);
+          float t=clamp(v,0.,1.),occ=clamp((ld(texture2D(tDepth,gl_FragCoord.xy/res).r)-ld(gl_FragCoord.z))/.015,0.,1.);
+          gl_FragColor=vec4(fc(t)*smoothstep(0.,.22,t)*w*occ,1.);}`}));
+      m.position.set((x0+x1)/2+dx,y0,FF.z+dz);m.scale.setScalar(sc);FXN.flames.add(m);fire.cards.push({m,off,w})}}
   else fire={U,cards:[]};
   fireUs.push(U);
   // hearth (blender/scripts/hearth.py): logs on andirons over a coal pile and ash bed. The logs' atlas holds baked
@@ -826,19 +830,34 @@ if(VOL&&CFG.dust){const NB=SMALL?1000:3200,N=NB+(SMALL?200:600),[lo,hi]=CFG.dust
 // ------------------------------------------------------------------ post
 const W0=app.clientWidth,H0=app.clientHeight;
 const rt=new THREE.WebGLRenderTarget(W0*DPR,H0*DPR,{type:THREE.HalfFloatType,samples:4});
-if(VOL)rt.depthTexture=new THREE.DepthTexture(W0*DPR,H0*DPR);
+// the volumetrics and the hearth flames read the scene's depth
+rt.depthTexture=new THREE.DepthTexture(W0*DPR,H0*DPR);
 const composer=new EffectComposer(renderer,rt);
-if(VOL)composer.renderTarget2.depthTexture=new THREE.DepthTexture(W0*DPR,H0*DPR);
+composer.renderTarget2.depthTexture=new THREE.DepthTexture(W0*DPR,H0*DPR);
+// the flames render straight after the scene, while the read buffer still holds its depth, into a target of their own
+class FirePass extends Pass{
+  constructor(){super();this.needsSwap=false;this.scale=SMALL?.5:1;
+    this.rt=new THREE.WebGLRenderTarget(1,1,{depthBuffer:false,generateMipmaps:true,minFilter:THREE.LinearMipmapLinearFilter})}
+  setSize(w,h){this.rt.setSize(Math.max(1,Math.round(w*this.scale)),Math.max(1,Math.round(h*this.scale)))}
+  render(r,wb,rb){const cc=r.getClearColor(new THREE.Color()),ca=r.getClearAlpha();r.setRenderTarget(this.rt);r.setClearColor(0,0);r.clear(true,false,false);
+    if(fire&&fire.cards.length){const U=fire.U;U.tDepth.value=rb.depthTexture;U.nf.value.set(camera.near,camera.far);U.res.value.set(this.rt.width,this.rt.height)}
+    r.render(fireScene,camera);
+    r.setClearColor(cc,ca)}}
+const firePass=new FirePass();
 composer.setPixelRatio(DPR);composer.setSize(W0,H0);
 composer.addPass(new RenderPass(scene,camera));
+composer.addPass(firePass);
 const volPass=VOL?new VolPass():null;if(volPass)composer.addPass(volPass);
 const bloom=new UnrealBloomPass(new THREE.Vector2(W0,H0),.32,.55,2.4);composer.addPass(bloom);
 composer.addPass(new OutputPass());
-const grade=new ShaderPass({uniforms:{tDiffuse:{value:null},time:{value:0},vig:{value:CFG.grade.vig},grain:{value:.035},contrast:{value:CFG.grade.contrast}},
+const grade=new ShaderPass({uniforms:{tDiffuse:{value:null},tFire:{value:null},time:{value:0},vig:{value:CFG.grade.vig},grain:{value:.035},contrast:{value:CFG.grade.contrast}},
   vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
-  fragmentShader:`uniform sampler2D tDiffuse;uniform float time,vig,grain,contrast;varying vec2 vUv;
+  fragmentShader:`uniform sampler2D tDiffuse,tFire;uniform float time,vig,grain,contrast;varying vec2 vUv;
     float h(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}
-    void main(){vec3 c=texture2D(tDiffuse,vUv).rgb;c=mix(c,c*c*(3.-2.*c),contrast);vec2 q=vUv-.5;c*=1.-vig*dot(q,q)*1.6;c+=(h(floor(gl_FragCoord.xy))-.5)*grain*.5;gl_FragColor=vec4(c,1.);}`});
+    void main(){vec3 c=texture2D(tDiffuse,vUv).rgb,f=texture2D(tFire,vUv).rgb+textureLod(tFire,vUv,3.).rgb*.2+textureLod(tFire,vUv,5.).rgb*.12;
+      c=1.-(1.-c)*(1.-clamp(f,0.,1.));c=mix(c,c*c*(3.-2.*c),contrast);vec2 q=vUv-.5;c*=1.-vig*dot(q,q)*1.6;c+=(h(floor(gl_FragCoord.xy))-.5)*grain*.5;gl_FragColor=vec4(c,1.);}`});
+// ShaderPass clones its uniforms, and a render target's texture does not survive the clone
+grade.uniforms.tFire.value=firePass.rt.texture;
 composer.addPass(grade);
 
 // ------------------------------------------------------------------ variant switching (crossfade between bakes)
