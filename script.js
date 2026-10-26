@@ -113,7 +113,7 @@
     (function () {
         const navLinks = document.querySelector('.nav-links');
         if (!navLinks) return;
-        if (navLinks.querySelector('a[href="writing.html"]')) return;
+        if (navLinks.querySelector('a[href$="writing.html"]')) return;
 
         const RSS_API = 'https://api.rss2json.com/v1/api.json?rss_url=' +
                         encodeURIComponent('https://nusayb.substack.com/feed');
@@ -374,7 +374,7 @@
 
     // ─── KEYBOARD SHORTCUTS ──────────────────
     // Single keys, guarded against modifiers and form fields:
-    //   ?  shortcuts overlay   h/r/b/w  navigate
+    //   ?  shortcuts overlay   h/r/p/b/w  navigate
     // Arrow keys: ←/→ rove focus across covers on the
     // shelf and step prev/next inside the detail modal.
     (function () {
@@ -418,6 +418,7 @@
             const items = [];
             if (findNav('home')) items.push(['H', 'Home']);
             if (findNav('resume')) items.push(['R', 'Resume']);
+            if (findNav('projects')) items.push(['P', 'Projects']);
             if (findNav('bookshelf')) items.push(['B', 'Bookshelf']);
             if (findNav('writing')) items.push(['W', 'Writing']);
             if (document.querySelector('.shelf-row')) items.push(['← →', 'Browse books']);
@@ -486,6 +487,7 @@
             switch (e.key.length === 1 ? e.key.toLowerCase() : '') {
                 case 'h': clickNav(findNav('home')); break;
                 case 'r': clickNav(findNav('resume')); break;
+                case 'p': clickNav(findNav('projects')); break;
                 case 'b': clickNav(findNav('bookshelf')); break;
                 case 'w': clickNav(findNav('writing')); break;
             }

@@ -93,7 +93,7 @@
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 [hidden] { display: none !important; }
-html { font-size: 16px; scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+html { font-size: 100%; scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
 body {
     font-family: var(--sans); font-weight: 400; color: var(--text);
     background: var(--bg); line-height: 1.7;
@@ -115,11 +115,10 @@ a:hover { color: var(--accent-hover); }
 .nav-link {
     font-size: 0.825rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
     color: var(--text); position: relative; padding-bottom: 2px;
-    opacity: 1;
-    transition: color 0.3s;
 }
 .nav-link::after { content:''; position: absolute; bottom: -2px; left: 0; width: 0; height: 1.5px; background: var(--accent-bright); transition: width 0.3s; }
-.nav-link:hover, .nav-link.active { color: var(--text); }
+/* a:hover would otherwise recolour the link; the nav signals hover with the underline only */
+.nav-link:hover { color: var(--text); }
 .nav-link:hover::after, .nav-link.active::after { width: 100%; }
 .nav-toggle { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; }
 .nav-toggle span { display: block; width: 22px; height: 1.5px; background: var(--text); transition: all 0.3s; }
@@ -204,15 +203,6 @@ body:has(.home) { overflow: hidden; }
 
 @keyframes fadeUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
 
-@media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-    html { scroll-behavior: auto; }
-}
-
 /* ─── PAGE TRANSITION ─── */
 /* Scale fade handled via inline styles in script.js */
 
@@ -224,8 +214,9 @@ body:has(.home) { overflow: hidden; }
         flex-direction: column; padding: 1.5rem var(--gutter); gap: 0.5rem;
         border-bottom: 1px solid var(--border);
     }
+    .nav { justify-content: flex-end; }
     .nav-links.open { display: flex; }
-    .nav-link { opacity: 1 !important; padding: 0.75rem 0; font-size: 0.9rem; }
+    .nav-link { padding: 0.75rem 0; font-size: 0.9rem; }
     .nav-toggle { display: flex; }
     .nav-toggle.open span:nth-child(1) { transform: rotate(45deg) translate(4px,4px); }
     .nav-toggle.open span:nth-child(2) { opacity: 0; }
@@ -509,7 +500,7 @@ html:has(.book-dialog[open]) { overflow: hidden; }
    RESUME PAGE
    ═══════════════════════════════════════════ */
 .resume-page {
-    flex: 1; width: 100%; max-width: 880px; margin: 0 auto;
+    flex: 1; width: 100%; max-width: calc(var(--max-w) + 2 * var(--gutter)); margin: 0 auto;
     padding: calc(var(--nav-h) + 3.5rem) var(--gutter) 4rem;
     animation: fadeUp 0.8s ease both;
 }
@@ -517,10 +508,7 @@ html:has(.book-dialog[open]) { overflow: hidden; }
 /* at --text-faint the dash inside a role reads as a gap, not a joiner */
 .rp-role .rp-sep { color: var(--text-muted); }
 
-.resume-page > * { max-width: 720px; margin-left: 0; margin-right: 0; }
-.resume-page > .sp-rule { margin-left: 0; }
 .rp-actions { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 3.5rem; }
-.rp-download { text-transform: uppercase; }
 .rp-section-nav { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin-bottom: 2.5rem; }
 .rp-section-nav a { font-size: 0.85rem; text-decoration: underline; text-underline-offset: 0.2em; padding: 0.5rem 0; }
 
@@ -637,7 +625,6 @@ main:focus { outline: none; }
 
     /* defeats the inline opacity/transform written by the page-transition script */
     main { opacity: 1 !important; transform: none !important; }
-    .resume-page > * { max-width: none; }
     .resume-page, .shelf-page { max-width: none; padding: 0; animation: none; }
 
     .sp-title { font-size: 20pt; }
