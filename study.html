@@ -22,6 +22,8 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preload" href="/fonts/cormorant-garamond.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/libre-franklin.woff2" as="font" type="font/woff2" crossorigin>
+<!-- the import map must come before any module fetch starts, or Firefox ignores it -->
+<script type="importmap">{"imports":{"three":"/study/lib/three.js"}}</script>
 <link rel="modulepreload" href="/study/lib/three.js">
 <style>
 @font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/cormorant-garamond.woff2) format("woff2")}
@@ -81,6 +83,7 @@ html,body{margin:0;background:#0b0907;color:var(--ink);font-family:var(--sans)}
   .panel{left:0;right:0;width:auto;top:auto;bottom:0;padding:52px 16px calc(14px + env(safe-area-inset-bottom));transform:translateY(24px);
     background:linear-gradient(0deg,rgba(11,9,7,.94),rgba(11,9,7,.84) 58%,rgba(11,9,7,0))}
   .panel.on{transform:none}.panel::before{display:none}.panel h2{font-size:28px;margin:6px 0 4px}.panel .a{font-size:16px}.panel .meta{margin:8px 0 12px}.panel .isbn{display:none}}
+@media (prefers-reduced-motion:reduce){.btn,.series{transition-property:background,border-color,color,opacity}.panel{transition:opacity .45s}.btn:hover,.brand a:hover span{transform:none}}
 </style></head>
 <body>
 <div id="app">
@@ -89,10 +92,10 @@ html,body{margin:0;background:#0b0907;color:var(--ink);font-family:var(--sans)}
   <noscript><style>#load{display:none}</style><div class="load"><div><p>The study needs JavaScript.</p><a href="/bookshelf">Browse the bookshelf</a></div></div></noscript>
   <div class="ui">
     <div class="brand p"><a href="/bookshelf" aria-label="Back to the bookshelf"><span aria-hidden="true">‹</span>Bookshelf</a><small>Nusayb Nurani</small><span class="hint" id="hint"></span></div>
-    <div class="top p"><button class="btn" id="bView">Overview</button><button class="btn" id="bTheme" aria-label="Toggle day and night">Night</button></div>
+    <div class="top p"><button class="btn" id="bView">Overview</button><button class="btn" id="bTheme">Night</button></div>
     <nav class="series p" id="series" aria-label="Series"></nav>
     <div class="tip" id="tip"></div>
-    <aside class="panel p" id="panel" aria-live="polite">
+    <aside class="panel p" id="panel" aria-live="polite" inert>
       <div class="k" id="pk"></div><h2 id="pt"></h2><div class="a" id="pa"></div>
       <div class="meta" id="pm"></div>
       <div class="row"><button class="btn" id="bOpen">Open</button><button class="btn" id="bPrev" aria-label="Previous book">‹</button><button class="btn" id="bNext" aria-label="Next book">›</button><button class="btn" id="bBack">Back to shelf</button></div>
@@ -108,7 +111,6 @@ html,body{margin:0;background:#0b0907;color:var(--ink);font-family:var(--sans)}
   window.__studyGL=ok;if(!ok)__studyFail(true);
   addEventListener('error',function(){__studyFail(false)});addEventListener('unhandledrejection',function(){__studyFail(false)})})();
 </script>
-<script type="importmap">{"imports":{"three":"/study/lib/three.js"}}</script>
 <script type="module" onerror="__studyFail(false)">
 import * as THREE from 'three';
 import {GLTFLoader,DRACOLoader,HDRLoader,EffectComposer,RenderPass,UnrealBloomPass,ShaderPass,OutputPass,Pass,FullScreenQuad} from 'three';
@@ -118,6 +120,7 @@ const $=id=>document.getElementById(id);
 const app=$('app');
 const TEST=window.__AUTOTEST__||null;
 const REDUCE=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const NARROW=()=>matchMedia('(max-width:700px),(max-aspect-ratio:4/5)').matches;
 const SCENE=window.__SCENE__||'study';
 const ASSET=window.__ASSETS__?(n=>window.__ASSETS__[n]):(n=>`/${SCENE}/${n}`);
 // canvas lettering (spines, title pages, bookplate) is drawn once, so the faces must be ready first
@@ -125,7 +128,9 @@ const FONTS=Promise.all(['600 40px "Cormorant Garamond"','italic 400 30px "Cormo
 let INSTANT=false;
 
 const CFG={
-  study:{overview:{pos:[-1.75,1.55,-.95],look:[.75,1.15,-4.4],fov:58},focusFov:40,focusDist:1.0,
+  // portrait screens open from the other corner onto a full bookcase: from the desktop corner a narrow frame holds
+  // little but the chimney breast
+  study:{overview:{pos:[-1.75,1.55,-.95],look:[.75,1.15,-4.4],fov:58},overviewNarrow:{pos:[1.75,1.55,-.95],look:[-1.24,1.36,-4.01],fov:66},focusFov:40,focusDist:1.0,
     orbit:{c:[0,-2.2],r:3,x:[-1.75,1.75],z:[-3.3,-.95]},focusBox:{x:[-2.06,2.06],z:[-3.76,-.64]},
     hint:'Drag to look around · click a book · <kbd>←</kbd> <kbd>→</kbd> browse · <kbd>↓</kbd> take down · <kbd>Esc</kbd> back',grade:{contrast:.04,vig:.38},
     // three coords: opening [half width,y0,y1,z]; haze box; amb = room light reaching the hearth, per variant
@@ -134,11 +139,11 @@ const CFG={
   hall:{overview:{pos:[.35,1.75,-.6],look:[0,1.9,-14],fov:60},focusFov:42,focusDist:1.25,window:{z:-14,x0:-1.7,x1:1.7,y0:.95,spring:6},
     hint:'Scroll or drag to walk · click a book · <kbd>←</kbd> <kbd>→</kbd> browse · <kbd>Esc</kbd> back',grade:{contrast:.1,vig:.42}},
 }[SCENE];
+const OV=NARROW()&&CFG.overviewNarrow||CFG.overview,ovFov=()=>(NARROW()&&CFG.overviewNarrow||CFG.overview).fov;
 $('hint').innerHTML=CFG.hint;
 
 let loadN=0,loadT=1;const tick=()=>{loadN++;const b=$('bar');if(b)b.style.transform=`scaleX(${Math.min(1,loadN/loadT)})`};
-const DATA=window.__BOOKS__||await (await fetch('/data/books.json')).json();
-const META=window.__META__||await (await fetch(ASSET('meta.json'))).json();
+const [DATA,META]=await Promise.all([window.__BOOKS__||fetch('/data/books.json').then(r=>r.json()),window.__META__||fetch(ASSET('meta.json')).then(r=>r.json())]);
 const COV=window.__COVERS__,COVL=window.__COVERS_L__||COV;
 // the shelf shows the small covers; the large one loads only for the book in hand
 const coverURL=(id,large=false)=>(large?COVL:COV)?.[id]||`/covers/${large?'large/':''}${id}.webp`;
@@ -171,7 +176,7 @@ renderer.setPixelRatio(DPR);renderer.setSize(app.clientWidth,app.clientHeight);
 renderer.toneMapping=THREE.AgXToneMapping;renderer.outputColorSpace=THREE.SRGBColorSpace;
 app.prepend(renderer.domElement);
 const scene=new THREE.Scene();
-const camera=new THREE.PerspectiveCamera(CFG.overview.fov,app.clientWidth/app.clientHeight,.02,120);
+const camera=new THREE.PerspectiveCamera(OV.fov,app.clientWidth/app.clientHeight,.02,120);
 const pmrem=new THREE.PMREMGenerator(renderer);
 const maxAniso=renderer.capabilities.getMaxAnisotropy();
 
@@ -306,7 +311,8 @@ const skyMat=new THREE.ShaderMaterial({uniforms:{a:{value:null},b:{value:null},k
     }`});
 const sky=new THREE.Mesh(new THREE.SphereGeometry(60,48,24),skyMat);sky.renderOrder=-1;scene.add(sky);
 
-loadT=META.pages+1+Object.keys(META.probes).length+DATA.books.length+2+(META.room?1:0)+Object.keys(META.texs||{}).length+(META.hands?.length?1:0)+(META.hearth?4:0);
+// three more steps after the downloads: the fire and window light set-up, shader compiles, the first frame
+loadT=3+META.pages*(META.flicker?2:1)+1+Object.keys(META.probes).length+DATA.books.length+2+(META.room?1:0)+Object.keys(META.texs||{}).length+(META.hands?.length?1:0)+(META.hearth?4:0);
 const draco=new DRACOLoader().setDecoderPath(window.__DRACO__||'/study/lib/draco/');
 const gltfLoader=new GLTFLoader().setDRACOLoader(draco);
 const loadGLB=n=>new Promise((res,rej)=>gltfLoader.load(ASSET(n),g=>{tick();res(g)},undefined,rej));
@@ -661,53 +667,70 @@ function applyVariantLook(v,k=1){for(const f of flames)if(f.night)f.o.visible=v=
 const SUN_MAX=Math.max(1e-6,...Object.values(META.variants).map(x=>x.suns?.[0]?.e||0));
 
 // ------------------------------------------------------------------ volumetric light: sun or moon through the orosi, the lantern's pierced stars, the fire
-// Single-scattering haze. The sun is shadowed by an orthographic depth map fitted to the window, tinted by the stained
-// glass drawn over it; the lantern by a distance panorama baked from the full scene; the fire by its opening.
+// Single-scattering haze. The sun lights only the room side of the window. Two orthographic maps are fitted to the
+// window: the room's depth, and the lattice with its stained glass as transmitted colour. The second is mipmapped and
+// read as blurred as the sun's disc blurs a shadow at that distance from the glass, so the tracery pattern in the shafts
+// stays sharp near the window, softens across the room, and does not alias under the march. The lantern is shadowed by
+// a distance panorama baked from the full scene, the fire by its opening.
 const VOL=!!(CFG.sunWin&&V2);
 const VU={sunD0:{value:BLACK},sunC0:{value:BLACK},sunD1:{value:BLACK},sunC1:{value:BLACK},sunM0:{value:new THREE.Matrix4()},sunM1:{value:new THREE.Matrix4()},
   sunL0:{value:V()},sunL1:{value:V()},sunE0:{value:V()},sunE1:{value:V()},sunK:{value:0},sunZ0:{value:new THREE.Vector2()},sunZ1:{value:new THREE.Vector2()},
+  sunPx0:{value:1},sunPx1:{value:1},winPl:{value:new THREE.Vector4()},
   pano:{value:BLACK},lanP:{value:V()},lanE:{value:V()},lanD0:{value:.02},lanD1:{value:1},fireP:{value:V()},fireE:{value:V()},fo:{value:V()},foz:{value:0}};
+// winPl: the window's inner plane, normal into the room; sunPx: a map texel in metres. The sun's disc is about 0.54
+// degrees across, so a shadow edge spreads 0.0094 m per metre behind its occluder.
 const VOL_GLSL=`uniform sampler2D sunD0,sunC0,sunD1,sunC1,pano;uniform mat4 sunM0,sunM1;uniform vec3 sunL0,sunL1,sunE0,sunE1,lanP,lanE,fireP,fireE,fo;
-uniform float sunK,lanD0,lanD1,foz;
+uniform float sunK,lanD0,lanD1,foz,sunPx0,sunPx1;uniform vec4 winPl;
 float hg(float c,float g){float g2=g*g;return (1.-g2)/(12.566*pow(max(1.+g2-2.*g*c,1e-4),1.5));}
-vec3 sunAt(vec3 p,mat4 M,sampler2D D,sampler2D C){vec3 s=(M*vec4(p,1.)).xyz*.5+.5;
-  if(s.x<0.||s.y<0.||s.x>1.||s.y>1.||s.z>1.)return vec3(0.);return textureLod(D,s.xy,0.).r>s.z+.001?textureLod(C,s.xy,0.).rgb:vec3(0.);}
+vec3 sunAt(vec3 p,mat4 M,sampler2D D,sampler2D C,vec3 Ls,float px,float lod0){float dw=dot(winPl.xyz,p)+winPl.w;if(dw<0.)return vec3(0.);
+  vec3 s=(M*vec4(p,1.)).xyz*.5+.5;if(s.x<0.||s.y<0.||s.x>1.||s.y>1.||s.z>1.||textureLod(D,s.xy,0.).r<=s.z+.001)return vec3(0.);
+  return textureLod(C,s.xy,max(lod0,log2(max(dw/max(dot(winPl.xyz,Ls),.05)*.0094/px,1.)))).rgb;}
 vec3 lanAt(vec3 p,vec3 rd){vec3 d=p-lanP;float r=length(d);d/=r;vec2 uv=vec2(atan(d.z,d.x)*.15915494+.5,asin(clamp(d.y,-1.,1.))*.31830989+.5);
   return r<lanD0*exp(textureLod(pano,uv,0.).r*lanD1)*.985-.01?lanE*mix(.0796,hg(-dot(d,rd),.4),.5)/(r*r+.0225):vec3(0.);}
 vec3 lightAt(vec3 p,vec3 rd,float lr){vec3 acc=vec3(0.);
-  if(sunK<1.)acc+=sunAt(p,sunM0,sunD0,sunC0)*sunE0*mix(.0796,hg(-dot(sunL0,rd),.3),.5)*(1.-sunK);
-  if(sunK>0.)acc+=sunAt(p,sunM1,sunD1,sunC1)*sunE1*mix(.0796,hg(-dot(sunL1,rd),.3),.5)*sunK;
+  if(sunK<1.)acc+=sunAt(p,sunM0,sunD0,sunC0,sunL0,sunPx0,0.)*sunE0*mix(.0796,hg(-dot(sunL0,rd),.3),.5)*(1.-sunK);
+  if(sunK>0.)acc+=sunAt(p,sunM1,sunD1,sunC1,sunL1,sunPx1,0.)*sunE1*mix(.0796,hg(-dot(sunL1,rd),.3),.5)*sunK;
   if(lanE.r>0.&&distance(p,lanP)>lr)acc+=lanAt(p,rd);
   if(fireE.r>0.&&p.z>foz){vec3 d=p-fireP;vec2 q=fireP.xy+d.xy*(foz-fireP.z)/d.z;
     if(abs(q.x)<fo.x&&q.y>fo.y&&q.y<fo.z){float r2=dot(d,d);acc+=fireE*.4*mix(.0796,hg(-dot(d,rd)*inversesqrt(r2),.3),.5)/(r2+.2);}}
   return acc;}`;
 // the sun's camera sits SUN_BACK behind the window centre, so the glass lies at light-space depth SUN_BACK
 const SUN_BACK=6,SUN_NEAR=.1,SUN_FAR=14,sunMaps={};
-function buildSun(v){const s=META.variants[v].suns?.[0];if(!s)return null;
+// the window's inner plane, 2 cm into the room so the casing counts as window; normal toward the room
+const WIN=CFG.sunWin&&ROOM?(()=>{const lo=VA(CFG.sunWin.min),hi=VA(CFG.sunWin.max),e=hi.clone().sub(lo),c=lo.clone().add(hi).multiplyScalar(.5);
+  const i=e.x<e.y&&e.x<e.z?'x':e.y<e.z?'y':'z',n=V(),p=c.clone();n[i]=Math.sign(ROOM.p[i]-c[i]);p[i]=(n[i]>0?hi[i]:lo[i])+.02*n[i];
+  return new THREE.Plane(n,-n.dot(p))})():null;
+function buildSun(v){const s=META.variants[v].suns?.[0];if(!s||!WIN)return null;
   const L=VA(s.dir).normalize(),lo=VA(CFG.sunWin.min),hi=VA(CFG.sunWin.max),C=lo.clone().add(hi).multiplyScalar(.5),res=SMALL?512:1024;
   const cam=new THREE.OrthographicCamera(-1,1,1,-1,SUN_NEAR,SUN_FAR);cam.position.copy(C).addScaledVector(L,-SUN_BACK);cam.lookAt(C);cam.updateMatrixWorld();
   let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
   for(let i=0;i<8;i++){const p=V(i&1?hi.x:lo.x,i&2?hi.y:lo.y,i&4?hi.z:lo.z).applyMatrix4(cam.matrixWorldInverse);x0=Math.min(x0,p.x);x1=Math.max(x1,p.x);y0=Math.min(y0,p.y);y1=Math.max(y1,p.y)}
   Object.assign(cam,{left:x0-.04,right:x1+.04,bottom:y0-.04,top:y1+.04});cam.updateProjectionMatrix();
   const rt=new THREE.WebGLRenderTarget(res,res,{type:THREE.HalfFloatType});rt.depthTexture=new THREE.DepthTexture(res,res,THREE.FloatType);
-  const cc=renderer.getClearColor(new THREE.Color()),ca=renderer.getClearAlpha(),vis=[sky.visible,fx.visible];
-  sky.visible=fx.visible=false;for(const g of GLASS)g.visible=false;
-  renderer.setRenderTarget(rt);renderer.setClearColor(0xffffff,1);scene.overrideMaterial=new THREE.MeshBasicMaterial({side:THREE.DoubleSide});renderer.render(scene,cam);
-  scene.overrideMaterial.dispose();scene.overrideMaterial=null;for(const g of GLASS)g.visible=true;
+  const win=new THREE.WebGLRenderTarget(res,res,{generateMipmaps:true,minFilter:THREE.LinearMipmapLinearFilter});
+  const cc=renderer.getClearColor(new THREE.Color()),ca=renderer.getClearAlpha(),vis=[sky.visible,fx.visible],black=new THREE.MeshBasicMaterial({color:0,side:THREE.DoubleSide});
+  sky.visible=fx.visible=false;for(const g of GLASS)g.visible=false;renderer.setClearColor(0xffffff,1);scene.overrideMaterial=black;
+  // the room's depth, cut at the window plane
+  renderer.clippingPlanes=[WIN];renderer.setRenderTarget(rt);renderer.render(scene,cam);
+  // the window alone: lattice black on white, then the stained glass multiplied in
+  renderer.clippingPlanes=[WIN.clone().negate()];renderer.setRenderTarget(win);renderer.render(scene,cam);
+  scene.overrideMaterial=null;black.dispose();for(const g of GLASS)g.visible=true;
   cam.layers.set(5);renderer.autoClear=false;renderer.render(scene,cam);renderer.autoClear=true;
-  renderer.setRenderTarget(null);renderer.setClearColor(cc,ca);[sky.visible,fx.visible]=vis;
+  renderer.clippingPlanes=[];renderer.setRenderTarget(null);renderer.setClearColor(cc,ca);[sky.visible,fx.visible]=vis;
   const nd=d=>2*(d-SUN_NEAR)/(SUN_FAR-SUN_NEAR)-1,end=Math.min(SUN_FAR-.1,SUN_BACK+hi.y/Math.max(.15,-L.y));
-  return {rt,M:new THREE.Matrix4().multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse),L,E:V(...s.col).multiplyScalar(s.e),Z:new THREE.Vector2(nd(SUN_BACK-.2),nd(end))}}
+  return {rt,win,px:Math.sqrt((cam.right-cam.left)*(cam.top-cam.bottom))/res,M:new THREE.Matrix4().multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse),L,E:V(...s.col).multiplyScalar(s.e),
+    Z:new THREE.Vector2(nd(SUN_BACK-.2),nd(end))}}
 const LANP=META.shadows?.lantern,FIREP=META.flicker?.lights?.fire?.find(l=>l.type==='POINT');
 const PANO=VOL&&LANP?await new Promise(res=>texLoader.load(ASSET('shadow_lantern.webp'),t=>{t.flipY=true;t.colorSpace=THREE.NoColorSpace;t.generateMipmaps=false;
   t.minFilter=t.magFilter=THREE.LinearFilter;t.wrapS=THREE.RepeatWrapping;res(t)},undefined,()=>res(null))):null;
-if(VOL){for(const v of VARS)sunMaps[v]=buildSun(v);
+if(VOL){for(const v of VARS)sunMaps[v]=buildSun(v);if(WIN)VU.winPl.value.set(WIN.normal.x,WIN.normal.y,WIN.normal.z,WIN.constant);
   if(PANO){VU.pano.value=PANO;VU.lanP.value.fromArray(LANP.p);VU.lanD0.value=LANP.dmin;VU.lanD1.value=Math.log(LANP.dmax/LANP.dmin)}
   if(FIREP)VU.fireP.value.fromArray(FIREP.p);if(HC){VU.fo.value.set(HC.open[0],HC.open[1],HC.open[2]);VU.foz.value=HC.open[3]}}
+tick();
 const ACT=(g,v)=>META.flicker?.active?.[v]?.includes(g)?1:0;
 let volA=variant,volB=variant,volK=0;
 const volFrom=(a,b)=>{volA=a;volB=b;volK=0},volMix=k=>{volK=k},volTo=v=>{volA=volB=v;volK=0};
-function sunU(i,S,w){if(!S){VU['sunE'+i].value.set(0,0,0);return}VU['sunD'+i].value=S.rt.depthTexture;VU['sunC'+i].value=S.rt.texture;
+function sunU(i,S,w){if(!S){VU['sunE'+i].value.set(0,0,0);return}VU['sunD'+i].value=S.rt.depthTexture;VU['sunC'+i].value=S.win.texture;VU['sunPx'+i].value=S.px;
   VU['sunM'+i].value.copy(S.M);VU['sunL'+i].value.copy(S.L);VU['sunZ'+i].value.copy(S.Z);VU['sunE'+i].value.copy(S.E).multiplyScalar(w)}
 const VD=(v,g)=>CFG.vol[v]?.[g]??0;
 function volUpdate(){if(!VOL)return;const k=volK;
@@ -728,23 +751,24 @@ class VolPass extends Pass{
         for(int i=-4;i<=4;i++){vec2 uv=vUv+step*float(i);float w=exp(-float(i*i)/8.)*exp(-abs(lin(uv)-z0)/(.06*z0+.02));a+=textureLod(tVol,uv,0.)*w;ws+=w;}
         gl_FragColor=a/ws;}`});
     // each light is marched only where it can be: the sun inside its window prism, the lantern inside a sphere, the fire in front of its opening
-    this.vol=new THREE.ShaderMaterial({defines:{SSTEPS:SMALL?14:26,LSTEPS:SMALL?12:28,FSTEPS:SMALL?6:12,LR:'1.6',
-        WZ:((SUN_BACK-SUN_NEAR)/(SUN_FAR-SUN_NEAR)).toFixed(5),WF:(.55/(SUN_FAR-SUN_NEAR)).toFixed(5)},uniforms:{...VU,nz:{value:NZ},time:flameU.time,tDepth:{value:null},projInv:{value:new THREE.Matrix4()},camWorld:{value:new THREE.Matrix4()},
+    this.vol=new THREE.ShaderMaterial({defines:{SSTEPS:SMALL?14:26,LSTEPS:SMALL?12:28,FSTEPS:SMALL?6:12,LR:'1.6'},uniforms:{...VU,nz:{value:NZ},time:flameU.time,tDepth:{value:null},projInv:{value:new THREE.Matrix4()},camWorld:{value:new THREE.Matrix4()},
       camPos:{value:V()},hzMin:{value:V(hz[0],hz[2],hz[4])},hzMax:{value:V(hz[1],hz[3],hz[5])},fbMin:{value:V(-1.1,0,HC?HC.open[3]:0)},fbMax:{value:V(1.1,1.5,HC?HC.open[3]+1.3:0)}},
       vertexShader:FSQ_VS,depthTest:false,depthWrite:false,
       fragmentShader:`uniform sampler2D tDepth;uniform mat4 projInv,camWorld;uniform vec3 camPos,hzMin,hzMax,fbMin,fbMax;uniform float time;varying vec2 vUv;${VOL_GLSL}${NOISE_GLSL}
       float air(vec3 p){vec3 q=p*vec3(1.8,1.1,1.8)+vec3(time*.045,-time*.03,time*.03);return .3+1.4*smoothstep(.22,.78,vn(q)*.6+vn(q*2.6+vec3(5.2,1.3,7.7)-vec3(0.,time*.05,0.))*.4);}
       vec2 slab(vec3 o,vec3 d,vec3 lo,vec3 hi){vec3 iv=1./d,a=(lo-o)*iv,b=(hi-o)*iv,mn=min(a,b),mx=max(a,b);return vec2(max(max(mn.x,mn.y),mn.z),min(min(mx.x,mx.y),mx.z));}
-      vec3 sunSeg(mat4 M,sampler2D D,sampler2D C,vec3 Ls,vec3 E,vec3 rd,float L,float j){vec3 o=(M*vec4(camPos,1.)).xyz,d=mat3(M)*rd;
-        // M is affine, so the light-space parameter t is also the world distance along rd
-        vec2 t=slab(o,d,vec3(-1.),vec3(1.));t.x=max(t.x,0.);t.y=min(t.y,L);if(t.y<=t.x)return vec3(0.);
-        float dl=(t.y-t.x)/float(SSTEPS);vec3 a=vec3(0.);
-        for(int i=0;i<SSTEPS;i++){float ti=t.x+(float(i)+j)*dl;vec3 s=(o+d*ti)*.5+.5;if(textureLod(D,s.xy,0.).r>s.z+.001)a+=textureLod(C,s.xy,0.).rgb*air(camPos+rd*ti)*(.2+.8*smoothstep(WZ,WZ+WF,s.z));}
+      vec3 sunSeg(mat4 M,sampler2D D,sampler2D C,vec3 Ls,vec3 E,float px,vec3 rd,float L,float j){vec3 o=(M*vec4(camPos,1.)).xyz,d=mat3(M)*rd;
+        // M is affine, so the light-space parameter t is also the world distance along rd; the march ends at the window
+        vec2 t=slab(o,d,vec3(-1.),vec3(1.));t.x=max(t.x,0.);t.y=min(t.y,L);float dn=dot(winPl.xyz,rd);if(dn<0.)t.y=min(t.y,(dot(winPl.xyz,camPos)+winPl.w)/-dn);
+        if(t.y<=t.x)return vec3(0.);
+        // no step reads the window map finer than the ground it covers across the light
+        float dl=(t.y-t.x)/float(SSTEPS),lod0=log2(max(length(d.xy)*dl*.5*float(textureSize(C,0).x),1.));vec3 a=vec3(0.);
+        for(int i=0;i<SSTEPS;i++){vec3 p=camPos+rd*(t.x+(float(i)+j)*dl);a+=sunAt(p,M,D,C,Ls,px,lod0)*air(p)*(.2+.8*smoothstep(0.,.45,dot(winPl.xyz,p)+winPl.w));}
         return a*dl*E*mix(.0796,hg(-dot(Ls,rd),.3),.5);}
       void main(){float z=textureLod(tDepth,vUv,0.).r;vec4 v=projInv*vec4(vUv*2.-1.,z*2.-1.,1.);v/=v.w;vec3 wp=(camWorld*v).xyz;
         vec3 rd=wp-camPos;float L=length(rd);rd/=L;float j=ign(gl_FragCoord.xy);vec3 acc=vec3(0.);
-        if(sunK<1.&&sunE0.r>0.)acc+=sunSeg(sunM0,sunD0,sunC0,sunL0,sunE0,rd,L,j)*(1.-sunK);
-        if(sunK>0.&&sunE1.r>0.)acc+=sunSeg(sunM1,sunD1,sunC1,sunL1,sunE1,rd,L,j)*sunK;
+        if(sunK<1.&&sunE0.r>0.)acc+=sunSeg(sunM0,sunD0,sunC0,sunL0,sunE0,sunPx0,rd,L,j)*(1.-sunK);
+        if(sunK>0.&&sunE1.r>0.)acc+=sunSeg(sunM1,sunD1,sunC1,sunL1,sunE1,sunPx1,rd,L,j)*sunK;
         vec3 oc=camPos-lanP;float lb=dot(oc,rd),lh=lb*lb-dot(oc,oc)+LR*LR;
         if(lanE.r>0.&&lh>0.){float ta=max(-lb-sqrt(lh),0.),tb=min(-lb+sqrt(lh),L);if(tb>ta){float dl=(tb-ta)/float(LSTEPS);vec3 la=vec3(0.);
           for(int i=0;i<LSTEPS;i++){vec3 p=camPos+rd*(ta+(float(i)+fract(j+.5))*dl),c=lanAt(p,rd);if(c.r>0.)la+=c*air(p);}acc+=la*dl;}}
@@ -753,10 +777,18 @@ class VolPass extends Pass{
             if(abs(q.x)<fo.x&&q.y>fo.y&&q.y<fo.z){float r2=dot(d,d);fa+=mix(.0796,hg(-dot(d,rd)*inversesqrt(r2),.3),.5)/(r2+.2);}}acc+=fa*fireE*.4*dl;}}
         vec2 hz=slab(camPos,rd,hzMin,hzMax);hz.x=max(hz.x,0.);
         gl_FragColor=vec4(acc,clamp((min(hz.y,L)-hz.x)/.25,0.,1.));}`});
-    this.comp=new THREE.ShaderMaterial({uniforms:{tScene:{value:null},tVol:{value:null},vpx:{value:new THREE.Vector2()},time:flameU.time,haze:{value:REDUCE?0:.0035},nz:{value:NZ}},
+    this.comp=new THREE.ShaderMaterial({uniforms:{tScene:{value:null},tVol:{value:null},tDepth:{value:null},nf:{value:new THREE.Vector2(.02,120)},vpx:{value:new THREE.Vector2()},
+        time:flameU.time,haze:{value:REDUCE?0:.0035},nz:{value:NZ}},
       vertexShader:FSQ_VS,depthTest:false,depthWrite:false,
-      fragmentShader:`uniform sampler2D tScene,tVol;uniform vec2 vpx;uniform float time,haze;varying vec2 vUv;${NOISE_GLSL}
-      void main(){vec4 v=textureLod(tVol,vUv,0.);
+      // joint bilateral upsample: of the four low-res texels around a pixel, those at its own depth carry the light, so
+      // the haze keeps to the silhouettes it was marched against (a lattice bar, the glass behind it) at full resolution
+      fragmentShader:`uniform sampler2D tScene,tVol,tDepth;uniform vec2 vpx,nf;uniform float time,haze;varying vec2 vUv;${NOISE_GLSL}
+      float lin(vec2 uv){float d=textureLod(tDepth,uv,0.).r;return nf.x*nf.y/(nf.y-d*(nf.y-nf.x));}
+      vec4 volUp(vec2 uv){vec2 p=uv/vpx-.5,f=fract(p),b=(floor(p)+.5)*vpx;float z0=lin(uv),tol=.06*z0+.02,best=1e9;vec4 a=vec4(0.),nb=vec4(0.);float ws=0.;
+        for(int i=0;i<4;i++){vec2 o=vec2(float(i%2),float(i/2)),q=b+o*vpx;float dz=abs(lin(q)-z0);vec4 c=textureLod(tVol,q,0.);
+          float w=mix(1.-f.x,f.x,o.x)*mix(1.-f.y,f.y,o.y)*exp(-dz/tol);a+=c*w;ws+=w;if(dz<best){best=dz;nb=c;}}
+        return ws>1e-4?a/ws:nb;}
+      void main(){vec4 v=volUp(vUv);
         vec2 off=vec2(0.);if(v.a>.002){vec3 q=vec3(vUv*vec2(64.,36.),0.)-vec3(0.,time*3.,time*.6);off=(vec2(vn(q),vn(q+vec3(19.,7.,3.)))-.5)*v.a*haze;}
         gl_FragColor=vec4(textureLod(tScene,vUv+off,0.).rgb+v.rgb,1.);}`})}
   setSize(w,h){const a=Math.max(1,Math.round(w/this.div)),b=Math.max(1,Math.round(h/this.div));this.rt.setSize(a,b);this.rt2.setSize(a,b);this.comp.uniforms.vpx.value.set(1/a,1/b)}
@@ -765,7 +797,7 @@ class VolPass extends Pass{
     const B=this.blur.uniforms,px=this.comp.uniforms.vpx.value;B.tDepth.value=rb.depthTexture;B.nf.value.set(camera.near,camera.far);this.q.material=this.blur;
     B.tVol.value=this.rt.texture;B.step.value.set(px.x,0);r.setRenderTarget(this.rt2);this.q.render(r);
     B.tVol.value=this.rt2.texture;B.step.value.set(0,px.y);r.setRenderTarget(this.rt);this.q.render(r);
-    const c=this.comp.uniforms;c.tScene.value=rb.texture;c.tVol.value=this.rt.texture;
+    const c=this.comp.uniforms;c.tScene.value=rb.texture;c.tVol.value=this.rt.texture;c.tDepth.value=rb.depthTexture;c.nf.value.set(camera.near,camera.far);
     r.setRenderTarget(this.renderToScreen?null:wb);this.q.material=this.comp;this.q.render(r)}}
 // dust motes, lit by the same lights as the haze. Most drift inside the sun's (or moon's) window prism, wrapped in its
 // light space so they never leave the beam; each hops to the incoming light's prism as the theme crossfade passes its seed.
@@ -812,10 +844,13 @@ composer.addPass(grade);
 // ------------------------------------------------------------------ variant switching (crossfade between bakes)
 let exposure=Math.pow(2,META.variants[variant].exposure);
 renderer.toneMappingExposure=exposure;applyVariantLook(variant);
-$('bTheme').textContent=variant==='day'?'Day':'Night';
+const themeLabel=v=>{const b=$('bTheme');b.textContent=v==='day'?'Day':'Night';b.setAttribute('aria-label',v==='day'?'Day, switch to night':'Night, switch to day')};
+themeLabel(variant);
 let switching=false;
-async function setVariant(v,store=true){if(v===variant||switching||!META.variants[v])return;switching=true;$('bTheme').textContent=v==='day'?'Day':'Night';
-  const T=await loadVariant(v);const from=variant;
+async function setVariant(v,store=true){if(v===variant||switching||!META.variants[v])return;switching=true;themeLabel(v);
+  let T;try{T=await loadVariant(v)}catch{themeLabel(variant);switching=false;return}const from=variant;
+  // each atlas uploads on first use; one a frame keeps the fade from stalling at its start
+  for(const t of [...T.pages,...T.flick,T.bg])if(t!==BLACK){renderer.initTexture(t);await new Promise(r=>requestAnimationFrame(r))}
   for(const m of bakedMats){m.uniforms.b.value=T.pages[m.userData.page];if(m.uniforms.envB)m.uniforms.envB.value=T.room;if(m.uniforms.fb)m.uniforms.fb.value=T.flick[m.userData.page]}skyMat.uniforms.b.value=T.bg;
   volFrom(from,v);
   const e0=exposure,e1=Math.pow(2,META.variants[v].exposure);let swapped=false;
@@ -823,39 +858,58 @@ async function setVariant(v,store=true){if(v===variant||switching||!META.variant
     applyVariantLook(k<.5?from:v,Math.abs(1-2*k));volMix(k);
     if(!swapped&&k>=.5){swapped=true;variant=v;for(const m of probeUsers){m.envMap=T.probes[m.userData.probe];m.needsUpdate=true}}});
   for(const m of bakedMats){m.uniforms.a.value=m.uniforms.b.value;if(m.uniforms.envA)m.uniforms.envA.value=m.uniforms.envB.value;if(m.uniforms.fa)m.uniforms.fa.value=m.uniforms.fb.value;m.uniforms.k.value=0}volTo(v);skyMat.uniforms.a.value=T.bg;skyMat.uniforms.k.value=0;
-  variant=v;applyVariantLook(v);if(store)try{localStorage.theme=v==='day'?'light':'dark'}catch{}switching=false}
+  variant=v;applyVariantLook(v);if(store)try{localStorage.theme=v==='day'?'light':'dark'}catch{}
+  // a phone frees the GPU copies of the theme it left; the images stay, so switching back uploads them again
+  if(SMALL){const C=varCache[from];for(const t of [...C.pages,...C.flick,C.bg])if(t!==BLACK)t.dispose()}
+  switching=false}
 $('bTheme').onclick=()=>setVariant(variant==='day'?'night':'day');
 
 // ------------------------------------------------------------------ camera rig + poses
-const rig={pos:V(),look:V(),fov:CFG.overview.fov,film:0};
+const rig={pos:V(),look:V(),fov:OV.fov,film:0};
 const look={yaw:0,pitch:0,ty:0,tp:0};
 // Overview orbit: the view turns a full circle and the camera backs away from where it looks, held inside the room.
-const ORB=CFG.orbit?(()=>{const d=V().subVectors(VA(CFG.overview.look),VA(CFG.overview.pos));const yaw=Math.atan2(d.x,-d.z),pitch=Math.atan2(d.y,Math.hypot(d.x,d.z));
-  return {...CFG.orbit,dist:d.length(),yaw0:yaw,pitch0:pitch,yaw,pitch,ty:yaw,tp:pitch}})():null;
+// Until the visitor turns it, a turned screen moves the orbit to the corner for its shape.
+const ORB=CFG.orbit?{...CFG.orbit,moved:false}:null;
+function seedOrb(){const o=NARROW()&&CFG.overviewNarrow||CFG.overview,d=V().subVectors(VA(o.look),VA(o.pos));const yaw=Math.atan2(d.x,-d.z),pitch=Math.atan2(d.y,Math.hypot(d.x,d.z));
+  Object.assign(ORB,{narrow:NARROW(),dist:d.length(),yaw0:yaw,pitch0:pitch,ty:yaw,tp:pitch})}
+if(ORB){seedOrb();ORB.yaw=ORB.ty;ORB.pitch=ORB.tp}
 function orbitPose(yaw,pitch){const o=ORB,hx=Math.sin(yaw),hz=-Math.cos(yaw),cp=Math.cos(pitch);
-  const pos=V(Math.max(o.x[0],Math.min(o.x[1],o.c[0]-hx*o.r)),CFG.overview.pos[1],Math.max(o.z[0],Math.min(o.z[1],o.c[1]-hz*o.r)));
-  return {pos,look:pos.clone().add(V(hx*cp,Math.sin(pitch),hz*cp).multiplyScalar(o.dist)),fov:CFG.overview.fov}}
+  const pos=V(Math.max(o.x[0],Math.min(o.x[1],o.c[0]-hx*o.r)),OV.pos[1],Math.max(o.z[0],Math.min(o.z[1],o.c[1]-hz*o.r)));
+  return {pos,look:pos.clone().add(V(hx*cp,Math.sin(pitch),hz*cp).multiplyScalar(o.dist)),fov:ovFov()}}
 let camMoving=0,orbitHold=false;
-const OVERVIEW=ORB?orbitPose(ORB.yaw,ORB.pitch):{pos:VA(CFG.overview.pos),look:VA(CFG.overview.look),fov:CFG.overview.fov};
-// Series framing. Where a series is wider than the frame (portrait screens) it opens at its first book, or at the book
-// being put back, and pans under a horizontal drag: the camera slides along the shelf while it stays inside the focus box,
-// and turns for the rest, because stepping back or sideways brings the corner cabinets between the camera and the books.
-const NARROW=()=>matchMedia('(max-width:700px),(max-aspect-ratio:4/5)').matches;
+const OVERVIEW=ORB?orbitPose(ORB.yaw,ORB.pitch):{pos:VA(OV.pos),look:VA(OV.look),fov:OV.fov};
+// Series framing, solved on screen. o slides the camera and its aim along the shelf; a camera held by the focus box
+// turns instead, because stepping back or sideways brings the corner cabinets between the camera and the books. At o0
+// the run's first book sits at the left margin of the frame, at o1 its last at the right. A run that fits opens centred
+// on screen, with its parallax scaled to the room it has to spare. A longer one (portrait screens) opens at the book
+// being put back, or at its first, and pans between o0 and o1 under a horizontal drag.
+// A face-out cover takes its width of the shelf and a spine its thickness, and front is how far the run's faces stand
+// out from its centre.
 const SER={};
 for(const sid of SERIES_ORDER){const es=books.filter(e=>e.sid===sid);const c=V(),n=V();const box=new THREE.Box3();
   for(const e of es){c.add(e.home.p);n.add(e.outW);box.expandByPoint(e.home.p)}c.multiplyScalar(1/es.length);n.y=0;n.normalize();
-  const ax=V().crossVectors(V(0,1,0),n).normalize();let a0=1e9,a1=-1e9;for(const e of es){const u=e.home.p.clone().sub(c).dot(ax);a0=Math.min(a0,u-e.t/2);a1=Math.max(a1,u+e.t/2)}
-  SER[sid]={c,n,ax,a0,a1,span:Math.max(box.max.x-box.min.x,box.max.z-box.min.z,box.max.y-box.min.y)}}
+  const ax=V().crossVectors(V(0,1,0),n).normalize();let a0=1e9,a1=-1e9,front=0;
+  for(const e of es){const p=e.home.p.clone().sub(c),u=p.dot(ax),w=(e.out==='x'?e.d:e.t)/2;a0=Math.min(a0,u-w);a1=Math.max(a1,u+w);front=Math.max(front,p.dot(n)+(e.out==='x'?e.t:e.d)/2)}
+  c.addScaledVector(ax,(a0+a1)/2);
+  SER[sid]={c,n,ax,front,a0:(a0-a1)/2,a1:(a1-a0)/2,span:Math.max(box.max.x-box.min.x,box.max.z-box.min.z,box.max.y-box.min.y)}}
 const inBox=p=>{const fb=CFG.focusBox;if(fb){p.x=Math.max(fb.x[0],Math.min(fb.x[1],p.x));p.z=Math.max(fb.z[0],Math.min(fb.z[1],p.z))}return p};
 const panPos=(p,ax,v,out)=>inBox(out.copy(p).addScaledVector(ax,v));
-function spose(sid,at){const S=SER[sid],th=Math.tan(CFG.focusFov*Math.PI/360)*app.clientWidth/app.clientHeight;
-  const need=S.a1-S.a0+.12,dist=Math.max(CFG.focusDist,S.span*.85+.45),pos=inBox(S.c.clone().addScaledVector(S.n,dist).add(V(0,.1,0)));
-  const r=Math.max(0,(need-2*dist*th)/2),o=r?Math.max(-r,Math.min(r,at?at.home.p.clone().sub(S.c).dot(S.ax):-r)):0;
-  return {pos:panPos(pos,S.ax,o,V()),look:S.c.clone().add(V(0,-.02,0)).addScaledVector(S.ax,o),fov:CFG.focusFov,n:S.n,
-    pan:r?{ax:S.ax,lo:-r-o,hi:r-o,mpp:2*dist*th/app.clientWidth}:null}}
-const pan={ax:null,lo:0,hi:0,mpp:0,v:0,t:0};
-function setPan(p){Object.assign(pan,{ax:p.pan?.ax||null,lo:p.pan?.lo||0,hi:p.pan?.hi||0,mpp:p.pan?.mpp||0,v:0,t:0})}
-function foldPan(){if(pan.ax){panPos(rig.pos,pan.ax,pan.v,rig.pos);rig.look.addScaledVector(pan.ax,pan.v)}setPan({})}
+const FRAME_IN=.88,PAR_SWAY=(.12+.05)*.45;
+function spose(sid,at){const S=SER[sid],tw=Math.tan(CFG.focusFov*Math.PI/360)*app.clientWidth/app.clientHeight;
+  const dist=Math.max(CFG.focusDist,S.span*.85+.45),base=S.c.clone().addScaledVector(S.n,dist).add(V(0,.1,0)),aim=S.c.clone().add(V(0,-.02,0));
+  const pose=o=>({pos:panPos(base,S.ax,o,V()),look:aim.clone().addScaledVector(S.ax,o)});
+  const sx=(p,q)=>{const f=V().subVectors(p.look,p.pos).normalize(),d=V().subVectors(q,p.pos);return d.dot(V().crossVectors(f,V(0,1,0)).normalize())/(d.dot(f)*tw)};
+  // the o at which g(pose) falls to x; every g here falls as o grows
+  const solve=(g,x)=>{let lo=-1,hi=1;for(let i=0;i<30;i++){const m=(lo+hi)/2;if(g(pose(m))>x)lo=m;else hi=m}return (lo+hi)/2};
+  const face=u=>S.c.clone().addScaledVector(S.ax,u).addScaledVector(S.n,S.front),L=face(S.a0),R=face(S.a1);
+  const o0=solve(p=>sx(p,L),-FRAME_IN),o1=solve(p=>sx(p,R),FRAME_IN),fit=o1<=o0;
+  const o=fit?solve(p=>sx(p,L)+sx(p,R),0):at?Math.max(o0,Math.min(o1,solve(p=>sx(p,face(at.home.p.clone().sub(S.c).dot(S.ax))),0))):o0;
+  // a panning run keeps only the frame's margin to spare
+  const p=pose(o),D=V().subVectors(R,p.pos).dot(V().subVectors(p.look,p.pos).normalize()),k=Math.max(.3,Math.min(1,(fit?1-sx(p,R):1-FRAME_IN)*D*tw/PAR_SWAY));
+  return {...p,fov:CFG.focusFov,n:S.n,k,pan:o1>o0?{ax:S.ax,base:base.clone().addScaledVector(S.ax,o),lo:o0-o,hi:o1-o,mpp:2*(dist-S.front)*tw/app.clientWidth}:null}}
+const pan={ax:null,base:V(),lo:0,hi:0,mpp:0,v:0,t:0,k:1};
+function setPan(p){Object.assign(pan,{ax:p.pan?.ax||null,lo:p.pan?.lo||0,hi:p.pan?.hi||0,mpp:p.pan?.mpp||0,v:0,t:0,k:p.k??1});if(p.pan)pan.base.copy(p.pan.base)}
+function foldPan(){if(pan.ax){panPos(pan.base,pan.ax,pan.v,rig.pos);rig.look.addScaledVector(pan.ax,pan.v)}setPan({})}
 function setRigInstant(p){rig.pos.copy(p.pos);rig.look.copy(p.look);rig.fov=p.fov;rig.film=p.film||0;setPan(p)}
 // rehal (X-shaped reading stand): the book's spine sits in the crease, pages on the reader's right leaf,
 // the cover opens onto the left leaf. Blender (x,y,z) -> three (x,z,-y).
@@ -868,7 +922,9 @@ const RH=META.extra?.rehal?(()=>{const r=META.extra.rehal;const A=B2T(r.axis).no
   const q=new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(nR,yw,zw));
   return {A,line,th,Rg,U,dirR,nR,q,openA:Math.PI-2*th}})():null;
 function rehalPose(){const r=RH,look=r.line.clone().addScaledVector(r.U,.04).addScaledVector(r.A,.05);
-  if(!NARROW())return {pos:r.line.clone().addScaledVector(r.A,-.24).addScaledVector(r.U,.6),look,fov:40,film:7};
+  // landscape: the film offset centres the spread in the room left of the side panel and its shade
+  if(!NARROW()){const W=app.clientWidth,A=W/app.clientHeight,free=W-28-Math.min(290,.34*W)-60;
+    return {pos:r.line.clone().addScaledVector(r.A,-.24).addScaledVector(r.U,.6),look,fov:40,film:(1-free/W)*35*Math.min(A,1)*A*Math.tan(20*Math.PI/180)}}
   // portrait: back off until the open spread fits the width, and aim low so the book sits above the docked panel
   const fov=46,th=Math.tan(fov*Math.PI/360),dir=V().addScaledVector(r.A,-.35).addScaledVector(r.U,.68).normalize();
   const D=Math.max(.78,.185/(th*Math.min(1,app.clientWidth/app.clientHeight))),f=dir.clone().negate(),up=V(0,1,0).addScaledVector(f,-f.y).normalize();
@@ -879,17 +935,20 @@ async function moveCam(p,dur=1.5){foldPan();const tok=++camTok,p0=rig.pos.clone(
   const mid=p0.clone().lerp(p.pos,.5);mid.y+=.12;if(NAVE){mid.x*=.15}
   const d=p0.distanceTo(p.pos);dur=(NAVE?Math.max(dur,1.1+d*.22):dur)*CAM_SLOW;
   look.ty=look.tp=0;camMoving++;
-  await tween(dur,k=>{const a=p0.clone().lerp(mid,k),b=mid.clone().lerp(p.pos,k);rig.pos.copy(a.lerp(b,k));rig.look.lerpVectors(l0,p.look,k);rig.fov=f0+(p.fov-f0)*k;rig.film=m0+(m1-m0)*k},easeCam);camMoving--;if(tok===camTok)setPan(p)}
+  await tween(dur,k=>{if(tok!==camTok)return;const a=p0.clone().lerp(mid,k),b=mid.clone().lerp(p.pos,k);rig.pos.copy(a.lerp(b,k));rig.look.lerpVectors(l0,p.look,k);rig.fov=f0+(p.fov-f0)*k;rig.film=m0+(m1-m0)*k},easeCam);camMoving--;if(tok===camTok)setPan(p)}
 setRigInstant(OVERVIEW);
 
 // ------------------------------------------------------------------ interaction
 const state={mode:'overview',series:null,cur:null,open:false,busy:false};
 const chips={};
-for(const sid of SERIES_ORDER){const s=SERIES[sid];const b=document.createElement('button');b.className='btn';b.innerHTML=`${s.name}<b>${BY_SERIES[sid].length}</b>`;b.onclick=()=>focusSeries(sid);$('series').appendChild(b);chips[sid]=b}
-function markChips(){for(const k in chips)chips[k].classList.toggle('on',k===state.series);$('bView').classList.toggle('on',state.mode==='overview');
+for(const sid of SERIES_ORDER){const s=SERIES[sid];const b=document.createElement('button');b.className='btn';b.innerHTML=`${s.name}<b>${BY_SERIES[sid].length}</b>`;b.setAttribute('aria-label',`${s.name}, ${BY_SERIES[sid].length} books`);b.onclick=()=>focusSeries(sid);$('series').appendChild(b);chips[sid]=b}
+function markChips(){for(const k in chips){chips[k].classList.toggle('on',k===state.series);chips[k].setAttribute('aria-pressed',k===state.series)}
+  $('bView').classList.toggle('on',state.mode==='overview');$('bView').setAttribute('aria-pressed',state.mode==='overview');
   const nav=$('series'),b=chips[state.series];if(b&&nav.scrollWidth>nav.clientWidth)nav.scrollTo({left:b.offsetLeft-(nav.clientWidth-b.offsetWidth)/2,behavior:REDUCE?'auto':'smooth'})}
-async function focusSeries(sid){if(state.busy)return;if(state.cur)await returnBook(state.cur);state.mode='focus';state.series=sid;markChips();await moveCam(spose(sid),1.4)}
-async function overview(){if(state.busy)return;if(state.cur)await returnBook(state.cur);state.mode='overview';state.series=null;markChips();await moveCam(ORB?orbitPose(ORB.yaw,ORB.pitch):OVERVIEW,1.6)}
+// leaving the stand for another view moves the camera once, straight there, while the book goes back
+async function goTo(p,dur){if(state.cur&&RH)await returnBook(state.cur,false,p);else{if(state.cur)await returnBook(state.cur);await moveCam(p,dur)}}
+async function focusSeries(sid){if(state.busy)return;state.mode='focus';state.series=sid;markChips();await goTo(spose(sid),1.4)}
+async function overview(){if(state.busy||state.mode==='overview'&&!state.cur)return;state.mode='overview';state.series=null;markChips();await goTo(ORB?orbitPose(ORB.yaw,ORB.pitch):OVERVIEW,1.6)}
 $('bView').onclick=overview;
 function presentTarget(e){const p=spose(e.sid,e);const cq=new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(p.pos,p.look,V(0,1,0)));
   const fwd=V(0,0,-1).applyQuaternion(cq),right=V(1,0,0).applyQuaternion(cq),up=V(0,1,0).applyQuaternion(cq);
@@ -897,8 +956,17 @@ function presentTarget(e){const p=spose(e.sid,e);const cq=new THREE.Quaternion()
   const q=cq.clone().multiply(new THREE.Quaternion().setFromAxisAngle(V(0,1,0),-Math.PI/2));return {pos,q,right,pose:p}}
 function rehalTarget(e){const r=RH;const pos=r.line.clone().addScaledVector(r.dirR,e.d/2+.004).addScaledVector(r.nR,e.t/2+.001);
   return {pos,q:r.q.clone(),right:r.Rg.clone(),pose:rehalPose()}}
-function hiRes(e){if(e.hi)return;e.hi=true;
-  const set=img=>{if(!img||!e.hi)return;const t=new THREE.Texture(img);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=maxAniso;t.needsUpdate=true;e.hiT=t;e.cover.map=t;e.cover.needsUpdate=true};
+// Between slot and stand a book slides out level until it clears the shelf front, travels on a Bezier while it turns,
+// and settles onto the right leaf from between the two leaves; anything sooner catches the shelf lamp, the board edges or
+// the left leaf. The parameter is split so the speed matches at both joins. Putting a book back runs the path in reverse.
+function flight(e,T,p0){const h=V(e.outW.x,0,e.outW.z).normalize(),s=e.home.p.clone().addScaledVector(h,e.out==='z'?e.d+.045:e.t+.3);
+  const up=RH.nR.clone().addScaledVector(RH.U,1.4).normalize(),H=T.pos.clone().addScaledVector(up,.12),c1=s.clone().addScaledVector(h,.18).add(V(0,.05,0)),c2=H.clone().addScaledVector(up,.12);
+  const ws=p0.distanceTo(s)/(3*c1.distanceTo(s)),wd=1/3,n=ws+1+wd,a=ws/n,b=(ws+1)/n;
+  // k 0 at p0, 1 on the stand; returns the share of the turn done
+  return (k,out)=>{if(k<a){out.lerpVectors(p0,s,k/a);return 0}if(k>b){out.lerpVectors(H,T.pos,(k-b)/(1-b));return 1}
+    const kb=(k-a)/(b-a);bez(s,c1,c2,H,kb,out);return smooth(.1,.8,kb)}}
+function hiRes(e){if(e.hi)return;e.hi=true;const tok=e.hiTok=(e.hiTok||0)+1;
+  const set=img=>{if(!img||!e.hi||tok!==e.hiTok)return;const t=new THREE.Texture(img);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=maxAniso;t.needsUpdate=true;e.hiT?.dispose();e.hiT=t;e.cover.map=t;e.cover.needsUpdate=true};
   loadImg(coverURL(e.b.id,true)).then(set)}
 // a phone keeps only the large cover in hand
 function loRes(e){if(!SMALL||!e.hi)return;e.hi=false;if(e.hiT){e.cover.map=e.lo;e.cover.needsUpdate=true;e.hiT.dispose();e.hiT=null}}
@@ -912,27 +980,32 @@ async function present(e){if(state.busy)return;
   else if(state.series!==e.sid||state.mode!=='focus'&&state.mode!=='present'){state.series=e.sid;markChips();moveCam(spose(e.sid,e),1.3)}
   state.mode='present';state.cur=e;markChips();e.state='flying';hiRes(e);if(!e.tp){e.tp=titlePage(e.b,e.n,e.N,e.h,e.d);e.page.map=e.tp;e.page.needsUpdate=true}
   showPanel(e);const T=RH?rehalTarget(e):presentTarget(e);e.T=T;
-  if(RH){const out=e.outW;const p0=e.g.position.clone(),q0=e.g.quaternion.clone(),p1=p0.clone().addScaledVector(out,.28).add(V(0,.06,0)),
-      p2=T.pos.clone().addScaledVector(RH.U,.32).addScaledVector(RH.A,-.12),tmp=V();let sw=false;
-    await tween(2.0,k=>{e.g.position.copy(bez(p0,p1,p2,T.pos,k,tmp));e.g.quaternion.slerpQuaternions(q0,T.q,smooth(.1,.9,k));if(!sw&&k>.5){sw=true;setProbe(e,viewProbe(e))}});
+  if(RH){const q0=e.g.quaternion.clone(),F=flight(e,T,e.g.position.clone());let sw=false;
+    await tween(2.2,k=>{e.g.quaternion.slerpQuaternions(q0,T.q,F(k,e.g.position));if(!sw&&k>.5){sw=true;setProbe(e,viewProbe(e))}});
     e.state='presented';state.busy=false;return}
   const out=e.outW;const p0=e.g.position.clone(),q0=e.g.quaternion.clone(),p1=p0.clone().addScaledVector(out,.3).add(V(0,.02,0)),p2=T.pos.clone().addScaledVector(T.pose.n,.1).add(V(0,-.05,0)),tmp=V();
   let sw=false;
   await tween(1.3,k=>{e.g.position.copy(bez(p0,p1,p2,T.pos,k,tmp));e.g.quaternion.slerpQuaternions(q0,T.q,smooth(.12,.92,k));if(!sw&&k>.35){sw=true;setProbe(e,viewProbe(e))}});
   e.state='presented';state.busy=false}
-async function setOpen(open){const e=state.cur;if(!e||e.state!=='presented'||state.open===open)return;state.busy=true;state.open=open;$('bOpen').textContent=open?'Close':'Open';
+async function setOpen(open){const e=state.cur;if(!e||e.state!=='presented'||state.open===open||state.busy)return;state.busy=true;state.open=open;$('bOpen').textContent=open?'Close':'Open';
   const r0=e.pivot.rotation.y,r1=open?(RH?-(RH.openA+Math.asin(Math.min(.3,e.t*Math.cos(2*RH.th)/e.d))):-Math.PI*.94):0;const g0=e.g.position.clone(),g1=RH?e.T.pos.clone():e.T.pos.clone().addScaledVector(e.T.right,open?e.d*.5:0);
   await tween(1.15,k=>{e.pivot.rotation.y=r0+(r1-r0)*k;e.g.position.lerpVectors(g0,g1,k)});state.busy=false}
-async function returnBook(e,quick){if(!e)return;state.busy=true;hidePanel();
+async function returnBook(e,quick,cam){if(!e||state.busy)return;state.busy=true;hidePanel();
+  if(!quick&&panelFocus){(chips[state.series]||$('bView')).focus({preventScroll:true});panelFocus=null}
   if(state.open){state.open=false;$('bOpen').textContent='Open';const r0=e.pivot.rotation.y;const g0=e.g.position.clone();await tween(.5,k=>{e.pivot.rotation.y=r0*(1-k);e.g.position.lerpVectors(g0,e.T.pos,k)})}
-  e.state='flying';const p0=e.g.position.clone(),q0=e.g.quaternion.clone(),p3=e.home.p.clone(),p2=p3.clone().addScaledVector(e.outW,.3),p1=p0.clone().add(V(0,RH?.25:-.05,0)),tmp=V();let sw=false;
-  if(RH&&!quick)moveCam(spose(e.sid,e),1.6);
-  await tween(RH?(quick?1.1:1.7):(quick?.8:1.1),k=>{e.g.position.copy(bez(p0,p1,p2,p3,k,tmp));e.g.quaternion.slerpQuaternions(q0,e.home.q,smooth(.05,.85,k));if(!sw&&k>.6){sw=true;setProbe(e,e.probe)}});
+  e.state='flying';let sw=false;
+  if(RH){if(!quick)moveCam(cam||spose(e.sid,e),1.6);const F=flight(e,e.T,e.home.p);
+    await tween(quick?1.2:1.9,k=>{e.g.quaternion.slerpQuaternions(e.home.q,e.T.q,F(1-k,e.g.position));if(!sw&&k>.6){sw=true;setProbe(e,e.probe)}})}
+  else{const p0=e.g.position.clone(),q0=e.g.quaternion.clone(),p3=e.home.p.clone(),p2=p3.clone().addScaledVector(e.outW,.3),p1=p0.clone().add(V(0,-.05,0)),tmp=V();
+    await tween(quick?.8:1.1,k=>{e.g.position.copy(bez(p0,p1,p2,p3,k,tmp));e.g.quaternion.slerpQuaternions(q0,e.home.q,smooth(.05,.85,k));if(!sw&&k>.6){sw=true;setProbe(e,e.probe)}})}
   e.state='shelf';e.hover=0;loRes(e);if(state.cur===e){state.cur=null;state.mode=state.series?'focus':'overview'}state.busy=false}
 function step(dir){const e=state.cur;if(!e||state.busy)return;const i=books.indexOf(e);present(books[(i+dir+books.length)%books.length])}
-function showPanel(e){const s=SERIES[e.sid];$('pk').textContent=`${s.name} · Book ${e.n} of ${e.N}`;$('pt').textContent=e.b.title;$('pa').textContent=s.author;
+// Whatever is faded out stays out of the tab order, the docked series row included. Focus on a panel button is kept
+// through a change of book, and goes to the series chip when the book goes back.
+let panelFocus=null;
+function showPanel(e){$('panel').inert=false;$('series').inert=NARROW();if(panelFocus){panelFocus.focus({preventScroll:true});panelFocus=null}const s=SERIES[e.sid];$('pk').textContent=`${s.name} · Book ${e.n} of ${e.N}`;$('pt').textContent=e.b.title;$('pa').textContent=s.author;
   $('pm').innerHTML=(s.tags||[]).map(t=>`<span>${t}</span>`).join('')+`<i class="isbn"><br>ISBN ${e.b.isbn}</i>`;$('panel').classList.add('on');app.classList.add('reading');$('bOpen').textContent='Open'}
-function hidePanel(){$('panel').classList.remove('on');app.classList.remove('reading')}
+function hidePanel(){const P=$('panel');if(P.contains(document.activeElement))panelFocus=document.activeElement;P.classList.remove('on');P.inert=true;$('series').inert=false;app.classList.remove('reading')}
 $('bOpen').onclick=()=>setOpen(!state.open);$('bBack').onclick=()=>returnBook(state.cur);$('bPrev').onclick=()=>step(-1);$('bNext').onclick=()=>step(1);
 function stepSeries(dir){if(state.cur){step(dir);return}const i=state.series?SERIES_ORDER.indexOf(state.series):(dir>0?-1:SERIES_ORDER.length);const j=i+dir;
   if(j<0||j>=SERIES_ORDER.length){overview();return}focusSeries(SERIES_ORDER[j])}
@@ -943,17 +1016,21 @@ addEventListener('keydown',ev=>{if(ev.altKey||ev.ctrlKey||ev.metaKey)return;cons
     if(state.cur){if(ev.key!=='ArrowDown'||!state.open)setOpen(!state.open)}
     else if(state.mode==='focus'&&state.series){document.activeElement?.blur?.();present(books.find(e=>e.sid===state.series))}}});
 
-const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(9,9);let hovered=null,drag=null;const tip=$('tip');
+const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(9,9);let hovered=null,drag=null,tipFor=null;const tip=$('tip');
 const cvs=renderer.domElement;const par=new THREE.Vector2(),parT=new THREE.Vector2();
+// a lost context takes every baked texture and render target with it, so a reload is the only full recovery
+cvs.addEventListener('webglcontextrestored',()=>location.reload());
 cvs.addEventListener('pointermove',ev=>{const r=cvs.getBoundingClientRect();ndc.set((ev.clientX-r.left)/r.width*2-1,-(ev.clientY-r.top)/r.height*2+1);parT.set(ndc.x,ndc.y);tip.style.transform=`translate(${ev.clientX-r.left+14}px,${ev.clientY-r.top+16}px)`;
-  if(!drag)return;const dx=ev.clientX-drag.x,dy=ev.clientY-drag.y;if(!drag.moved&&Math.hypot(dx,dy)>(ev.pointerType==='mouse'?6:10))drag.moved=true;
-  if(drag.moved&&!state.cur){if(ORB&&state.mode==='overview'){ORB.ty=drag.oy+dx*.0034;ORB.tp=Math.max(ORB.pitch0-.42,Math.min(ORB.pitch0+.42,drag.op-dy*.0022))}
+  if(!drag||drag.multi||ev.pointerId!==drag.id)return;const dx=ev.clientX-drag.x,dy=ev.clientY-drag.y;if(!drag.moved&&Math.hypot(dx,dy)>(ev.pointerType==='mouse'?6:10))drag.moved=true;
+  if(drag.moved&&!state.cur){if(ORB&&state.mode==='overview'){ORB.moved=true;ORB.ty=drag.oy+dx*.0034;ORB.tp=Math.max(ORB.pitch0-.42,Math.min(ORB.pitch0+.42,drag.op-dy*.0022))}
     else if(pan.hi>pan.lo){pan.t=Math.max(pan.lo,Math.min(pan.hi,drag.pn-dx*pan.mpp));look.tp=Math.max(-.35,Math.min(.35,drag.p0+dy*.002))}
     else{look.ty=Math.max(-.7,Math.min(.7,drag.y0-dx*.0026));look.tp=Math.max(-.35,Math.min(.35,drag.p0+dy*.002))}}});
 cvs.addEventListener('pointerleave',()=>{ndc.set(9,9);parT.set(0,0)});
-cvs.addEventListener('pointerdown',ev=>{drag={x:ev.clientX,y:ev.clientY,y0:look.ty,p0:look.tp,oy:ORB?.ty,op:ORB?.tp,pn:pan.t,moved:false};cvs.setPointerCapture?.(ev.pointerId)});
-cvs.addEventListener('pointercancel',()=>{drag=null});
-cvs.addEventListener('pointerup',ev=>{const d=drag;drag=null;if(!d)return;
+// only the main button drags or picks; a second finger (a pinch) voids the gesture rather than starting another
+cvs.addEventListener('pointerdown',ev=>{if(ev.button>0)return;if(!ev.isPrimary){if(drag)drag.multi=true;return}
+  drag={id:ev.pointerId,x:ev.clientX,y:ev.clientY,y0:look.ty,p0:look.tp,oy:ORB?.ty,op:ORB?.tp,pn:pan.t,moved:false,multi:false};cvs.setPointerCapture?.(ev.pointerId)});
+cvs.addEventListener('pointercancel',ev=>{if(ev.pointerId===drag?.id)drag=null});
+cvs.addEventListener('pointerup',ev=>{const d=drag;if(!d||ev.pointerId!==d.id)return;drag=null;if(d.multi)return;
   // a sideways swipe over the book in hand moves to the next or previous one
   if(d.moved){const dx=ev.clientX-d.x,dy=ev.clientY-d.y;if(state.cur&&Math.abs(dx)>40&&Math.abs(dx)>1.4*Math.abs(dy))step(dx<0?1:-1);return}
   const r=cvs.getBoundingClientRect();ndc.set((ev.clientX-r.left)/r.width*2-1,-(ev.clientY-r.top)/r.height*2+1);ray.setFromCamera(ndc,camera);
@@ -962,13 +1039,21 @@ cvs.addEventListener('pointerup',ev=>{const d=drag;drag=null;if(!d)return;
   if(state.cur){returnBook(state.cur);return}
   if(state.mode==='focus')overview()});
 let wheelAcc=0,wheelT=0;
-cvs.addEventListener('wheel',ev=>{ev.preventDefault();if(state.busy||tweens.size)return;wheelAcc+=ev.deltaY;const now=performance.now();if(now-wheelT<700){return}if(Math.abs(wheelAcc)>40){wheelT=now;stepSeries(Math.sign(wheelAcc));wheelAcc=0}},{passive:false});
+// a trackpad pinch arrives as a wheel with ctrlKey; it stays the browser's zoom
+cvs.addEventListener('wheel',ev=>{if(ev.ctrlKey)return;ev.preventDefault();if(state.busy||tweens.size)return;wheelAcc+=ev.deltaY;const now=performance.now();if(now-wheelT<700){return}if(Math.abs(wheelAcc)>40){wheelT=now;stepSeries(Math.sign(wheelAcc));wheelAcc=0}},{passive:false});
 
-let poseA=app.clientWidth/app.clientHeight;
+// a turned phone reframes the series or the reading stand for the new shape, once no book is in flight
+let poseA=app.clientWidth/app.clientHeight,reframe=false;
 function resize(){const w=app.clientWidth,h=app.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h);composer.setSize(w,h);bloom.setSize(w,h);if(dust)dust.material.uniforms.dpr.value=DPR;
-  // a turned phone reframes the series or the reading stand for the new shape
-  if(Math.abs(w/h-poseA)>.08*poseA){poseA=w/h;if(INSTANT||state.busy)return;
-    if(RH&&state.cur?.state==='presented'&&!state.open)moveCam(rehalPose(),.8);else if(state.mode==='focus'&&state.series)moveCam(spose(state.series),.8)}}
+  $('series').inert=$('panel').classList.contains('on')&&NARROW();
+  if(Math.abs(w/h-poseA)>.08*poseA){poseA=w/h;reframe=true}}
+// a series keeps the book nearest the middle of the frame in view
+function doReframe(){reframe=false;if(INSTANT)return;
+  if(RH&&state.cur?.state==='presented')moveCam(rehalPose(),.8);
+  else if(state.mode==='focus'&&state.series){const S=SER[state.series],m=rig.look.clone().sub(S.c).dot(S.ax)+(pan.ax?pan.v:0);let at=null,best=1e9;
+    for(const e of books)if(e.sid===state.series){const u=Math.abs(e.home.p.clone().sub(S.c).dot(S.ax)-m);if(u<best){best=u;at=e}}
+    moveCam(spose(state.series,at),.8)}
+  else if(state.mode==='overview'&&ORB&&!ORB.moved&&ORB.narrow!==NARROW())seedOrb()}
 new ResizeObserver(resize).observe(app);
 
 // ------------------------------------------------------------------ frame
@@ -977,24 +1062,28 @@ new IntersectionObserver(([en])=>visible=en.isIntersecting).observe(app);
 const tmpV=V(),tmpP=V(),tmpL=V(),UP=V(0,1,0);
 function update(dt){
   elapsed+=dt;const t=elapsed;
-  runTweens(dt);
-  const amp=REDUCE?0:(state.mode==='overview'?1:state.cur?.25:.45),pt=parT.clone().multiplyScalar(amp);par.lerp(pt,1-Math.pow(.04,dt));
+  runTweens(dt);if(reframe&&!state.busy)doReframe();
+  const amp=REDUCE?0:(state.mode==='overview'?1:state.cur?.25:.45*pan.k),pt=parT.clone().multiplyScalar(amp);par.lerp(pt,1-Math.pow(.04,dt));
   const kk=1-Math.pow(.02,dt);look.yaw+=(look.ty-look.yaw)*kk;look.pitch+=(look.tp-look.pitch)*kk;pan.v+=(pan.t-pan.v)*kk;
   motion=par.distanceTo(pt)+Math.abs(look.ty-look.yaw)+Math.abs(look.tp-look.pitch)+Math.abs(pan.t-pan.v);
   if(!drag&&!state.cur){look.ty*=1-dt*.15;look.tp*=1-dt*.15}
   if(ORB&&state.mode==='overview'&&!camMoving&&!orbitHold){ORB.yaw+=(ORB.ty-ORB.yaw)*kk;ORB.pitch+=(ORB.tp-ORB.pitch)*kk;const p=orbitPose(ORB.yaw,ORB.pitch);
-    rig.pos.lerp(p.pos,INSTANT?1:1-Math.pow(.05,dt));rig.look.copy(rig.pos).add(p.look.sub(p.pos));motion+=Math.abs(ORB.ty-ORB.yaw)+Math.abs(ORB.tp-ORB.pitch)+rig.pos.distanceTo(p.pos)}
-  const rp=pan.ax?panPos(rig.pos,pan.ax,pan.v,tmpP):rig.pos,rl=pan.ax?tmpL.copy(rig.look).addScaledVector(pan.ax,pan.v):rig.look;
+    const ko=INSTANT?1:1-Math.pow(.05,dt);rig.pos.lerp(p.pos,ko);rig.look.copy(rig.pos).add(p.look.sub(p.pos));rig.fov+=(p.fov-rig.fov)*ko;
+    motion+=Math.abs(ORB.ty-ORB.yaw)+Math.abs(ORB.tp-ORB.pitch)+rig.pos.distanceTo(p.pos)+Math.abs(p.fov-rig.fov)*.01}
+  const rp=pan.ax?panPos(pan.base,pan.ax,pan.v,tmpP):rig.pos,rl=pan.ax?tmpL.copy(rig.look).addScaledVector(pan.ax,pan.v):rig.look;
   const fwd=tmpV.copy(rl).sub(rp);const dist=fwd.length();fwd.normalize();const right=V().crossVectors(fwd,UP).normalize();
   fwd.applyAxisAngle(UP,look.yaw).applyAxisAngle(right,-look.pitch);
   camera.position.copy(rp).addScaledVector(right,par.x*.12).add(V(0,par.y*.055,0));
-  camera.lookAt(V().copy(camera.position).addScaledVector(fwd,dist).addScaledVector(right,par.x*.05));
+  // The parallax keeps to the focus box too, or the corner cabinet swings across the first L1 books. The aim follows
+  // the unclamped position, so the view sways as far one way as the other.
+  const aim=V().copy(camera.position);if(state.mode!=='overview')inBox(camera.position);
+  camera.lookAt(aim.addScaledVector(fwd,dist).addScaledVector(right,par.x*.05));
   if(Math.abs(camera.fov-rig.fov)>.01||Math.abs(camera.filmOffset-rig.film)>.01){camera.fov=rig.fov;camera.filmOffset=rig.film;camera.updateProjectionMatrix()}
   sky.position.copy(camera.position);
   hovered=null;
   if(ndc.x<5&&!state.busy&&!tweens.size&&!drag){ray.setFromCamera(ndc,camera);const h=ray.intersectObjects(pickables,false)[0];if(h&&h.object.userData.entry.state==='shelf')hovered=h.object.userData.entry}
   for(const e of books){if(e.state!=='shelf')continue;const tg=e===hovered?1:0;if(Math.abs(e.hover-tg)>.001){motion+=.01;e.hover+=(tg-e.hover)*(1-Math.pow(.0005,dt));e.g.position.copy(e.home.p).addScaledVector(e.outW,(e.out==='z'?.06:.025)*e.hover).add(V(0,.006*e.hover,0))}}
-  if(hovered){tip.innerHTML=`${hovered.b.title}<small>${SERIES[hovered.sid].name} · ${hovered.n}</small>`;tip.classList.add('on');cvs.style.cursor='pointer'}else{tip.classList.remove('on');cvs.style.cursor=state.cur?'pointer':(drag?.moved?'grabbing':'grab')}
+  if(hovered){if(tipFor!==hovered){tipFor=hovered;tip.innerHTML=`${hovered.b.title}<small>${SERIES[hovered.sid].name} · ${hovered.n}</small>`}tip.classList.add('on');cvs.style.cursor='pointer'}else{tipFor=null;tip.classList.remove('on');cvs.style.cursor=state.cur?'pointer':(drag?.moved?'grabbing':'grab')}
   if(!RH&&state.cur&&state.cur.state==='presented'&&!state.busy&&!REDUCE){const e=state.cur;const sway=new THREE.Quaternion().setFromEuler(new THREE.Euler(-par.y*.12+Math.sin(t*.7)*.01,par.x*.25,0));e.g.quaternion.copy(e.T.q).multiply(sway)}
   {const bs=RH&&state.cur?.12:.2;bloom.strength=INSTANT?bs:bloom.strength+(bs-bloom.strength)*(1-Math.pow(.2,dt))}
   flameU.time.value=t;grade.uniforms.time.value=t;
@@ -1035,7 +1124,9 @@ async function applyTest(s){
   if(s.hover!=null){const e=books[s.hover];e.hover=1;e.g.position.copy(e.home.p).addScaledVector(e.outW,(e.out==='z'?.06:.025))}
 }
 // shaders compile behind the loading screen rather than on the first frames
-await renderer.compileAsync(scene,camera).catch(()=>{});
+await renderer.compileAsync(scene,camera).catch(()=>{});tick();
+// the post passes build their programs and targets on their first frame, which is drawn behind the loading screen
+if(!TEST){update(.016);composer.render();tick()}
 window.__studyReady=true;$('load').style.opacity=0;setTimeout(()=>$('load')?.remove(),900);
 if(TEST){INSTANT=true;const shots=TEST.shots||[TEST];const W=app.clientWidth,H=app.clientHeight;const cols=shots.length>1?2:1,rows=Math.ceil(shots.length/cols);
   const [cc,cg]=canvas(W*DPR,H*DPR);
