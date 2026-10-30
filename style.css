@@ -247,6 +247,8 @@ body:has(.home) { overflow: hidden; }
 .project-features span { display: block; font-size: 0.85rem; color: var(--text-secondary); }
 .project-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; }
 .project-actions p { font-size: 0.75rem; color: var(--text-muted); }
+.project-next { border-top: 1px solid var(--rule); margin-top: 2.5rem; padding-top: 2rem; }
+.project-next h3 { font-family: var(--serif); font-size: 1.6rem; font-weight: 500; line-height: 1.2; margin: 0.5rem 0 0.75rem; }
 @media (max-width: 640px) {
     .project-features { grid-template-columns: 1fr; }
     .project-actions { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
