@@ -2,4 +2,6 @@ resume.docx
 .github
 tools
 wrangler.jsonc
+worker.js
+.wrangler
 .git

@@ -494,4 +494,30 @@
         });
     })();
 
+    /* ─── LEDGER FILM ─── */
+    (function () {
+        const trigger = document.querySelector('[data-film]');
+        const dialog = document.getElementById('film-dialog');
+        if (!trigger || !dialog || typeof dialog.showModal !== 'function') return;
+        const video = dialog.querySelector('video');
+        const phone = window.matchMedia('(max-width: 640px)');
+
+        trigger.addEventListener('click', e => {
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+            e.preventDefault();
+            dialog.classList.toggle('is-tall', phone.matches);
+            video.poster = phone.matches ? trigger.dataset.posterTall : trigger.dataset.poster;
+            video.src = phone.matches ? trigger.dataset.filmTall : trigger.href;
+            dialog.showModal();
+            video.play().catch(() => { /* The controls remain if playback is refused. */ });
+        });
+        dialog.querySelector('.film-close').addEventListener('click', () => dialog.close());
+        dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
+        dialog.addEventListener('close', () => {
+            video.pause();
+            video.removeAttribute('src');
+            video.load();
+        });
+    })();
+
 })();
