@@ -10,14 +10,14 @@
     <meta property="og:description" content="Lifting Ledger is a private workout tracker I built for my own training. The web app is live. Lifting Ledger for iPhone opens as a public beta on TestFlight on November 2.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://nusayb.me/projects">
-    <meta property="og:image" content="https://nusayb.me/og-image.png">
+    <meta property="og:image" content="https://nusayb.me/media/ledger/ledger-share-1200x630.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Nusayb Nurani — nusayb.me">
+    <meta property="og:image:alt" content="Lifting Ledger on an iPhone, showing a bench press workout with a gold star on a new best set.">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Projects — Nusayb Nurani">
     <meta name="twitter:description" content="Lifting Ledger is a private workout tracker I built for my own training. The web app is live. Lifting Ledger for iPhone opens as a public beta on TestFlight on November 2.">
-    <meta name="twitter:image" content="https://nusayb.me/og-image.png">
+    <meta name="twitter:image" content="https://nusayb.me/media/ledger/ledger-share-1200x630.jpg">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
     <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
@@ -79,7 +79,7 @@
                 <p class="ledger-label">Personal project</p>
                 <h2 id="ledger-title">Lifting Ledger</h2>
                 <p class="ledger-lede">A private workout tracker I built for my own training.</p>
-                <p class="ledger-status">Log your lifts, runs, and everything between, then see how it adds up. It’s free, and the web app is live now.</p>
+                <p class="ledger-status">Log your lifts, runs, and everything between, then see how it adds up. <span class="ledger-region">The web app is live now.</span></p>
                 <p class="ledger-availability"><strong>Lifting Ledger for iPhone, shown here, opens as a public beta on TestFlight on November&nbsp;2.</strong> <span class="ledger-region">Not available in Europe.</span></p>
                 <div class="ledger-actions">
                     <a href="https://inarun.github.io/workout-tracker/" class="btn btn-primary" target="_blank" rel="noopener">
@@ -89,8 +89,8 @@
                 </div>
             </div>
             <div class="ledger-stage">
-                <div class="ledger-screen"><img src="media/ledger/screens/home.webp" width="780" height="1696" decoding="async" alt="Lifting Ledger’s Home screen, with a Start Workout button and last week’s summary."></div>
-                <div class="ledger-screen"><img src="media/ledger/screens/logging.webp" width="780" height="1696" decoding="async" alt="A bench press workout with last time’s numbers filled in, ready to tick off."></div>
+                <div class="ledger-screen"><img src="media/ledger/screens/home.webp" width="780" height="1696" decoding="async" alt="Lifting Ledger’s Home screen with templates and last week’s recap."></div>
+                <div class="ledger-screen"><img src="media/ledger/screens/start.webp" width="780" height="1696" decoding="async" alt="Lifting Ledger’s Start Workout chooser, asking what you are training."></div>
             </div>
         </section>
 
@@ -98,6 +98,13 @@
             <p class="ledger-label">Why I built it</p>
             <h3>The tracker I wanted to use.</h3>
             <p>I wanted a simple, convenient way to track my workouts the way I like to. Building it myself meant I could add whatever features I wanted, and it was a fun thing to work on.</p>
+            <figure class="ledger-film">
+                <video controls playsinline preload="none" width="1280" height="720" poster="media/ledger/ledger-poster-16x9.jpg" aria-label="A short video of Lifting Ledger, an iPhone workout log, showing a workout being started and logged, the rest timer, progress charts, and extras such as the Lock Screen timer and body map.">
+                    <source src="media/ledger/video/ledger-testflight-16x9-720p.mp4" type="video/mp4">
+                </video>
+                <a class="ledger-film-still" href="media/ledger/video/ledger-testflight-16x9-720p.mp4"><img src="media/ledger/ledger-poster-16x9.jpg" width="1920" height="1080" loading="lazy" decoding="async" alt="A short video of Lifting Ledger, an iPhone workout log, showing a workout being started and logged, the rest timer, progress charts, and extras such as the Lock Screen timer and body map."></a>
+                <figcaption>A short look at the iPhone app, with sample data.</figcaption>
+            </figure>
         </section>
 
         <section class="ledger-row">
@@ -115,7 +122,7 @@
                 <h3>Your rest, at a glance.</h3>
                 <p>The countdown and the next set, on your Lock&nbsp;Screen.</p>
             </div>
-            <img class="ledger-card" src="media/ledger/screens/rest-card.webp" width="900" height="370" loading="lazy" decoding="async" alt="Lifting Ledger’s Lock Screen card, with a 56 second rest countdown and the next set of 232.5 pounds for 8 reps.">
+            <img class="ledger-card" src="media/ledger/screens/rest-card.webp" width="900" height="373" loading="lazy" decoding="async" alt="The rest countdown and next set in a Live Activity on the Lock Screen.">
         </section>
 
         <section class="ledger-row">
@@ -124,7 +131,7 @@
                 <h3>Run. Swim.<br>Stretch. Play.</h3>
                 <p>Every activity gets its own fields. Log a run and Lifting Ledger works out your pace.</p>
             </div>
-            <div class="ledger-screen"><img src="media/ledger/screens/activity-pace.webp" width="780" height="1696" loading="lazy" decoding="async" alt="A logged run showing time, distance, and pace."></div>
+            <div class="ledger-screen"><img src="media/ledger/screens/activity-pace.webp" width="780" height="1696" loading="lazy" decoding="async" alt="A logged run showing time, distance and pace."></div>
         </section>
 
         <section class="ledger-progress">
@@ -134,15 +141,15 @@
             </div>
             <div class="ledger-trio" tabindex="0" role="group" aria-label="Progress screens">
                 <figure>
-                    <div class="ledger-screen"><img src="media/ledger/screens/progress-exercises.webp" width="780" height="1696" loading="lazy" decoding="async" alt="A chart of bench press strength rising over three months."></div>
+                    <div class="ledger-screen"><img src="media/ledger/screens/progress-exercises.webp" width="780" height="1696" loading="lazy" decoding="async" alt="A chart of the heaviest bench press set climbing over three months."></div>
                     <figcaption><strong>Every lift</strong><span>Heaviest sets, estimated 1RM, and records.</span></figcaption>
                 </figure>
                 <figure>
-                    <div class="ledger-screen"><img src="media/ledger/screens/progress-bodymap.webp" width="780" height="1696" loading="lazy" decoding="async" alt="A body map showing estimated weekly sets by muscle."></div>
+                    <div class="ledger-screen"><img src="media/ledger/screens/progress-bodymap.webp" width="780" height="1696" loading="lazy" decoding="async" alt="A body map shaded by the estimated sets each muscle received."></div>
                     <figcaption><strong>Every muscle</strong><span>Estimated sets per week on a body map.</span></figcaption>
                 </figure>
                 <figure>
-                    <div class="ledger-screen"><img src="media/ledger/screens/history-detail.webp" width="780" height="1696" loading="lazy" decoding="async" alt="A workout summary with sets, volume, duration, and a new record."></div>
+                    <div class="ledger-screen"><img src="media/ledger/screens/history-detail.webp" width="780" height="1696" loading="lazy" decoding="async" alt="The summary of a finished push workout, with sets, volume and time."></div>
                     <figcaption><strong>Every session</strong><span>Sets, volume, and duration for each workout.</span></figcaption>
                 </figure>
             </div>

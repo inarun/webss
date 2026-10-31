@@ -270,7 +270,15 @@ body:has(.home) { overflow: hidden; }
     font-family: var(--serif); font-size: clamp(2rem, 3.8vw, 2.75rem); font-weight: 500;
     line-height: 1.1; letter-spacing: -0.01em; margin: 0.75rem 0 1rem;
 }
-.ledger-why p:last-child { color: var(--text-secondary); }
+.ledger-why > p:last-of-type { color: var(--text-secondary); }
+.ledger-film { margin-top: 2rem; }
+.ledger-film video, .ledger-film img { display: block; width: 100%; height: auto; border-radius: 12px; background: #000; }
+.ledger-film-still { display: none; }
+.ledger-film figcaption { margin-top: 0.6rem; font-size: 0.8rem; color: var(--text-muted); }
+@media (prefers-reduced-motion: reduce) {
+    .ledger-film video { display: none; }
+    .ledger-film-still { display: block; }
+}
 .ledger-row {
     display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(2rem, 6vw, 5rem);
     align-items: center; margin-top: clamp(5rem, 11vw, 8rem);
@@ -314,7 +322,7 @@ body:has(.home) { overflow: hidden; }
     .ledger-details { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 560px) {
-    .ledger-status, .ledger-availability, .ledger-why p, .ledger-copy p,
+    .ledger-availability, .ledger-why > p, .ledger-copy p,
     .ledger-trio span, .ledger-details span { text-wrap: balance; }
     .ledger-trio {
         display: flex; gap: 1rem; margin: 1rem calc(-1 * var(--gutter)) 0; padding: 1.5rem var(--gutter) 1rem;
