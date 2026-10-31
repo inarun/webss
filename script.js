@@ -494,30 +494,240 @@
         });
     })();
 
-    /* ─── LEDGER FILM ─── */
+    /* ─── LEDGER PREVIEW ─── */
     (function () {
-        const trigger = document.querySelector('[data-film]');
-        const dialog = document.getElementById('film-dialog');
-        if (!trigger || !dialog || typeof dialog.showModal !== 'function') return;
-        const video = dialog.querySelector('video');
-        const phone = window.matchMedia('(max-width: 640px)');
+        const phone = document.getElementById('ledger-phone');
+        if (!phone) return;
 
-        trigger.addEventListener('click', e => {
-            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-            e.preventDefault();
-            dialog.classList.toggle('is-tall', phone.matches);
-            video.poster = phone.matches ? trigger.dataset.posterTall : trigger.dataset.poster;
-            video.src = phone.matches ? trigger.dataset.filmTall : trigger.href;
-            dialog.showModal();
-            video.play().catch(() => { /* The controls remain if playback is refused. */ });
+        const CHAPTERS = {
+            start: ['Start', 'Start with what you came to do.', 'Pick a workout, or repeat the last one.'],
+            log: ['Log a set', 'Last time’s numbers, ready to beat.', 'Tick a set, start your rest, and see a star on a new best.'],
+            rest: ['Rest', 'Rest starts on the tick.', 'Fifteen seconds more or less, or skip it.'],
+            lock: ['Lock Screen', 'Your rest, on your Lock Screen.', 'The countdown and the next set, in one glance.'],
+            run: ['Run', 'Run. Swim. Stretch. Play.', 'Every activity gets its own fields. Log a run and Ledger works out your pace.'],
+            plan: ['Plan', 'One sentence. One workout.', 'Say what you’ve got, and Ledger plans today’s session from your own log. Needs iOS 27. Asking also needs Apple Intelligence.'],
+            progress: ['Progress', 'Every lift.', 'Heaviest sets, estimated 1RM, and records.'],
+            muscles: ['Muscles', 'See where the work goes.', 'Estimated sets per week on a body map.'],
+            history: ['History', 'Every session.', 'Sets, volume, and duration at a glance.'],
+        };
+        const FIRST = { start: 'home', log: 'logging', rest: 'rest', lock: 'lockscreen', run: 'activity-running', plan: 'plan-empty', progress: 'progress-exercises', muscles: 'progress-bodymap', history: 'history' };
+
+        const HOME_TAB = ['Home', 'home', 8, 91, 21, 6.5, 'fade'];
+        const PROGRESS_TAB = ['Progress', 'progress-exercises', 29, 91, 21, 6.5, 'fade'];
+        const HISTORY_TAB = ['History', 'history', 50, 91, 21, 6.5, 'fade'];
+
+        // Each spot is [label, target, x%, y%, width%, height%, move], placed over the control it stands for.
+        const SCREENS = {
+            home: { chapter: 'start', alt: 'Ledger’s Home screen, with a Start Workout button and last week’s summary.', spots: [
+                ['Start Workout', 'start', 4, 20.5, 92, 6, 'up'],
+                ['Plan or Ask', 'plan-empty', 4, 28, 29, 7, 'up'],
+                PROGRESS_TAB, HISTORY_TAB,
+            ] },
+            start: { chapter: 'start', alt: 'What are you training? A list of workouts and activities.', spots: [
+                ['Push', 'start-push', 4, 26, 45, 8.5],
+                ['Cardio', 'start-cardio', 4, 54, 45, 7.5],
+                ['Cancel', 'home', 4, 8.5, 21, 6, 'down'],
+            ] },
+            'start-push': { chapter: 'start', alt: 'The Push workout, with templates and exercises to choose from.', spots: [
+                ['Start Workout', 'logging', 4, 89.5, 92, 6],
+                ['Back', 'start', 3, 8, 13, 6.5, 'back'],
+            ] },
+            'start-cardio': { chapter: 'run', alt: 'A grid of cardio activities, from running to battle ropes.', spots: [
+                ['Running', 'activity-running', 4, 16.5, 30, 10],
+                ['Back', 'start', 3, 8, 13, 6.5, 'back'],
+            ] },
+            logging: { chapter: 'log', alt: 'A bench press workout showing last time’s weights and reps, with no sets ticked yet.', spots: [
+                ['Tick the set', 'rest', 69, 43.5, 13, 17, 'fade'],
+            ] },
+            rest: { chapter: 'rest', alt: 'Three ticked sets, a gold star on a new best, and the rest timer at 1:12.', spots: [
+                ['Skip rest', 'logging-pr', 41, 88.5, 18, 5, 'fade'],
+            ] },
+            'logging-pr': { chapter: 'log', alt: 'A bench press workout with a gold star on a new best set of 235 by 8.', spots: [
+                ['Finish', 'history-detail', 76, 7, 21, 5.5],
+            ] },
+            lockscreen: { chapter: 'lock', alt: 'A Lock Screen showing the rest countdown and the next set.', spots: [] },
+            'activity-running': { chapter: 'run', alt: 'A running activity with empty time and distance fields.', spots: [
+                ['Enter time and distance', 'activity-pace', 6, 33.5, 88, 6, 'fade'],
+            ] },
+            'activity-pace': { chapter: 'run', alt: 'A logged run of 28:42 over 3.2 miles, with a pace of 8:58 per mile.', spots: [
+                ['Done', 'history', 6, 45, 88, 6, 'fade'],
+            ] },
+            'plan-empty': { chapter: 'plan', alt: 'Plan or Ask, with suggested questions and an empty text box.', spots: [
+                ['Type a request', 'plan-typed', 3, 82.5, 81, 5, 'fade'],
+                ['Done', 'home', 3, 8.5, 19, 6, 'down'],
+            ] },
+            'plan-typed': { chapter: 'plan', alt: 'Plan or Ask with “45 minutes, upper body, no barbell” typed in.', spots: [
+                ['Send', 'plan', 84, 45.5, 13, 6.5, 'fade'],
+            ] },
+            plan: { chapter: 'plan', alt: 'A 45 minute upper body plan with four exercises and a Start Workout button.', spots: [
+                ['Start Workout', 'logging', 6, 57.5, 88, 6],
+                ['Done', 'home', 3, 8.5, 19, 6, 'down'],
+            ] },
+            'progress-exercises': { chapter: 'progress', alt: 'A chart of bench press strength rising from about 200 to 232.5 pounds.', spots: [HOME_TAB, HISTORY_TAB] },
+            'progress-bodymap': { chapter: 'muscles', alt: 'A body map shaded by estimated weekly sets for each muscle.', spots: [
+                ['List', 'progress-exercises', 7, 12, 42, 3.8, 'fade'],
+                HOME_TAB, HISTORY_TAB,
+            ] },
+            history: { chapter: 'history', alt: 'History, a list of past workouts by date.', spots: [
+                ['Oct 25, Push', 'history-detail', 4, 59.5, 92, 9],
+                ['Calendar', 'history-calendar', 68, 6.5, 16, 6.5, 'fade'],
+                HOME_TAB, PROGRESS_TAB,
+            ] },
+            'history-calendar': { chapter: 'history', alt: 'History as an October calendar with workouts marked by colour.', spots: [
+                ['Oct 25', 'history-detail', 80.5, 63, 9, 6.5],
+                ['List', 'history', 68, 6.5, 16, 6.5, 'fade'],
+                HOME_TAB, PROGRESS_TAB,
+            ] },
+            'history-detail': { chapter: 'history', alt: 'A workout summary with 16 working sets, 14.6k pounds of volume, and 59 minutes.', spots: [
+                ['Back', 'history', 3, 7, 13, 6.5, 'back'],
+                HOME_TAB, PROGRESS_TAB,
+            ] },
+        };
+        const TOUR = ['home', 'start', 'start-push', 'logging', 'rest', 'logging-pr', 'history-detail', 'home'];
+        const MOVES = {
+            push: ['translateX(100%)', 'translateX(-28%)'],
+            back: ['translateX(-28%)', 'translateX(100%)'],
+            up: ['translateY(100%)', 'none'],
+            down: ['none', 'translateY(100%)'],
+            fade: ['none', 'none'],
+        };
+
+        const calm = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const chapters = document.getElementById('ledger-chapters');
+        const caption = document.getElementById('ledger-caption');
+        const hint = document.getElementById('ledger-hint');
+        const tourButton = document.getElementById('ledger-tour');
+        const src = id => `media/ledger/screens/${id}.webp`;
+        const touch = document.createElement('span');
+        touch.className = 'ledger-touch';
+        phone.append(touch);
+
+        let current = 'home';
+        let spots = [];
+        let step = -1;
+        let timer = 0;
+        let inView = false;
+        let toured = false;
+        const touring = () => step >= 0;
+
+        const buttons = {};
+        Object.entries(CHAPTERS).forEach(([key, [label]]) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = label;
+            button.addEventListener('click', () => { stopTour(); show(FIRST[key], 'fade'); });
+            chapters.append(button);
+            buttons[key] = button;
         });
-        dialog.querySelector('.film-close').addEventListener('click', () => dialog.close());
-        dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
-        dialog.addEventListener('close', () => {
-            video.pause();
-            video.removeAttribute('src');
-            video.load();
+        chapters.hidden = false;
+        hint.hidden = false;
+
+        function drawSpots() {
+            spots.forEach(spot => spot.remove());
+            spots = SCREENS[current].spots.map(([label, target, x, y, w, h, move], index) => {
+                const spot = document.createElement('button');
+                spot.type = 'button';
+                spot.className = 'ledger-spot';
+                spot.setAttribute('aria-label', label);
+                spot.style.cssText = `left:${x}%;top:${y}%;width:${w}%;height:${h}%`;
+                spot.classList.toggle('is-next', index === 0 && !touring() && !calm.matches);
+                spot.addEventListener('click', () => { stopTour(); show(target, move); });
+                phone.append(spot);
+                new Image().src = src(target);
+                return spot;
+            });
+        }
+
+        function setCaption(chapter) {
+            const [, title, text] = CHAPTERS[chapter];
+            caption.querySelector('h3').textContent = title;
+            caption.querySelector('p').textContent = text;
+            Object.entries(buttons).forEach(([key, button]) => button.setAttribute('aria-pressed', String(key === chapter)));
+        }
+
+        function show(id, move = 'push') {
+            const screen = SCREENS[id];
+            const shots = phone.querySelectorAll('.ledger-shot');
+            const old = shots[shots.length - 1];
+            shots.forEach(shot => { if (shot !== old) shot.remove(); });
+            const next = old.cloneNode();
+            next.src = src(id);
+            next.alt = screen.alt;
+            old.alt = '';
+            old.after(next);
+            current = id;
+            setCaption(screen.chapter);
+            drawSpots();
+
+            if (calm.matches) { old.remove(); return; }
+            const [enter, leave] = MOVES[move];
+            const timing = { duration: move === 'fade' ? 240 : 340, easing: 'cubic-bezier(0.32, 0.72, 0, 1)' };
+            if (move === 'down') next.style.zIndex = -1;
+            next.animate({ transform: [enter, 'none'], opacity: [move === 'fade' ? 0 : 1, 1] }, timing);
+            old.animate({ transform: ['none', leave] }, { ...timing, fill: 'forwards' }).finished
+                .then(() => { old.remove(); next.style.zIndex = ''; })
+                .catch(() => { /* The old screen was already replaced. */ });
+        }
+
+        function stopTour() {
+            toured = true;
+            clearTimeout(timer);
+            if (!touring()) return;
+            step = -1;
+            tourButton.textContent = 'Play tour';
+            caption.setAttribute('aria-live', 'polite');
+            drawSpots();
+        }
+
+        function tourStep() {
+            if (!touring() || !inView) return;
+            const target = TOUR[step + 1];
+            const index = SCREENS[current].spots.findIndex(s => s[1] === target);
+            const spot = spots[index];
+            touch.style.left = `${spot.offsetLeft + spot.offsetWidth / 2}px`;
+            touch.style.top = `${spot.offsetTop + spot.offsetHeight / 2}px`;
+            touch.animate(
+                [{ opacity: 0, transform: 'scale(1.5)' }, { opacity: 1, transform: 'scale(1)', offset: 0.55 }, { opacity: 1, transform: 'scale(0.82)', offset: 0.8 }, { opacity: 0, transform: 'scale(1.1)' }],
+                { duration: 760, easing: 'ease-out' }
+            );
+            timer = setTimeout(() => {
+                step += 1;
+                show(target, SCREENS[current].spots[index][6]);
+                if (step === TOUR.length - 1) stopTour();
+                else timer = setTimeout(tourStep, 1900);
+            }, 560);
+        }
+
+        function startTour() {
+            toured = true;
+            step = 0;
+            tourButton.textContent = 'Pause tour';
+            caption.setAttribute('aria-live', 'off');
+            if (current === 'home') drawSpots();
+            else show('home', 'fade');
+            clearTimeout(timer);
+            timer = setTimeout(tourStep, 900);
+        }
+
+        tourButton.addEventListener('click', () => { if (touring()) stopTour(); else startTour(); });
+
+        phone.addEventListener('click', e => {
+            if (e.target.closest('.ledger-spot')) return;
+            stopTour();
+            phone.classList.add('show-spots');
+            setTimeout(() => phone.classList.remove('show-spots'), 700);
         });
+        phone.addEventListener('keydown', stopTour);
+
+        setCaption('start');
+        drawSpots();
+
+        new IntersectionObserver(([entry]) => {
+            inView = entry.isIntersecting;
+            if (!inView) return;
+            if (touring()) { clearTimeout(timer); timer = setTimeout(tourStep, 900); }
+            else if (!toured && !calm.matches) startTour();
+        }, { threshold: 0.6 }).observe(phone);
     })();
 
 })();
