@@ -68,16 +68,18 @@
     </nav>
 
     <main id="main-content" tabindex="-1" class="projects-page">
+        <header class="projects-header">
+            <h1>Projects</h1>
+            <p>Things I build for everyday life.</p>
+        </header>
+
         <article class="ledger" aria-labelledby="ledger-title">
+        <section class="ledger-hero">
             <div class="ledger-intro">
-                <header class="projects-header">
-                    <h1>Projects</h1>
-                    <p>Things I build for everyday life.</p>
-                </header>
                 <p class="ledger-label">Personal project</p>
                 <h2 id="ledger-title">Ledger</h2>
                 <p class="ledger-lede">A private workout tracker I built for my own training.</p>
-                <p class="ledger-status">Shown here: Ledger for iPhone, coming soon to TestFlight.</p>
+                <p class="ledger-status">Log your lifts, runs, and everything between, then see how it adds up. The web app is live. Ledger for iPhone, shown here, is coming soon to TestFlight.</p>
                 <div class="ledger-actions">
                     <a href="https://inarun.github.io/workout-tracker/" class="btn btn-primary" target="_blank" rel="noopener">
                         Try the web app
@@ -85,29 +87,76 @@
                     </a>
                 </div>
             </div>
-
-            <div class="ledger-demo">
-                <div class="ledger-phone" id="ledger-phone" role="group" aria-label="Interactive preview of Ledger for iPhone">
-                    <img class="ledger-shot" src="media/ledger/screens/home.webp" width="780" height="1696" decoding="async" alt="Ledger’s Home screen, with a Start Workout button and last week’s summary.">
-                </div>
+            <div class="ledger-stage">
+                <div class="ledger-screen"><img src="media/ledger/screens/home.webp" width="780" height="1696" decoding="async" alt="Ledger’s Home screen, with a Start Workout button and last week’s summary."></div>
+                <div class="ledger-screen"><img src="media/ledger/screens/logging.webp" width="780" height="1696" decoding="async" alt="A bench press workout with last time’s numbers filled in, ready to tick off."></div>
             </div>
+        </section>
 
-            <div class="ledger-guide">
-                <div class="ledger-chapters" id="ledger-chapters" hidden></div>
-                <div class="ledger-caption" id="ledger-caption">
-                    <h3>Start with what you came to do.</h3>
-                    <p>Pick a workout, or repeat the last one.</p>
-                </div>
-                <p class="ledger-hint" id="ledger-hint" hidden>Real screens, sample data. Tap around. <button type="button" id="ledger-tour">Play tour</button></p>
+        <section class="ledger-row">
+            <div class="ledger-copy">
+                <p class="ledger-label">Lifting</p>
+                <h3>Last time’s numbers, ready to beat.</h3>
+                <p>Sets start filled in. A star marks a new best.</p>
             </div>
-        </article>
+            <div class="ledger-screen"><img src="media/ledger/screens/logging-pr.webp" width="780" height="1696" loading="lazy" decoding="async" alt="A bench press workout with a gold star on a new best set."></div>
+        </section>
+
+        <section class="ledger-row">
+            <div class="ledger-copy">
+                <p class="ledger-label">While you rest</p>
+                <h3>Your rest, at a glance.</h3>
+                <p>The countdown and the next set, on your Lock Screen.</p>
+            </div>
+            <img class="ledger-card" src="media/ledger/screens/rest-card.webp" width="900" height="370" loading="lazy" decoding="async" alt="Ledger’s Lock Screen card, with a 56 second rest countdown and the next set of 232.5 pounds for 8 reps.">
+        </section>
+
+        <section class="ledger-row">
+            <div class="ledger-copy">
+                <p class="ledger-label">And everything else</p>
+                <h3>Run. Swim.<br>Stretch. Play.</h3>
+                <p>Every activity gets its own fields. Log a run and Ledger works out your pace.</p>
+            </div>
+            <div class="ledger-screen"><img src="media/ledger/screens/activity-pace.webp" width="780" height="1696" loading="lazy" decoding="async" alt="A logged run showing time, distance, and pace."></div>
+        </section>
+
+        <section class="ledger-progress">
+            <div class="ledger-copy">
+                <p class="ledger-label">Progress</p>
+                <h3>See where the work goes.</h3>
+            </div>
+            <div class="ledger-trio" tabindex="0" role="group" aria-label="Progress screens">
+                <figure>
+                    <div class="ledger-screen"><img src="media/ledger/screens/progress-exercises.webp" width="780" height="1696" loading="lazy" decoding="async" alt="A chart of bench press strength rising over three months."></div>
+                    <figcaption><strong>Every lift</strong><span>Heaviest sets, estimated 1RM, and records.</span></figcaption>
+                </figure>
+                <figure>
+                    <div class="ledger-screen"><img src="media/ledger/screens/progress-bodymap.webp" width="780" height="1696" loading="lazy" decoding="async" alt="A body map showing estimated weekly sets by muscle."></div>
+                    <figcaption><strong>Every muscle</strong><span>Estimated sets per week on a body map.</span></figcaption>
+                </figure>
+                <figure>
+                    <div class="ledger-screen"><img src="media/ledger/screens/history-detail.webp" width="780" height="1696" loading="lazy" decoding="async" alt="A workout summary with sets, volume, duration, and a new record."></div>
+                    <figcaption><strong>Every session</strong><span>Sets, volume, and duration for each workout.</span></figcaption>
+                </figure>
+            </div>
+        </section>
+
+        <section class="ledger-row">
+            <div class="ledger-copy">
+                <p class="ledger-label">Plan or Ask</p>
+                <h3>One sentence.<br>One workout.</h3>
+                <p>Say what you have, like 45 minutes and no barbell, and Ledger plans it from your own log. Or ask about your training. Needs iOS 27. Asking also needs Apple Intelligence.</p>
+            </div>
+            <div class="ledger-screen"><img src="media/ledger/screens/plan.webp" width="780" height="1696" loading="lazy" decoding="async" alt="Plan or Ask turning one sentence into a workout plan."></div>
+        </section>
 
         <ul class="ledger-details" role="list">
             <li><strong>Apple Watch</strong><span>Log sets from your wrist, while your iPhone runs the workout. Needs watchOS 27.</span></li>
             <li><strong>Private by default</strong><span>No account needed. No ads. No tracking. Works offline. Sync is optional.</span></li>
         </ul>
 
-        <p class="ledger-note">Ledger for iPhone, shown with sample data. Ledger is a training log, not medical advice. iPhone, Apple Watch, watchOS, Apple Intelligence, and TestFlight are trademarks of Apple Inc., registered in the U.S. and other countries and regions.</p>
+        <p class="ledger-note">Ledger for iPhone, shown with sample data. Ledger is a training log, not medical advice. iPhone, Apple Watch, watchOS, and TestFlight are trademarks of Apple Inc., registered in the U.S. and other countries and regions. Apple Intelligence is a trademark of Apple Inc.</p>
+        </article>
     </main>
 
     <footer class="footer"><p><a href="https://github.com/inarun" target="_blank" rel="noopener" class="footer-link">GitHub</a></p></footer>
