@@ -257,9 +257,6 @@
     (function () {
         'use strict';
 
-        var RSS_API = 'https://api.rss2json.com/v1/api.json?rss_url=' +
-                      encodeURIComponent('https://nusayb.substack.com/feed');
-
         var stateEl = document.getElementById('writing-state');
         var listEl  = document.getElementById('post-list');
         var ctaEl   = document.getElementById('writing-cta');
@@ -277,85 +274,50 @@
                 '</div>';
         }
 
-        function extractThumb(item) {
-            if (item.thumbnail && item.thumbnail.startsWith('http')) {
-                return item.thumbnail;
-            }
-            if (item.enclosure && item.enclosure.link &&
-                item.enclosure.link.startsWith('http')) {
-                return item.enclosure.link;
-            }
-            var tmp = document.createElement('div');
-            tmp.innerHTML = item.content || '';
-            var img = tmp.querySelector('img');
-            return img ? img.getAttribute('src') : null;
-        }
-
-        function stripHTML(html) {
-            var tmp = document.createElement('div');
-            tmp.innerHTML = html || '';
-            return (tmp.textContent || tmp.innerText || '').trim();
-        }
-
         function formatDate(str) {
-            if (!str) return '';
-            var d = new Date(str.replace(' ', 'T'));
-            if (isNaN(d)) return '';
+            var d = new Date(str);
+            if (!str || isNaN(d)) return '';
             return d.toLocaleDateString('en-US', {
                 year: 'numeric', month: 'long', day: 'numeric'
             });
         }
 
-        function renderPost(item) {
-            var thumb   = extractThumb(item);
-            var date    = formatDate(item.pubDate);
-            var title   = item.title || 'Untitled';
-            var url     = item.link  || '#';
-            var plain   = stripHTML(item.description || item.content || '');
-            var excerpt = plain.length > 200 ? plain.slice(0, 200) + '\u2026' : plain;
-
-            var safeUrl     = escapeHTML(url);
-            var safeTitle   = escapeHTML(title);
-            var safeExcerpt = escapeHTML(excerpt);
-            var safeDate    = escapeHTML(date);
-
-            var li = document.createElement('li');
-
-            var thumbHTML = thumb
+        function renderPost(post) {
+            var thumbHTML = post.image
                 ? '<div class="post-thumb">' +
-                  '<img src="' + escapeHTML(thumb) + '" alt="" loading="lazy">' +
+                  '<img src="' + escapeHTML(post.image) + '" alt="" loading="lazy">' +
                   '</div>'
                 : '';
 
+            var li = document.createElement('li');
             li.innerHTML =
-                '<a class="post-item" href="' + safeUrl + '" target="_blank" rel="noopener">' +
+                '<a class="post-item" href="' + escapeHTML(post.url) + '" target="_blank" rel="noopener">' +
                 '<div class="post-inner">' +
                 '<div class="post-text">' +
-                '<span class="post-date">' + safeDate + '</span>' +
-                '<div class="post-title">' + safeTitle + '</div>' +
-                '<p class="post-excerpt">' + safeExcerpt + '</p>' +
+                '<span class="post-date">' + escapeHTML(formatDate(post.date)) + '</span>' +
+                '<div class="post-title">' + escapeHTML(post.title) + '</div>' +
+                '<p class="post-excerpt">' + escapeHTML(post.excerpt || '') + '</p>' +
                 '</div>' +
                 thumbHTML +
                 '</div>' +
                 '</a>';
-
             return li;
         }
 
-        fetch(RSS_API)
+        fetch('/api/writing')
             .then(function (r) {
                 if (!r.ok) throw new Error('Network error');
                 return r.json();
             })
             .then(function (data) {
-                var items = data.items;
-                if (!items || items.length === 0) {
+                var posts = data.posts;
+                if (!posts || posts.length === 0) {
                     showEmpty();
                     return;
                 }
 
-                items.forEach(function (item) {
-                    listEl.appendChild(renderPost(item));
+                posts.forEach(function (post) {
+                    listEl.appendChild(renderPost(post));
                 });
 
                 stateEl.style.display = 'none';

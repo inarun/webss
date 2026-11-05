@@ -104,24 +104,18 @@
 
     // ─── CONDITIONAL WRITING NAV ─────────────
     // The Writing link is absent from every page's static HTML until the
-    // Substack feed has at least one post. This fetch queries the RSS feed
-    // on page load; if items.length > 0, a Writing link is injected into
-    // the current page's nav. If the feed is empty or the fetch fails, the
-    // link stays absent — users and crawlers never see a "coming soon" page.
-    // When the first post publishes, the link appears across all pages
-    // automatically, with no code change.
+    // Substack feed has at least one post (/api/writing, served by worker.js).
+    // If the feed is empty or the fetch fails, the link stays absent — users
+    // and crawlers never see a "coming soon" page.
     (function () {
         const navLinks = document.querySelector('.nav-links');
         if (!navLinks) return;
         if (navLinks.querySelector('a[href$="writing.html"]')) return;
 
-        const RSS_API = 'https://api.rss2json.com/v1/api.json?rss_url=' +
-                        encodeURIComponent('https://nusayb.substack.com/feed');
-
-        fetch(RSS_API)
+        fetch('/api/writing')
             .then(r => r.ok ? r.json() : null)
             .then(data => {
-                if (!data || !data.items || data.items.length === 0) return;
+                if (!data || !data.posts || data.posts.length === 0) return;
 
                 const link = document.createElement('a');
                 link.href = '/writing.html';

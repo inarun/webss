@@ -59,8 +59,79 @@ async function assetSize(url, etag, env) {
     return sizes.get(etag);
 }
 
+// Substack's feed sends no CORS headers, so the Worker reads it on a schedule and serves the posts from KV.
+const FEED = 'https://nusayb.substack.com/feed';
+const POSTS_KEY = 'posts';
+
+const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
+
+function decode(text) {
+    return text.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (whole, name) => {
+        if (name[0] === '#') {
+            const code = name[1].toLowerCase() === 'x' ? parseInt(name.slice(2), 16) : Number(name.slice(1));
+            return Number.isFinite(code) ? String.fromCodePoint(code) : whole;
+        }
+        return ENTITIES[name.toLowerCase()] ?? whole;
+    });
+}
+
+function field(item, tag) {
+    const match = new RegExp(`<${tag}(?:\\s[^>]*)?>([\\s\\S]*?)</${tag}>`, 'i').exec(item);
+    if (!match) return '';
+    const cdata = /^\s*<!\[CDATA\[([\s\S]*?)\]\]>\s*$/.exec(match[1]);
+    return cdata ? cdata[1] : decode(match[1]);
+}
+
+const plain = html => decode(html.replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' ').trim();
+const https = url => /^https:\/\//i.test(url) ? url : '';
+
+function parseFeed(xml) {
+    // A page without a channel is an error page or a block notice, not an empty feed.
+    if (!/<channel[\s>]/i.test(xml)) return null;
+    const posts = [];
+    for (const [, item] of xml.matchAll(/<item>([\s\S]*?)<\/item>/gi)) {
+        const url = https(field(item, 'link').trim());
+        const date = new Date(field(item, 'pubDate').trim());
+        if (!url || isNaN(date)) continue;
+        const subtitle = plain(field(item, 'description'));
+        const body = plain(field(item, 'content:encoded'));
+        const excerpt = subtitle || (body.length > 220 ? body.slice(0, 220).replace(/\s+\S*$/, '') + '…' : body);
+        const image = https(/<enclosure[^>]*\burl="([^"]+)"/i.exec(item)?.[1] || '');
+        posts.push({ title: plain(field(item, 'title')) || 'Untitled', url, date: date.toISOString(), excerpt, image: decode(image) });
+    }
+    posts.sort((a, b) => b.date.localeCompare(a.date));
+    return posts;
+}
+
+// A failed or unreadable fetch leaves the stored list as it was.
+async function refreshPosts(env) {
+    const response = await fetch(FEED, { headers: { 'User-Agent': 'nusayb.me (+https://nusayb.me)', Accept: 'application/rss+xml, application/xml' } });
+    if (!response.ok) throw new Error(`feed answered ${response.status}`);
+    const posts = parseFeed(await response.text());
+    if (!posts) throw new Error('feed had no channel');
+    const record = { updated: new Date().toISOString(), posts };
+    await env.WRITING.put(POSTS_KEY, JSON.stringify(record));
+    return record;
+}
+
+async function writing(env) {
+    let record = await env.WRITING.get(POSTS_KEY, 'json');
+    // Only before the first scheduled run has stored anything.
+    if (!record) record = await refreshPosts(env).catch(() => null);
+    if (!record) {
+        return Response.json({ error: 'unavailable' }, { status: 503, headers: { 'Cache-Control': 'no-store' } });
+    }
+    return Response.json(record, { headers: { 'Cache-Control': 'public, max-age=300' } });
+}
+
 export default {
+    async scheduled(event, env, ctx) {
+        ctx.waitUntil(refreshPosts(env));
+    },
+
     async fetch(request, env, ctx) {
+        if (new URL(request.url).pathname === '/api/writing') return writing(env);
+
         const assetRequest = new Request(request);
         assetRequest.headers.delete('Range');
         const response = await env.ASSETS.fetch(assetRequest);
