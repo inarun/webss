@@ -80,7 +80,8 @@
     }
     </script>
     <!-- END GENERATED: jsonld -->
-    <script>(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t)})()</script>
+    <meta name="theme-color" content="#f0ede7">
+    <script>(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='dark'?'#0e0c0a':'#f0ede7'})()</script>
     <link rel="preload" href="fonts/cormorant-garamond.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="fonts/libre-franklin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="style.css">
@@ -529,9 +530,10 @@
         <!-- END GENERATED: bookshelf -->
     </main>
 
-    <footer class="footer"><p><a href="https://github.com/inarun" target="_blank" rel="noopener" class="footer-link">GitHub</a></p></footer>
+    <footer class="footer"><p class="footer-links"><a href="mailto:nusayb.nurani@gmail.com" class="footer-link">Email</a><span class="footer-sep" aria-hidden="true">&middot;</span><a href="https://www.linkedin.com/in/nusayb/" target="_blank" rel="noopener" class="footer-link">LinkedIn</a><span class="footer-sep" aria-hidden="true">&middot;</span><a href="https://github.com/inarun" target="_blank" rel="noopener" class="footer-link">GitHub</a></p></footer>
 
     <dialog class="book-dialog" aria-labelledby="book-dialog-title">
+        <button type="button" class="book-dialog-close" aria-label="Close">&times;</button>
         <button type="button" class="book-dialog-prev" aria-label="Previous book">&lsaquo;</button>
         <button type="button" class="book-dialog-next" aria-label="Next book">&rsaquo;</button>
         <div class="book-dialog-inner">

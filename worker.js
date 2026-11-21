@@ -89,7 +89,7 @@ function parseFeed(xml) {
     // A page without a channel is an error page or a block notice, not an empty feed.
     if (!/<channel[\s>]/i.test(xml)) return null;
     const posts = [];
-    for (const [, item] of xml.matchAll(/<item>([\s\S]*?)<\/item>/gi)) {
+    for (const [, item] of xml.matchAll(/<item(?:\s[^>]*)?>([\s\S]*?)<\/item>/gi)) {
         const url = https(field(item, 'link').trim());
         const date = new Date(field(item, 'pubDate').trim());
         if (!url || isNaN(date)) continue;
@@ -114,14 +114,19 @@ async function refreshPosts(env) {
     return record;
 }
 
-async function writing(env) {
+async function writing(request, env) {
+    if (request.method !== 'GET' && request.method !== 'HEAD') {
+        return new Response(null, { status: 405, headers: { Allow: 'GET, HEAD', 'X-Content-Type-Options': 'nosniff' } });
+    }
     let record = await env.WRITING.get(POSTS_KEY, 'json');
     // Only before the first scheduled run has stored anything.
     if (!record) record = await refreshPosts(env).catch(() => null);
     if (!record) {
-        return Response.json({ error: 'unavailable' }, { status: 503, headers: { 'Cache-Control': 'no-store' } });
+        return Response.json({ error: 'unavailable' }, { status: 503, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } });
     }
-    return Response.json(record, { headers: { 'Cache-Control': 'public, max-age=300' } });
+    const headers = { 'Cache-Control': 'public, max-age=300', 'X-Content-Type-Options': 'nosniff' };
+    if (request.method === 'HEAD') return new Response(null, { status: 200, headers: { ...headers, 'Content-Type': 'application/json' } });
+    return Response.json(record, { headers });
 }
 
 export default {
@@ -130,7 +135,7 @@ export default {
     },
 
     async fetch(request, env, ctx) {
-        if (new URL(request.url).pathname === '/api/writing') return writing(env);
+        if (new URL(request.url).pathname === '/api/writing') return writing(request, env);
 
         const assetRequest = new Request(request);
         assetRequest.headers.delete('Range');

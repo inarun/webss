@@ -1,0 +1,29 @@
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+/fonts/*
+  Cache-Control: public, max-age=2592000
+
+/covers/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/media/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/study/lib/*
+  Cache-Control: public, max-age=2592000
+
+/study/tex/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/study/probes/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/study/*.glb
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/study/*.webp
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400

@@ -103,4 +103,6 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add $files
           git commit -m "Rebuild resume page and PDF from resume.docx"
+          # The bookshelf workflow may push in the same window when one commit touches both inputs.
+          git pull --rebase origin main
           git push

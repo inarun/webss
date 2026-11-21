@@ -20,6 +20,9 @@
         links.addEventListener('click', e => {
             if (e.target.closest('.nav-link')) setMenu(false);
         });
+        document.addEventListener('click', e => {
+            if (links.classList.contains('open') && !e.target.closest('.nav')) setMenu(false);
+        });
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape' && links.classList.contains('open')) {
                 e.preventDefault();
@@ -32,14 +35,18 @@
     // ─── THEME TOGGLE ────────────────────────
     const themeToggle = document.querySelector('.theme-toggle');
     if (themeToggle) {
-        const labelTheme = () => themeToggle.setAttribute('aria-label',
-            document.documentElement.dataset.theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
-        labelTheme();
+        const themeMeta = document.querySelector('meta[name="theme-color"]');
+        const syncTheme = () => {
+            const dark = document.documentElement.dataset.theme === 'dark';
+            themeToggle.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+            if (themeMeta) themeMeta.content = dark ? '#0e0c0a' : '#f0ede7';
+        };
+        syncTheme();
         themeToggle.addEventListener('click', () => {
             const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', next);
             try { localStorage.setItem('theme', next); } catch (_) { /* Theme still works without storage. */ }
-            labelTheme();
+            syncTheme();
         });
     }
 
@@ -71,7 +78,7 @@
             main.style.transform = 'scale(1.03)';
             main.style.transition = 'none';
             main.offsetHeight;
-            main.style.transition = 'opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)';
+            main.style.transition = 'opacity 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)';
             main.style.opacity = '1';
             main.style.transform = 'scale(1)';
         }
@@ -94,11 +101,11 @@
             if (pending !== null) return;
             try { sessionStorage.setItem('pageTransition', '1'); } catch (_) { /* Optional animation state. */ }
 
-            main.style.transition = 'opacity 0.35s ease, transform 0.35s cubic-bezier(0.4, 0, 1, 1)';
+            main.style.transition = 'opacity 0.18s ease, transform 0.18s cubic-bezier(0.4, 0, 1, 1)';
             main.style.opacity = '0';
             main.style.transform = 'scale(0.97)';
 
-            pending = setTimeout(() => { window.location.href = href; }, 360);
+            pending = setTimeout(() => { window.location.href = href; }, 190);
         });
     })();
 
@@ -235,6 +242,7 @@
         const shelf = document.querySelector('.shelf-page');
         if (!dialog || !shelf || typeof dialog.showModal !== 'function') return;
 
+        const closeBtn = dialog.querySelector('.book-dialog-close');
         const prevBtn  = dialog.querySelector('.book-dialog-prev');
         const nextBtn  = dialog.querySelector('.book-dialog-next');
         const titleEl  = dialog.querySelector('.book-dialog-title');
@@ -349,6 +357,7 @@
             if (next) next.focus();
         });
 
+        if (closeBtn) closeBtn.addEventListener('click', closeDialog);
         prevBtn.addEventListener('click', () => step(-1));
         nextBtn.addEventListener('click', () => step(1));
         dialog.addEventListener('click', e => { if (e.target === dialog) closeDialog(); });
@@ -485,6 +494,27 @@
                 case 'b': clickNav(findNav('bookshelf')); break;
                 case 'w': clickNav(findNav('writing')); break;
             }
+        });
+    })();
+
+    // ─── COPY EMAIL ──────────────────────────
+    (function () {
+        const btn = document.querySelector('.copy-email');
+        if (!btn || !navigator.clipboard) return;
+        const status = document.getElementById('copy-status');
+        let timer = null;
+        btn.addEventListener('click', () => {
+            const value = btn.dataset.copy;
+            if (!value) return;
+            navigator.clipboard.writeText(value).then(() => {
+                btn.textContent = 'Copied';
+                if (status) status.textContent = 'Email copied to clipboard';
+                clearTimeout(timer);
+                timer = setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    if (status) status.textContent = '';
+                }, 2000);
+            }).catch(() => {});
         });
     })();
 

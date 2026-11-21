@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Projects — Nusayb Nurani</title>
-    <meta name="description" content="Personal projects by Nusayb Nurani, featuring Lifting Ledger, a private workout tracker. Lifting Ledger for iPhone and Apple Watch is coming to the App Store, and is in beta on TestFlight now.">
+    <meta name="description" content="Personal projects by Nusayb Nurani — Lifting Ledger, a private workout tracker for iPhone and Apple Watch, and The Study, a 3D interactive bookshelf.">
     <link rel="canonical" href="https://nusayb.me/projects">
     <meta property="og:title" content="Projects — Nusayb Nurani">
-    <meta property="og:description" content="Lifting Ledger is a private workout tracker I built for my own training. Lifting Ledger for iPhone and Apple Watch is coming to the App Store, and is in beta on TestFlight now.">
+    <meta property="og:description" content="Lifting Ledger for iPhone and Apple Watch (in beta on TestFlight) and The Study, an interactive 3D bookshelf.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://nusayb.me/projects">
     <meta property="og:image" content="https://nusayb.me/media/ledger/ledger-launch-share-1200x630.jpg">
@@ -16,8 +16,9 @@
     <meta property="og:image:alt" content="Lifting Ledger on an iPhone and an Apple Watch, beside the words Every set, on the record.">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Projects — Nusayb Nurani">
-    <meta name="twitter:description" content="Lifting Ledger is a private workout tracker I built for my own training. Lifting Ledger for iPhone and Apple Watch is coming to the App Store, and is in beta on TestFlight now.">
+    <meta name="twitter:description" content="Lifting Ledger for iPhone and Apple Watch (in beta on TestFlight) and The Study, an interactive 3D bookshelf.">
     <meta name="twitter:image" content="https://nusayb.me/media/ledger/ledger-launch-share-1200x630.jpg">
+    <meta name="theme-color" content="#f0ede7">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
     <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
@@ -28,22 +29,43 @@
         "@type": "CollectionPage",
         "name": "Projects — Nusayb Nurani",
         "url": "https://nusayb.me/projects",
-        "description": "Personal projects by Nusayb Nurani, featuring Lifting Ledger, a private workout tracker. Lifting Ledger for iPhone and Apple Watch is coming to the App Store, and is in beta on TestFlight now.",
+        "description": "Personal projects by Nusayb Nurani — Lifting Ledger, a private workout tracker for iPhone and Apple Watch, and The Study, a 3D interactive bookshelf.",
         "author": {
             "@type": "Person",
             "name": "Nusayb Nurani",
             "url": "https://nusayb.me/"
         },
         "mainEntity": {
-            "@type": "SoftwareApplication",
-            "name": "Lifting Ledger",
-            "applicationCategory": "HealthApplication",
-            "operatingSystem": "iOS",
-            "author": { "@type": "Person", "name": "Nusayb Nurani", "url": "https://nusayb.me/" }
+            "@type": "ItemList",
+            "numberOfItems": 2,
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "item": {
+                        "@type": "SoftwareApplication",
+                        "name": "Lifting Ledger",
+                        "applicationCategory": "HealthApplication",
+                        "operatingSystem": "iOS",
+                        "author": { "@type": "Person", "name": "Nusayb Nurani", "url": "https://nusayb.me/" }
+                    }
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "item": {
+                        "@type": "WebApplication",
+                        "name": "The Study",
+                        "url": "https://nusayb.me/study",
+                        "applicationCategory": "MultimediaApplication",
+                        "author": { "@type": "Person", "name": "Nusayb Nurani", "url": "https://nusayb.me/" }
+                    }
+                }
+            ]
         }
     }
     </script>
-    <script>(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t)})()</script>
+    <script>(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='dark'?'#0e0c0a':'#f0ede7'})()</script>
     <link rel="preload" href="fonts/cormorant-garamond.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="fonts/libre-franklin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="style.css">
@@ -68,8 +90,8 @@
 
     <main id="main-content" tabindex="-1" class="projects-page">
         <header class="projects-header">
-            <h1>Project</h1>
-            <p>Something I built for everyday life.</p>
+            <h1>Projects</h1>
+            <p>Things I built.</p>
         </header>
 
         <article class="ledger" aria-labelledby="ledger-title">
@@ -177,9 +199,25 @@
 
         <p class="ledger-note">Lifting Ledger for iPhone, shown with sample data. Lifting Ledger is a training log, not medical advice. iPhone, Apple Watch, watchOS, App Store, and TestFlight are trademarks of Apple Inc., registered in the U.S. and other countries and regions. Apple Intelligence is a trademark of Apple Inc.</p>
         </article>
+
+        <article class="study-project" aria-labelledby="study-title">
+            <div class="study-project-copy">
+                <p class="ledger-label">Interactive 3D</p>
+                <h2 id="study-title">The Study</h2>
+                <p class="ledger-lede">My bookshelf as a lamplit room.</p>
+                <p class="ledger-status">Built with Three.js and custom baked lightmaps in Blender. Pull a book off the shelf to open it on the reading stand, switch between day and night, or sit at the desk for sealed letters from Substack.</p>
+                <div class="ledger-actions">
+                    <a href="study.html" class="btn btn-primary">Enter the study &rarr;</a>
+                    <a href="bookshelf.html" class="study-project-link" data-page-link>Browse the flat bookshelf</a>
+                </div>
+            </div>
+            <a href="study.html" class="study-preview" aria-label="Enter The Study — 3D bookshelf">
+                <img src="study/og.jpg" width="1200" height="630" loading="lazy" decoding="async" alt="A lamplit 3D study with wooden bookshelves, a fireplace, and a reading stand.">
+            </a>
+        </article>
     </main>
 
-    <footer class="footer"><p><a href="https://github.com/inarun" target="_blank" rel="noopener" class="footer-link">GitHub</a></p></footer>
+    <footer class="footer"><p class="footer-links"><a href="mailto:nusayb.nurani@gmail.com" class="footer-link">Email</a><span class="footer-sep" aria-hidden="true">&middot;</span><a href="https://www.linkedin.com/in/nusayb/" target="_blank" rel="noopener" class="footer-link">LinkedIn</a><span class="footer-sep" aria-hidden="true">&middot;</span><a href="https://github.com/inarun" target="_blank" rel="noopener" class="footer-link">GitHub</a></p></footer>
     <script src="script.js"></script>
 </body>
 </html>

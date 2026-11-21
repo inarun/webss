@@ -1,7 +1,14 @@
 resume.docx
 .github
+.claude
 tools
 wrangler.jsonc
 worker.js
 .wrangler
 .git
+.gitignore
+README.md
+CLAUDE.md
+AGENTS.md
+REPORT.md
+SKILL.md
